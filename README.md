@@ -102,6 +102,7 @@ last-write-wins per document on its `updatedAt`.
 npm install
 npm run dev      # Vite dev server
 npm test         # Vitest: scoring, stats, i18n
+npm run lint     # ESLint (npm run lint:fix to auto-fix)
 npm run build    # type-check + production build to dist/
 npm run preview  # serve the production build
 ```

@@ -10,10 +10,12 @@ npm install
 npm run dev      # Vite dev server
 npm test         # Vitest — pure logic only (scoring, stats, i18n)
 npm run build    # tsc -b (type-check) + production build to dist/
+npm run lint     # ESLint for src/ and worker/ (lint:fix auto-fixes almost everything)
 ```
 
-There is no linter. `npm test` and `npm run build` are the checks; run both
-before declaring frontend work done. CI runs them plus the worker tests.
+`npm run lint`, `npm test` and `npm run build` are the checks; run all three
+before declaring work done (`npm run lint:fix` first). CI runs them plus the
+worker tests.
 
 Worker commands run from `worker/`:
 
@@ -139,8 +141,20 @@ banner instead of reloading mid-game. Don't switch it to `autoUpdate`.
 
 ## Code style
 
-2-space indent, single quotes, no semicolons, named exports only, hooks in
-`src/hooks/`, shared types in `src/types.ts`, screens in `src/screens/`.
+Enforced by `eslint.config.js` (one config for the app and the worker):
+
+- **Every `if`/`else`/`for`/`while` has braces**, with the body on its own line,
+  never `if (x) return`.
+- **Blank lines between steps**: before every `return` (unless it is the
+  first line of its block), after a group of `const`/`let`, and around
+  multi-line `if`/`for`/`switch`/`try` blocks.
+- 2-space indent, single quotes, no semicolons, trailing commas on multi-line
+  literals, `(x) =>` parentheses, `===` (except `x == null`).
+- React hooks rules (`rules-of-hooks`, `exhaustive-deps`) are errors.
+
+Not linted but expected: named exports only, hooks in `src/hooks/`, shared
+types in `src/types.ts`, screens in `src/screens/`. No Prettier: ESLint's
+stylistic rules are the formatter.
 
 ## Deployment
 
