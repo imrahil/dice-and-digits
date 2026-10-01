@@ -10,7 +10,13 @@ import tseslint from 'typescript-eslint'
  * run `npm run lint:fix` before committing.
  */
 export default tseslint.config(
-  { ignores: ['dist', 'dist-e2e', 'dev-dist', 'test-results', 'playwright-report', 'node_modules', 'worker/.wrangler', 'worker/node_modules'] },
+  {
+    ignores: [
+      'dist', 'dist-e2e', 'dev-dist', 'test-results', 'playwright-report', 'node_modules', 'worker/.wrangler', 'worker/node_modules',
+      // Claude Design sync: staged scripts and generated output (sources under .design-sync/ stay linted)
+      '.ds-sync', 'ds-bundle', '.design-sync/.cache', '.design-sync/lib/dist', '.design-sync/lib/types',
+    ],
+  },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
