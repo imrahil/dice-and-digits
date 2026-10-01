@@ -16,7 +16,7 @@ export function Games() {
 
   const row = (g: GameDef) => (
     <Card key={g.id} onClick={() => navigate(`games/${encodeURIComponent(g.id)}`)} className="flex items-center gap-3 !p-3">
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-paper text-2xl dark:bg-night">{g.emoji}</span>
+      <span className="flex size-11 shrink-0 items-center justify-center emoji-tile rounded-2xl text-2xl">{g.emoji}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate font-extrabold">{text(g.name)}</span>
         <ModeBadge mode={g.mode} target={g.target} lowWins={g.lowWins} />

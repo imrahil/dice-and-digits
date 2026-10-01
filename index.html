@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f6f1e7" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#14111d" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f0ebff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f0b17" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="Score keeper for board games — rounds, score sheets, history and stats. Works offline. English &amp; Polish." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -15,7 +15,7 @@
     <link rel="manifest" href="./manifest.json" />
     <title>Dice &amp; Digits</title>
     <script>
-      // Apply the saved (or system) theme and language before first paint.
+      // Apply the saved (or system) theme, skin and language before first paint.
       // Keep in sync with src/hooks/useTheme.ts and the settings key in src/lib/store.ts.
       ;(function () {
         var s = {}
@@ -23,6 +23,7 @@
         var t = s.theme
         var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
         document.documentElement.classList.toggle('dark', dark)
+        document.documentElement.dataset.skin = s.skin || 'arcade'
         if (s.lang) document.documentElement.lang = s.lang
       })()
     </script>

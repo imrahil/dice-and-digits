@@ -152,8 +152,21 @@ banner instead of reloading mid-game. Don't switch it to `autoUpdate`.
   `tailwind.config`. Use the tokens (`bg-paper`, `text-ink`, `bg-accent`,
   `text-gold`, `bg-slate`, `bg-night`) rather than raw hex. Gradients are
   `bg-linear-to-*` (v4), not `bg-gradient-to-*`.
+- **Skins** (`settings.skin`: `arcade` default, `bubble`, `classic`). Each is
+  a block of CSS variables in `src/index.css` under `[data-skin=…]` and
+  `.dark[data-skin=…]`: Tailwind's theme tokens (colours, radii, fonts) plus
+  shape variables (`--bw`/`--line` outline, `--sh` shadow, `--press`,
+  `--cta*`, `--page-bg`, `--nav-*`). Every skin defines every variable,
+  because the Settings previews nest `data-skin` inside another skin.
+  Adding a skin: a CSS block (light + dark), the `Skin` type, `SKINS` in
+  `More.tsx`, `COLORS` in `useTheme.ts`, and i18n labels.
+- Build surfaces with the skin utilities, not hand-rolled rings: `surface`
+  (raised panel), `surface-flat` (nested row, chip, input), `press` (tap
+  feedback), `btn-cta` (primary action), `chip-on` (selected pill),
+  `emoji-tile`, `avatar-ring`, `display` (heading/score font),
+  `section-title`. Score numbers use `display`.
 - Dark mode is class-based. Both `src/hooks/useTheme.ts` and the inline script
-  in `index.html` toggle `.dark`, and the script reads the
+  in `index.html` toggle `.dark` and set `data-skin`, and the script reads the
   `dice-digits:settings` key. Change one, change the other.
 - `vite.config.ts` uses `base: './'`. Reference public assets relatively.
 - `public/icons/icon.svg` is the master icon. Its drawing also lives in

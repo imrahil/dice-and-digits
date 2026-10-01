@@ -18,7 +18,7 @@ export default defineConfig({
       manifest: false, // public/manifest.json is the source of truth
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,woff2,json}'],
-        // Polish needs latin-ext; the other Nunito subsets load on demand via
+        // Polish needs latin-ext; the other font subsets load on demand via
         // unicode-range and aren't worth precaching.
         globIgnores: ['**/*cyrillic*', '**/*vietnamese*'],
         navigateFallback: 'index.html',

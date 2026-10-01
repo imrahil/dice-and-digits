@@ -38,7 +38,7 @@ function GamePicker() {
 
   const row = (g: GameDef) => (
     <Card key={g.id} onClick={() => navigate(`new/${encodeURIComponent(g.id)}`, { replace: true })} className="flex items-center gap-3 !p-3">
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-paper text-2xl dark:bg-night">{g.emoji}</span>
+      <span className="flex size-11 shrink-0 items-center justify-center emoji-tile rounded-2xl text-2xl">{g.emoji}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate font-extrabold">{text(g.name)}</span>
         <ModeBadge mode={g.mode} target={g.target} lowWins={g.lowWins} />
@@ -186,7 +186,7 @@ function Setup({ game }: { game: GameDef }) {
   return (
     <Page title={t('newGame')} back="" bare>
       <Card className="flex items-center gap-3 !p-3">
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-paper text-3xl dark:bg-night">{game.emoji}</span>
+        <span className="flex size-12 shrink-0 items-center justify-center emoji-tile rounded-2xl text-3xl">{game.emoji}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-lg font-extrabold">{text(game.name)}</span>
           <ModeBadge mode={game.mode} target={game.target} lowWins={game.lowWins} />
@@ -238,8 +238,8 @@ function Setup({ game }: { game: GameDef }) {
               }
 
               return (
-                <li key={id} className="flex animate-pop items-center gap-3 rounded-2xl bg-card p-2 pr-1 ring-1 ring-edge dark:bg-slate dark:ring-white/8">
-                  <span className="w-5 text-center text-sm font-black text-ink/40 tabular-nums dark:text-white/40">{i + 1}</span>
+                <li key={id} className="flex animate-pop items-center gap-3 surface-flat rounded-2xl p-2 pr-1">
+                  <span className="display w-5 text-center text-base font-black text-ink/40 tabular-nums dark:text-white/40">{i + 1}</span>
                   <Avatar name={p.name} color={p.color} />
                   <span className="min-w-0 flex-1 truncate font-bold">{p.name}</span>
                   <button
@@ -267,7 +267,7 @@ function Setup({ game }: { game: GameDef }) {
               <button
                 key={p.id}
                 onClick={() => toggle(p.id)}
-                className="flex items-center gap-2 rounded-full bg-card py-1 pr-3.5 pl-1 font-bold ring-1 ring-edge transition active:scale-95 dark:bg-slate dark:ring-white/10"
+                className="surface press flex items-center gap-2 rounded-full py-1 pr-3.5 pl-1 font-bold"
               >
                 <Avatar name={p.name} color={p.color} size="sm" />
                 {p.name}

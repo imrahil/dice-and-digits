@@ -1,31 +1,52 @@
 @import "tailwindcss";
 @import "@fontsource-variable/nunito";
+@import "@fontsource-variable/bricolage-grotesque/opsz.css";
+@import "@fontsource-variable/unbounded";
 
 /* Class-based dark mode so the in-app switch can override the OS setting.
    The .dark class on <html> is managed by useTheme and by the inline script
    in index.html that prevents a flash of the wrong theme on load. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Skins. Every colour, radius and font below is a CSS variable, so a skin is
+ * just a block that redefines them under [data-skin=…] (light) and
+ * .dark[data-skin=…] (dark). Shape comes from a few extra variables that the
+ * utilities further down read: outline (--bw, --line), shadow (--sh*), press
+ * motion (--press), the primary button (--cta*), page backdrop (--page-bg)
+ * and the bottom dock (--nav-*).
+ *
+ * data-skin sits on <html> (set by useTheme and the script in index.html) and
+ * on the preview tiles in Settings, so every skin must define every variable:
+ * a preview must not inherit anything from the skin around it.
+ * Skin ids live in src/types.ts (Skin).
+ */
 @theme {
-  --font-sans: "Nunito Variable", "Nunito", ui-rounded, ui-sans-serif, system-ui,
-    -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
 
-  /* A game-table palette: cream card stock, ink, meeple red and a gold crown. */
-  --color-paper: #f6f1e7; /* light page background */
-  --color-card: #ffffff; /* light surfaces */
-  --color-ink: #1f1a2e; /* text, dark surfaces' text-on-light */
-  --color-night: #14111d; /* dark page background */
-  --color-slate: #221d31; /* dark surfaces */
-  --color-edge: #e7dfcf; /* light borders */
-  --color-accent: #e4572e; /* primary actions */
-  --color-accent-dark: #c4431e;
-  --color-gold: #f2b134; /* leader / winner */
-  --color-mint: #2a9d5c; /* positive deltas */
-  --color-danger: #d64550; /* negative deltas, destructive */
+  --color-paper: #f0ebff; /* page background */
+  --color-card: #ffffff; /* surfaces */
+  --color-ink: #15111f; /* text on light */
+  --color-night: #0f0b17; /* dark page background */
+  --color-slate: #1c1628; /* dark surfaces */
+  --color-edge: #ded6f2; /* dividers inside a surface */
+  --color-accent: #6a43ff; /* links, focus, selection */
+  --color-accent-dark: #4521d6;
+  --color-gold: #ffbf1f; /* leader / winner */
+  --color-mint: #0f9f55; /* positive deltas */
+  --color-danger: #ec3048; /* negative deltas, destructive */
+  /* Decorative fills: quick-start tiles, podium steps. */
+  --color-candy-a: #ff8fd0;
+  --color-candy-b: #7fd8ff;
+  --color-candy-c: #ffd447;
+  --color-candy-d: #b9a4ff;
+  --color-candy-e: #c6f24e;
 
   --animate-pop: pop 260ms cubic-bezier(0.2, 0.9, 0.3, 1.4);
   --animate-roll: roll 500ms cubic-bezier(0.3, 0.7, 0.4, 1);
   --animate-rise: rise 220ms ease-out;
+  --animate-wiggle: wiggle 2.4s ease-in-out infinite;
   @keyframes pop {
     0% { transform: scale(0.8); opacity: 0.4; }
     100% { transform: scale(1); opacity: 1; }
@@ -39,6 +60,380 @@
     0% { transform: translateY(16px); opacity: 0; }
     100% { transform: translateY(0); opacity: 1; }
   }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+  }
+}
+
+/* ── Arcade: sticker-book neo-brutalism. Ink outlines, hard shadows, lime. ── */
+:root,
+[data-skin="arcade"] {
+  --font-sans: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --display-tracking: -0.03em;
+  --title-size: 22px;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 0.9rem;
+  --radius-3xl: 1.25rem;
+
+  --color-paper: #f0ebff;
+  --color-card: #ffffff;
+  --color-ink: #15111f;
+  --color-night: #0f0b17;
+  --color-slate: #1c1628;
+  --color-edge: #ded6f2;
+  --color-accent: #6a43ff;
+  --color-accent-dark: #4521d6;
+  --color-gold: #ffbf1f;
+  --color-mint: #0f9f55;
+  --color-danger: #ec3048;
+  --color-candy-a: #ff8fd0;
+  --color-candy-b: #7fd8ff;
+  --color-candy-c: #ffd447;
+  --color-candy-d: #b9a4ff;
+  --color-candy-e: #c6f24e;
+
+  --fg: #15111f;
+  --page-bg: radial-gradient(rgb(21 17 31 / 0.13) 1.2px, transparent 1.5px) 0 0 / 18px 18px;
+  --line: #15111f;
+  --bw: 2px;
+  --line-flat: #15111f;
+  --bw-flat: 2px;
+  --sh: 3px 3px 0 0 #15111f;
+  --sh-press: 1px 1px 0 0 #15111f;
+  --press: translate(2px, 2px);
+  --avatar-bw: 2px;
+  --tile-bg: color-mix(in oklab, #6a43ff 16%, white);
+  --tile-tilt: rotate(-4deg);
+  --hl: #c6f24e;
+
+  --cta: #c6f24e;
+  --cta-ink: #15111f;
+  --cta-bw: 2px;
+  --cta-line: #15111f;
+  --cta-sh: 4px 4px 0 0 #15111f;
+  --cta-sh-press: 1px 1px 0 0 #15111f;
+  --cta-press: translate(3px, 3px);
+
+  --nav-bg: #15111f;
+  --nav-line: #15111f;
+  --nav-sh: 4px 4px 0 0 #6a43ff;
+  --nav-ink: rgb(255 255 255 / 0.6);
+  --nav-on: #c6f24e;
+  --nav-on-ink: #15111f;
+}
+
+.dark[data-skin="arcade"],
+.dark [data-skin="arcade"] {
+  --color-paper: #0f0b17;
+  --color-card: #1c1628;
+  --color-edge: rgb(255 255 255 / 0.1);
+  --color-accent: #9b82ff;
+  --color-accent-dark: #6a43ff;
+  --color-gold: #ffc83d;
+  --color-mint: #3ddc84;
+  --color-danger: #ff5a6e;
+
+  --fg: #f4f0ff;
+  --page-bg: radial-gradient(rgb(255 255 255 / 0.07) 1.2px, transparent 1.5px) 0 0 / 18px 18px;
+  --line: #4a3d6e;
+  --line-flat: #4a3d6e;
+  --sh: 3px 3px 0 0 #000;
+  --sh-press: 1px 1px 0 0 #000;
+  --tile-bg: #2b2140;
+  --hl: rgb(106 67 255 / 0.6);
+
+  --cta-sh: 4px 4px 0 0 #000;
+  --cta-sh-press: 1px 1px 0 0 #000;
+  --cta-line: #000;
+
+  --nav-bg: #1c1628;
+  --nav-line: #4a3d6e;
+  --nav-sh: 4px 4px 0 0 #000;
+}
+
+/* ── Bubblegum: Y2K gloss. Gradient mesh, frosted cards, chrome-candy CTA. ── */
+[data-skin="bubble"] {
+  --font-sans: "Nunito Variable", "Nunito", ui-rounded, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Unbounded Variable", "Nunito Variable", ui-rounded, sans-serif;
+  --display-tracking: -0.01em;
+  --title-size: 18px; /* Unbounded runs wide */
+  --radius-xl: 1rem;
+  --radius-2xl: 1.35rem;
+  --radius-3xl: 1.9rem;
+
+  --color-paper: #fbefff;
+  --color-card: rgb(255 255 255 / 0.74);
+  --color-ink: #2a1440;
+  --color-night: #150a24;
+  --color-slate: #2b1846;
+  --color-edge: rgb(42 20 64 / 0.09);
+  --color-accent: #d42f98;
+  --color-accent-dark: #a51c75;
+  --color-gold: #ffb020;
+  --color-mint: #0e9f7a;
+  --color-danger: #e8365a;
+  --color-candy-a: #ffc4e8;
+  --color-candy-b: #bdeeff;
+  --color-candy-c: #fff0a8;
+  --color-candy-d: #dccbff;
+  --color-candy-e: #c9ffe5;
+
+  --fg: #2a1440;
+  --page-bg:
+    radial-gradient(60% 45% at 0% 0%, #ffcdee 0%, transparent 70%),
+    radial-gradient(55% 40% at 100% 12%, #c4efff 0%, transparent 70%),
+    radial-gradient(60% 45% at 85% 100%, #e2d2ff 0%, transparent 70%),
+    radial-gradient(45% 35% at 5% 85%, #fff1b8 0%, transparent 70%);
+  --line: rgb(255 255 255 / 0.95);
+  --bw: 1.5px;
+  --line-flat: rgb(255 255 255 / 0.9);
+  --bw-flat: 1.5px;
+  --sh: 0 12px 28px -14px rgb(150 50 190 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --sh-press: 0 4px 10px -6px rgb(150 50 190 / 0.45);
+  --press: scale(0.97);
+  --avatar-bw: 2px;
+  --tile-bg: linear-gradient(140deg, #ffd6f0, #d7f3ff);
+  --tile-tilt: none;
+  --hl: transparent;
+
+  --cta: linear-gradient(115deg, #ff4fb3 0%, #b45cff 52%, #3fc8ff 100%);
+  --cta-ink: #ffffff;
+  --cta-bw: 0px;
+  --cta-line: transparent;
+  --cta-sh: 0 12px 24px -10px rgb(180 92 255 / 0.75), inset 0 2px 0 rgb(255 255 255 / 0.45);
+  --cta-sh-press: 0 4px 10px -6px rgb(180 92 255 / 0.75), inset 0 2px 0 rgb(255 255 255 / 0.45);
+  --cta-press: scale(0.97);
+
+  --nav-bg: rgb(255 255 255 / 0.86);
+  --nav-line: rgb(255 255 255 / 0.95);
+  --nav-sh: 0 14px 34px -14px rgb(150 50 190 / 0.5);
+  --nav-ink: rgb(42 20 64 / 0.5);
+  --nav-on: linear-gradient(115deg, #ff4fb3, #b45cff);
+  --nav-on-ink: #ffffff;
+}
+
+.dark[data-skin="bubble"],
+.dark [data-skin="bubble"] {
+  --color-paper: #150a24;
+  --color-card: rgb(48 26 80 / 0.72);
+  --color-edge: rgb(255 255 255 / 0.08);
+  --color-accent: #ff74c8;
+  --color-accent-dark: #d42f98;
+  --color-gold: #ffc94d;
+  --color-mint: #3ee6a8;
+  --color-danger: #ff6b81;
+
+  --fg: #fbefff;
+  --page-bg:
+    radial-gradient(60% 45% at 0% 0%, #4d1463 0%, transparent 70%),
+    radial-gradient(55% 40% at 100% 15%, #0f3b63 0%, transparent 70%),
+    radial-gradient(60% 45% at 85% 100%, #33196e 0%, transparent 70%);
+  --line: rgb(255 255 255 / 0.12);
+  --line-flat: rgb(255 255 255 / 0.1);
+  --sh: 0 12px 30px -14px rgb(0 0 0 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.1);
+  --sh-press: 0 4px 10px -6px rgb(0 0 0 / 0.7);
+  --tile-bg: linear-gradient(140deg, #5a2477, #1d3f6e);
+
+  --nav-bg: rgb(43 24 70 / 0.9);
+  --nav-line: rgb(255 255 255 / 0.12);
+  --nav-sh: 0 14px 34px -14px rgb(0 0 0 / 0.8);
+  --nav-ink: rgb(255 255 255 / 0.55);
+}
+
+/* ── Classic: the original cream card stock, meeple red and gold crown. ── */
+[data-skin="classic"] {
+  --font-sans: "Nunito Variable", "Nunito", ui-rounded, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Nunito Variable", "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+  --display-tracking: -0.02em;
+  --title-size: 22px;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+
+  --color-paper: #f6f1e7;
+  --color-card: #ffffff;
+  --color-ink: #1f1a2e;
+  --color-night: #14111d;
+  --color-slate: #221d31;
+  --color-edge: #e7dfcf;
+  --color-accent: #e4572e;
+  --color-accent-dark: #c4431e;
+  --color-gold: #f2b134;
+  --color-mint: #2a9d5c;
+  --color-danger: #d64550;
+  --color-candy-a: #f4c9b4;
+  --color-candy-b: #e7dfcf;
+  --color-candy-c: #f0e2c6;
+  --color-candy-d: #e7dfcf;
+  --color-candy-e: #e7dfcf;
+
+  --fg: #1f1a2e;
+  --page-bg: none;
+  --line: #e7dfcf;
+  --bw: 1px;
+  --line-flat: #e7dfcf;
+  --bw-flat: 1px;
+  --sh: 0 0 #0000;
+  --sh-press: 0 0 #0000;
+  --press: scale(0.98);
+  --avatar-bw: 0px;
+  --tile-bg: #f6f1e7;
+  --tile-tilt: none;
+  --hl: transparent;
+
+  --cta: #e4572e;
+  --cta-ink: #ffffff;
+  --cta-bw: 0px;
+  --cta-line: transparent;
+  --cta-sh: 0 4px 0 0 #c4431e;
+  --cta-sh-press: 0 2px 0 0 #c4431e;
+  --cta-press: translateY(2px);
+
+  --nav-bg: rgb(246 241 231 / 0.92);
+  --nav-line: #e7dfcf;
+  --nav-sh: 0 10px 28px -14px rgb(31 26 46 / 0.35);
+  --nav-ink: rgb(31 26 46 / 0.5);
+  --nav-on: rgb(228 87 46 / 0.12);
+  --nav-on-ink: #e4572e;
+}
+
+.dark[data-skin="classic"],
+.dark [data-skin="classic"] {
+  --color-paper: #14111d;
+  --color-card: #221d31;
+  --color-edge: rgb(255 255 255 / 0.08);
+
+  --fg: #f3eefc;
+  --line: rgb(255 255 255 / 0.08);
+  --line-flat: rgb(255 255 255 / 0.08);
+  --tile-bg: #14111d;
+
+  --nav-bg: rgb(20 17 29 / 0.92);
+  --nav-line: rgb(255 255 255 / 0.08);
+  --nav-sh: 0 10px 28px -14px rgb(0 0 0 / 0.6);
+  --nav-ink: rgb(255 255 255 / 0.5);
+}
+
+/* ── Building blocks every skin styles through the variables above. ── */
+
+/** A raised panel: cards, list rows, tables. */
+@utility surface {
+  background: var(--color-card);
+  border: var(--bw) solid var(--line);
+  box-shadow: var(--sh);
+}
+
+/** A panel nested inside another (seat rows in a sheet, chips): outline, no lift. */
+@utility surface-flat {
+  background: var(--color-card);
+  border: var(--bw-flat) solid var(--line-flat);
+}
+
+/** Tactile press for anything with a surface shadow. */
+@utility press {
+  transition: transform 110ms ease, box-shadow 110ms ease;
+  &:active:not(:disabled) {
+    transform: var(--press);
+    box-shadow: var(--sh-press);
+  }
+}
+
+/** The primary call to action. */
+@utility btn-cta {
+  background: var(--cta);
+  color: var(--cta-ink);
+  border: var(--cta-bw) solid var(--cta-line);
+  box-shadow: var(--cta-sh);
+  transition: transform 110ms ease, box-shadow 110ms ease;
+  &:active:not(:disabled) {
+    transform: var(--cta-press);
+    box-shadow: var(--cta-sh-press);
+  }
+}
+
+/** A selected pill or tab: the CTA fill, same outline width as surface-flat. */
+@utility chip-on {
+  background: var(--cta);
+  color: var(--cta-ink);
+  border: var(--bw-flat) solid var(--cta-line);
+}
+
+/** The square a game's emoji sits in. */
+@utility emoji-tile {
+  background: var(--tile-bg);
+  border: var(--bw-flat) solid var(--line-flat);
+  transform: var(--tile-tilt);
+}
+
+/** Avatars wear the skin's outline, like a sticker. */
+@utility avatar-ring {
+  border: var(--avatar-bw) solid var(--line-flat);
+}
+
+/** Big numbers and headings. */
+@utility display {
+  font-family: var(--font-display);
+  letter-spacing: var(--display-tracking);
+}
+
+/** Section headings: a highlighter swipe in Arcade, small caps in Classic, gradient in Bubblegum. */
+@utility section-title {
+  font-family: var(--font-display);
+  letter-spacing: var(--display-tracking);
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.2;
+  background: linear-gradient(transparent 58%, var(--hl) 58%, var(--hl) 92%, transparent 92%);
+  padding-inline: 0.15em;
+  margin-inline: -0.15em;
+}
+
+[data-skin="classic"] .section-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  color: rgb(31 26 46 / 0.5);
+}
+
+.dark[data-skin="classic"] .section-title {
+  color: rgb(255 255 255 / 0.5);
+}
+
+[data-skin="bubble"] .section-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(100deg, #ff3fa8, #8f4bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dark[data-skin="bubble"] .section-title {
+  background-image: linear-gradient(100deg, #ff8ad4, #b9a0ff);
+}
+
+/** A skin's page: its backdrop, colours and body font (the skin previews in Settings). */
+@utility skin-bg {
+  background: var(--page-bg);
+  background-color: var(--color-paper);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+
+/** The floating tab dock. */
+@utility nav-dock {
+  background: var(--nav-bg);
+  border: var(--bw) solid var(--nav-line);
+  box-shadow: var(--nav-sh);
+}
+
+@utility nav-on {
+  background: var(--nav-on);
+  color: var(--nav-on-ink);
 }
 
 html, body, #root {
@@ -47,17 +442,27 @@ html, body, #root {
 
 body {
   margin: 0;
-  background: var(--color-paper);
-  color: var(--color-ink);
+  background-color: var(--color-paper);
+  color: var(--fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
 }
 
-.dark body {
-  background: var(--color-night);
-  color: #f3eefc;
+/* The skin's backdrop (dots, gradient mesh), fixed behind everything. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--page-bg);
+  pointer-events: none;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: var(--display-tracking);
 }
 
 /* Score buttons get tapped fast and often: no double-tap zoom, no text selection. */

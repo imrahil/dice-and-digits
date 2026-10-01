@@ -70,8 +70,8 @@ function BottomNav({ active }: { active: string }) {
   const { t } = useI18n()
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-edge bg-paper/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md dark:border-white/8 dark:bg-night/90">
-      <div className="mx-auto flex max-w-2xl">
+    <nav className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)]">
+      <div className="nav-dock mx-auto flex max-w-md rounded-[26px] p-1.5 backdrop-blur-xl">
         {TABS.map(({ path, icon: Icon, label }) => {
           const on = active === path
 
@@ -81,13 +81,11 @@ function BottomNav({ active }: { active: string }) {
               onClick={() => navigate(path)}
               aria-current={on ? 'page' : undefined}
               className={cx(
-                'flex flex-1 flex-col items-center gap-0.5 pt-2 pb-1.5 text-[11px] font-bold transition',
-                on ? 'text-accent' : 'text-ink/50 dark:text-white/50',
+                'flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-[20px] py-1.5 text-[11px] font-bold transition active:scale-90',
+                on ? 'nav-on' : 'text-(--nav-ink)',
               )}
             >
-              <span className={cx('rounded-full px-4 py-1 transition', on && 'bg-accent/12')}>
-                <Icon className="size-5" strokeWidth={on ? 2.6 : 2} />
-              </span>
+              <Icon className={cx('size-5 transition', on && '-rotate-6 scale-110')} strokeWidth={on ? 2.6 : 2} />
               {t(label)}
             </button>
           )
@@ -161,7 +159,7 @@ export function App() {
   const settings = useStore((s) => s.settings)
   const route = useRoute()
 
-  useTheme(settings.theme)
+  useTheme(settings.theme, settings.skin)
   useAutoSync()
 
   useEffect(() => {

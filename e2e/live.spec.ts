@@ -27,7 +27,7 @@ test('join to score on a score sheet, including while the host is away', async (
   await expect(emptyCells(guest)).toHaveCount(7)
   await emptyCells(guest).first().click()
   await press(guest, '5')
-  await dialog(guest).locator('button.bg-accent').click()
+  await dialog(guest).locator('button.btn-cta').click()
   await press(guest, '12') // Treasury is coins ÷ 3 → 4 points
   await dialog(guest).getByRole('button', { name: /Gotowe/ }).click()
 

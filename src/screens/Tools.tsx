@@ -66,7 +66,7 @@ function Die({ value, sides, rollKey, i }: { value: number; sides: number; rollK
       ) : coin ? (
         <span className="text-center text-sm leading-tight font-black uppercase">{value === 1 ? t('heads') : t('tails')}</span>
       ) : (
-        <span className="text-4xl font-black tabular-nums">{value}</span>
+        <span className="display text-4xl font-black tabular-nums">{value}</span>
       )}
     </div>
   )
@@ -94,7 +94,7 @@ function Dice() {
   return (
     <div>
       <div className="flex items-center gap-3">
-        <div className="flex items-center rounded-2xl bg-card ring-1 ring-edge dark:bg-slate dark:ring-white/8">
+        <div className="surface flex items-center rounded-2xl">
           <IconButton label="−" onClick={() => count > 1 && (setCount(count - 1), roll(count - 1))}>
             <Minus className="size-5" />
           </IconButton>
@@ -111,7 +111,7 @@ function Dice() {
             setSides(s)
             roll(count, s)
           }}
-          className="h-11 flex-1 rounded-2xl bg-card px-3 font-bold ring-1 ring-edge outline-none dark:bg-slate dark:ring-white/8"
+          className="surface h-11 flex-1 rounded-2xl px-3 font-bold outline-none"
           aria-label={t('diceSides')}
         >
           {SIDES.map((s) => (
@@ -137,7 +137,7 @@ function Dice() {
 
       {sides !== 2 && count > 1 && (
         <p className="mt-4 text-center text-lg font-bold">
-          {t('sum')}: <span className="text-3xl font-black tabular-nums">{num(sum)}</span>
+          {t('sum')}: <span className="display text-3xl font-black tabular-nums">{num(sum)}</span>
         </p>
       )}
       {log.length > 1 && (
@@ -374,8 +374,8 @@ function Timer() {
             key={p}
             onClick={() => reset(p)}
             className={cx(
-              'flex-1 rounded-2xl py-2 font-bold tabular-nums ring-1 transition',
-              length === p ? 'bg-ink text-white ring-ink dark:bg-white dark:text-ink' : 'bg-card ring-edge dark:bg-slate dark:ring-white/10',
+              'flex-1 rounded-2xl py-2 font-bold tabular-nums transition active:scale-95',
+              length === p ? 'chip-on' : 'surface-flat',
             )}
           >
             {mmss(p)}

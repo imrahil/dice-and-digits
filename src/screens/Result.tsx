@@ -27,15 +27,15 @@ export function Podium({ table }: { table: Standing[] }) {
     <div className="flex items-end justify-center gap-2 pt-4">
       {order.map((r) => (
         <div key={r.seat.id} className="flex w-28 animate-rise flex-col items-center">
-          {r.rank === 1 && <Crown className="mb-1 size-7 text-gold" fill="currentColor" />}
+          {r.rank === 1 && <Crown className="mb-1 size-9 -rotate-6 text-gold drop-shadow-[2px_2px_0_var(--line)]" fill="currentColor" />}
           <Avatar name={r.seat.name} color={r.seat.color} size={r.rank === 1 ? 'lg' : 'md'} />
-          <span className="mt-1 w-full truncate text-center font-extrabold">{r.seat.name}</span>
-          <span className="text-2xl font-black tabular-nums">{num(r.total)}</span>
+          <span className="display mt-1 w-full truncate text-center font-extrabold">{r.seat.name}</span>
+          <span className="display text-2xl font-black tabular-nums">{num(r.total)}</span>
           <div
             className={cx(
-              'mt-1 flex w-full items-start justify-center rounded-t-2xl pt-2 text-2xl',
+              'surface mt-1 flex w-full items-start justify-center !rounded-b-none !border-b-0 pt-2 text-3xl',
               height(r.rank),
-              r.rank === 1 ? 'bg-gold/30' : 'bg-ink/8 dark:bg-white/8',
+              r.rank === 1 ? '!bg-gold' : r.rank === 2 ? '!bg-candy-b' : '!bg-candy-a',
             )}
           >
             {MEDAL[r.rank - 1]}
@@ -158,19 +158,21 @@ export function Result({ id }: { id: string }) {
       {session.seats.length > 1 ? (
         <>
           <Podium table={table} />
-          <p className="mt-3 text-center text-sm font-extrabold tracking-wide text-ink/60 uppercase dark:text-white/60">
-            {winners.length > 1 ? t('shared') : t('winner')}
+          <p className="mt-4 text-center">
+            <span className="chip-on display inline-block -rotate-3 rounded-full px-4 py-1 text-sm font-extrabold tracking-wide uppercase">
+              {winners.length > 1 ? t('shared') : t('winner')}
+            </span>
           </p>
         </>
       ) : (
         <div className="py-6 text-center">
           <Avatar name={table[0].seat.name} color={table[0].seat.color} size="lg" />
-          <p className="mt-2 text-5xl font-black tabular-nums">{num(table[0].total)}</p>
+          <p className="mt-2 display text-5xl font-black tabular-nums">{num(table[0].total)}</p>
         </div>
       )}
 
       {tied && (
-        <Card className="mt-4 !bg-gold/15 !ring-gold/40">
+        <Card className="mt-4 !bg-gold/20">
           <p className="font-extrabold">{t('tieBreakTitle')}</p>
           <p className="text-sm text-ink/65 dark:text-white/65">{t('tieBreakBody')}</p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -180,7 +182,7 @@ export function Result({ id }: { id: string }) {
                 <button
                   key={r.seat.id}
                   onClick={() => updateSession(id, (s) => ({ ...s, tieBreak: r.seat.id }))}
-                  className="flex items-center gap-2 rounded-full bg-card py-1 pr-3.5 pl-1 font-bold ring-1 ring-edge active:scale-95 dark:bg-slate dark:ring-white/10"
+                  className="surface press flex items-center gap-2 rounded-full py-1 pr-3.5 pl-1 font-bold"
                 >
                   <Avatar name={r.seat.name} color={r.seat.color} size="sm" /> {r.seat.name}
                 </button>
@@ -204,7 +206,7 @@ export function Result({ id }: { id: string }) {
               <span className="w-7 text-center text-lg font-black tabular-nums">{MEDAL[r.rank - 1] ?? r.rank}</span>
               <Avatar name={r.seat.name} color={r.seat.color} size="sm" />
               <span className="min-w-0 flex-1 truncate font-bold">{r.seat.name}</span>
-              <span className="text-xl font-black tabular-nums">{num(r.total)}</span>
+              <span className="display text-xl font-black tabular-nums">{num(r.total)}</span>
             </div>
           ))}
         </Card>
@@ -228,7 +230,7 @@ export function Result({ id }: { id: string }) {
           placeholder={t('notesPlaceholder')}
           rows={3}
           maxLength={2000}
-          className="w-full rounded-2xl bg-card p-4 text-base ring-1 ring-edge outline-none placeholder:text-ink/35 focus:ring-2 focus:ring-accent dark:bg-slate dark:ring-white/8 dark:placeholder:text-white/35"
+          className="surface-flat w-full rounded-2xl p-4 text-base outline-none placeholder:text-ink/35 focus:!border-accent focus:ring-2 focus:ring-accent/30 dark:placeholder:text-white/35"
         />
       </Section>
 

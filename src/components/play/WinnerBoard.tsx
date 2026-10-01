@@ -39,14 +39,14 @@ export function WinnerBoard({ session, scorer }: { session: Session; scorer: Sco
               disabled={!editable}
               onClick={() => record(seat.id)}
               className={cx(
-                'relative flex flex-col items-center gap-1.5 rounded-3xl bg-card px-2 pt-4 pb-3 ring-1 transition active:scale-95 disabled:active:scale-100 dark:bg-slate',
-                lead ? 'ring-2 ring-gold' : 'ring-edge dark:ring-white/8',
+                'surface press relative flex flex-col items-center gap-1.5 rounded-3xl px-2 pt-4 pb-3',
+                lead && '!bg-gold/25 dark:!bg-gold/15',
                 !editable && 'opacity-60',
               )}
             >
-              {lead && <Crown className="absolute top-2 right-3 size-5 text-gold" fill="currentColor" />}
+              {lead && <Crown className="absolute -top-3 right-2 size-7 rotate-12 text-gold drop-shadow-[1px_1px_0_var(--line)]" fill="currentColor" />}
               <Avatar name={seat.name} color={seat.color} size="lg" />
-              <span className="w-full truncate text-center text-lg font-extrabold">{seat.name}</span>
+              <span className="display w-full truncate text-center text-lg font-extrabold">{seat.name}</span>
               <span className="flex items-center gap-1 text-sm font-bold text-ink/60 dark:text-white/60">
                 <Icon className={cx('size-4', losing ? 'text-danger' : 'text-gold')} />
                 {losing ? tp('nLosses', row.total) : tp('nWins', row.total)}
@@ -57,7 +57,7 @@ export function WinnerBoard({ session, scorer }: { session: Session; scorer: Sco
       </div>
 
       {played && (
-        <ol className="mt-5 space-y-1.5 rounded-3xl bg-card p-4 ring-1 ring-edge dark:bg-slate dark:ring-white/8">
+        <ol className="surface mt-5 space-y-1.5 rounded-3xl p-4">
           {session.rounds
             .map((r, i) => ({ i, who: session.seats.filter((s) => r[s.id] === 1) }))
             .reverse()

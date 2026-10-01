@@ -23,7 +23,7 @@ export function Page({
   const { t } = useI18n()
 
   return (
-    <div className={cx('mx-auto w-full max-w-2xl', bare ? 'pb-[calc(env(safe-area-inset-bottom)+1rem)]' : 'pb-28')}>
+    <div className={cx('mx-auto w-full max-w-2xl', bare ? 'pb-[calc(env(safe-area-inset-bottom)+1rem)]' : 'pb-[calc(env(safe-area-inset-bottom)+7.5rem)]')}>
       {(title || back !== undefined || actions) && (
         <header className="sticky top-0 z-30 flex items-center gap-1 bg-paper/85 px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-2 backdrop-blur-md dark:bg-night/85">
           {back !== undefined && (
@@ -31,7 +31,7 @@ export function Page({
               <ChevronLeft className="size-6" />
             </IconButton>
           )}
-          <h1 className={cx('min-w-0 flex-1 truncate text-xl font-extrabold tracking-tight', back === undefined && 'pl-1')}>
+          <h1 className={cx('min-w-0 flex-1 truncate text-(length:--title-size) font-extrabold', back === undefined && 'pl-1')}>
             {title}
           </h1>
           {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
@@ -52,14 +52,14 @@ export function Button({ variant = 'secondary', size = 'md', className, ...rest 
     <button
       {...rest}
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-2xl font-bold transition active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40',
-        size === 'lg' && 'h-14 px-6 text-lg',
+        'inline-flex items-center justify-center gap-2 rounded-2xl font-bold disabled:pointer-events-none disabled:opacity-40',
+        size === 'lg' && 'display h-14 px-6 text-lg font-extrabold',
         size === 'md' && 'h-11 px-4 text-[15px]',
         size === 'sm' && 'h-9 rounded-xl px-3 text-sm',
-        variant === 'primary' && 'bg-accent text-white shadow-[0_4px_0_0_var(--color-accent-dark)] active:translate-y-0.5 active:shadow-[0_2px_0_0_var(--color-accent-dark)]',
-        variant === 'secondary' && 'bg-card text-ink ring-1 ring-edge dark:bg-slate dark:text-white dark:ring-white/10',
-        variant === 'ghost' && 'text-ink/70 hover:bg-ink/5 dark:text-white/70 dark:hover:bg-white/5',
-        variant === 'danger' && 'bg-danger/10 text-danger dark:bg-danger/20 dark:text-[#ff8a93]',
+        variant === 'primary' && 'btn-cta',
+        variant === 'secondary' && 'surface press text-ink dark:text-white',
+        variant === 'ghost' && 'text-ink/70 transition hover:bg-ink/5 active:scale-[0.97] dark:text-white/70 dark:hover:bg-white/5',
+        variant === 'danger' && 'surface-flat press !border-danger/40 !bg-danger/10 text-danger dark:!bg-danger/20 dark:text-[#ff8a93]',
         className,
       )}
     />
@@ -91,8 +91,8 @@ export function Card({ className, children, onClick }: { className?: string; chi
     <Tag
       onClick={onClick}
       className={cx(
-        'block w-full rounded-3xl bg-card p-4 text-left ring-1 ring-edge dark:bg-slate dark:ring-white/8',
-        onClick && 'transition active:scale-[0.99]',
+        'surface block w-full rounded-3xl p-4 text-left',
+        onClick && 'press',
         className,
       )}
     >
@@ -105,7 +105,7 @@ export function Section({ title, action, children, className }: { title: ReactNo
   return (
     <section className={cx('mt-6', className)}>
       <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="text-xs font-extrabold uppercase tracking-wide text-ink/50 dark:text-white/50">{title}</h2>
+        <h2 className="section-title">{title}</h2>
         {action}
       </div>
       {children}
@@ -126,7 +126,7 @@ export function Avatar({ name, color, size = 'md' }: { name: string; color: stri
       aria-hidden
       style={{ backgroundColor: color }}
       className={cx(
-        'inline-flex shrink-0 items-center justify-center rounded-full font-extrabold text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.18)]',
+        'avatar-ring inline-flex shrink-0 items-center justify-center rounded-full font-extrabold text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.18)] [text-shadow:0_1px_0_rgb(0_0_0/0.2)]',
         size === 'sm' && 'size-7 text-[11px]',
         size === 'md' && 'size-10 text-sm',
         size === 'lg' && 'size-14 text-lg',
@@ -178,12 +178,12 @@ export function Sheet({
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[92dvh] w-full max-w-lg animate-rise overflow-y-auto rounded-t-[28px] bg-paper px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl sm:rounded-[28px] dark:bg-slate"
+        className="max-h-[92dvh] w-full max-w-lg animate-rise overflow-y-auto rounded-t-[28px] border-x-[length:var(--bw)] border-t-[length:var(--bw)] border-(--line) bg-paper px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl sm:rounded-[28px] sm:border-b-[length:var(--bw)] dark:bg-slate"
       >
         <div className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-ink/15 sm:hidden dark:bg-white/20" />
         {title && (
           <div className="mb-3 flex items-center gap-2">
-            <h2 className="min-w-0 flex-1 truncate text-lg font-extrabold">{title}</h2>
+            <h2 className="min-w-0 flex-1 truncate text-xl font-extrabold">{title}</h2>
             <IconButton label={t('close')} onClick={onClose} className="-mr-2">
               <X className="size-5" />
             </IconButton>
@@ -203,7 +203,7 @@ export function Toggle({ checked, onChange, label, hint }: { checked: boolean; o
         {hint && <span className="block text-sm text-ink/55 dark:text-white/55">{hint}</span>}
       </span>
       <input type="checkbox" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="relative h-7 w-12 shrink-0 rounded-full bg-ink/15 transition peer-checked:bg-mint peer-focus-visible:ring-2 peer-focus-visible:ring-accent after:absolute after:top-0.5 after:left-0.5 after:size-6 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-5 dark:bg-white/15" />
+      <span className="relative h-7 w-12 shrink-0 rounded-full border-[length:var(--bw-flat)] border-(--line-flat) bg-ink/15 transition peer-checked:bg-mint peer-focus-visible:ring-2 peer-focus-visible:ring-accent after:absolute after:top-1/2 after:left-0.5 after:size-5 after:-translate-y-1/2 after:rounded-full after:border-[length:var(--bw-flat)] after:border-(--line-flat) after:bg-white after:shadow after:transition peer-checked:after:translate-x-5 dark:bg-white/15" />
     </label>
   )
 }
@@ -223,7 +223,7 @@ export function Segmented<T extends string>({
   grid?: boolean
 }) {
   return (
-    <div className={cx(grid ? 'grid grid-cols-2 gap-1' : 'flex', 'rounded-2xl bg-ink/6 p-1 dark:bg-white/8', className)} role="radiogroup">
+    <div className={cx(grid ? 'grid grid-cols-2 gap-1' : 'flex gap-1', 'rounded-2xl bg-ink/6 p-1 dark:bg-white/8', className)} role="radiogroup">
       {options.map((o) => (
         <button
           key={o.value}
@@ -232,7 +232,7 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
           className={cx(
             'flex-1 rounded-xl px-2 py-2 text-sm leading-tight font-bold transition',
-            o.value === value ? 'bg-card text-ink shadow-sm dark:bg-white/15 dark:text-white' : 'text-ink/60 dark:text-white/60',
+            o.value === value ? 'chip-on' : 'border-[length:var(--bw-flat)] border-transparent text-ink/60 dark:text-white/60',
           )}
         >
           {o.label}
@@ -245,15 +245,15 @@ export function Segmented<T extends string>({
 export function Empty({ icon, title, children }: { icon: ReactNode; title?: ReactNode; children?: ReactNode }) {
   return (
     <div className="flex flex-col items-center px-6 py-12 text-center">
-      <div className="mb-3 text-5xl">{icon}</div>
-      {title && <p className="text-lg font-extrabold">{title}</p>}
+      <div className="mb-3 animate-wiggle text-6xl">{icon}</div>
+      {title && <p className="display text-xl font-extrabold">{title}</p>}
       {children && <div className="mt-1 max-w-xs text-ink/60 dark:text-white/60">{children}</div>}
     </div>
   )
 }
 
 export const inputClass =
-  'h-12 w-full rounded-2xl bg-card px-4 text-base font-semibold ring-1 ring-edge outline-none placeholder:font-normal placeholder:text-ink/35 focus:ring-2 focus:ring-accent dark:bg-night dark:ring-white/10 dark:placeholder:text-white/35'
+  'surface-flat h-12 w-full rounded-2xl px-4 text-base font-semibold outline-none placeholder:font-normal placeholder:text-ink/35 focus:!border-accent focus:ring-2 focus:ring-accent/30 dark:placeholder:text-white/35'
 
 /** Primary actions pinned to the bottom of the screen, above the home indicator. */
 export function BottomBar({ children }: { children: ReactNode }) {
