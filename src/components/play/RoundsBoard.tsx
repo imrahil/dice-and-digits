@@ -46,7 +46,7 @@ export function RoundsTable({ session, onRow }: { session: Session; onRow?: (i: 
             onClick={() => onRow?.(i)}
             className="grid w-full items-center border-b border-edge/70 py-2 last:border-0 active:bg-ink/5 dark:border-white/5 dark:active:bg-white/5"
             style={{ gridTemplateColumns: cols }}
-            aria-label={t('editRound', { n: i + 1 })}
+            aria-label={onRow ? t('editRound', { n: i + 1 }) : undefined}
           >
             <span className="text-center text-xs font-black text-ink/40 tabular-nums dark:text-white/40">{i + 1}</span>
             {session.seats.map((s) => {

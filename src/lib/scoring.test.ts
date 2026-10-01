@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BUILTIN_GAMES } from '../data/presets'
 import type { Rules, Session } from '../types'
-import { gapsToLeader, isEmpty, leaders, standings, targetProgress, targetReached, toTarget, totals } from './scoring'
+import { gapsToLeader, isEmpty, leaders, marginOfVictory, standings, targetProgress, targetReached, toTarget, totals } from './scoring'
 
 const seats = [
   { id: 'a', name: 'Anna', color: '#e4572e' },
@@ -146,5 +146,19 @@ describe('distance to the target and the leader', () => {
     expect(gapsToLeader(standings(session({ lowWins: true }, { rounds: [{ a: 23, b: 31, c: 40 }] })))).toEqual([0, 8, 17])
     expect(gapsToLeader(standings(session({}, { rounds: [{ a: 9, b: 9, c: 4 }] })))).toEqual([0, 0, 5])
     expect(gapsToLeader([])).toEqual([])
+  })
+})
+
+describe('margin of victory', () => {
+  const four = [...seats, { id: 'd', name: 'Daria', color: '#f2b134' }]
+
+  it('is the gap to the next distinct score', () => {
+    expect(marginOfVictory(standings(session({}, { seats: four, rounds: [{ a: 56, b: 44, c: 62, d: 51 }] })))).toBe(6)
+    expect(marginOfVictory(standings(session({ lowWins: true }, { seats: seats.slice(0, 2), rounds: [{ a: 31, b: 23 }] })))).toBe(8)
+  })
+
+  it('is 0 for a tie at the top or a single player', () => {
+    expect(marginOfVictory(standings(session({}, { rounds: [{ a: 10, b: 10, c: 4 }] })))).toBe(0)
+    expect(marginOfVictory(standings(session({}, { seats: seats.slice(0, 1), rounds: [{ a: 7 }] })))).toBe(0)
   })
 })

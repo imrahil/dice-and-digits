@@ -91,6 +91,8 @@ export const pl: Dict = {
   viewTableHint: 'Połóż telefon między graczami: górna połowa jest odwrócona do osób naprzeciwko.',
   toTarget: 'brakuje {n}',
   endShort: 'Koniec',
+  behindWinner: '−{n} do zwycięzcy',
+  scoreSheetSummary: 'Karta wyników: kategorie: {n}',
   history: 'Historia',
   bonusNeeded: 'Brakuje {n} do premii',
   bonusEarned: 'Premia zdobyta',
@@ -260,5 +262,6 @@ export const pl: Dict = {
   nRounds: { one: '{n} runda', few: '{n} rundy', many: '{n} rund', other: '{n} rundy' },
   nPhones: { one: '{n} telefon połączony', few: '{n} telefony połączone', many: '{n} telefonów połączonych', other: '{n} telefonu połączonego' },
   nLosses: { one: '{n} przegrana', few: '{n} przegrane', many: '{n} przegranych', other: '{n} przegranej' },
+  nPointsAhead: { one: '{n} punkt przewagi', few: '{n} punkty przewagi', many: '{n} punktów przewagi', other: '{n} punktu przewagi' },
   nWins: { one: '{n} wygrana', few: '{n} wygrane', many: '{n} wygranych', other: '{n} wygranej' },
 }

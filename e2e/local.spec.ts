@@ -111,7 +111,8 @@ test('winner-only: Gorący ziemniak counts who lost, fewest losses wins', async 
   expect((await session(page, 'builtin:hot-potato')).rounds).toHaveLength(2)
 
   await finishGame(page)
-  await expect(page.locator('main')).toContainText('🥇')
+  await expect(page.getByText('Zwycięzca')).toBeVisible()
+  await expect(page.locator('main')).toContainText('Ola')
   await expect(page.getByText('Zwycięzca')).toBeVisible()
 })
 

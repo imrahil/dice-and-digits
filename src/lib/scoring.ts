@@ -186,3 +186,11 @@ export function gapsToLeader(table: Standing[]): number[] {
 
   return table.map((r) => Math.abs(r.total - top))
 }
+
+/** How far rank 1 is ahead of the runner-up; 0 for a tie or a single player. */
+export function marginOfVictory(table: Standing[]): number {
+  const [top, next] = table
+
+  // A tie at the top (even one settled by a tie-break) leaves no margin.
+  return top && next ? Math.abs(top.total - next.total) : 0
+}

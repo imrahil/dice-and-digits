@@ -98,6 +98,8 @@ export const en = {
   viewTableHint: 'Lay the phone between you: the top half faces the players opposite.',
   toTarget: '{n} to go',
   endShort: 'End',
+  behindWinner: '−{n} behind the winner',
+  scoreSheetSummary: 'Score sheet: {n} categories',
   history: 'History',
   bonusNeeded: '{n} more for the bonus',
   bonusEarned: 'Bonus earned',
@@ -281,6 +283,7 @@ export const en = {
   nWins: { one: '{n} win', other: '{n} wins' } as Plural,
   nLosses: { one: '{n} loss', other: '{n} losses' } as Plural,
   nPhones: { one: '{n} phone connected', other: '{n} phones connected' } as Plural,
+  nPointsAhead: { one: '{n} point ahead', other: '{n} points ahead' } as Plural,
 }
 
 export type Dict = typeof en
