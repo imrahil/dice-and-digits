@@ -46,7 +46,7 @@ test('remembers the last lineup for the next game', async ({ page }) => {
 test('rounds: negative scores on the keypad, edit a past round', async ({ page }) => {
   await startGame(page, 'builtin:1000', ['Anna', 'Bartek'])
 
-  await button(page, /Dodaj rundę/).click()
+  await button(page, /^Runda \d/).click()
   await press(page, '120')
   await dialog(page).getByRole('button', { name: 'Bartek', exact: true }).click()
   await press(page, '-60')
@@ -54,6 +54,10 @@ test('rounds: negative scores on the keypad, edit a past round', async ({ page }
 
   // Edit round 1: Anna 120 → 100.
   await page.getByRole('button', { name: 'Edytuj rundę 1' }).click()
+
+  const del = dialog(page).getByRole('button', { name: 'Usuń rundę' })
+
+  await expect(del).toHaveCSS('color', 'rgb(236, 48, 72)') // arcade light --color-danger
   await button(page, 'Backspace').click()
   await button(page, 'Backspace').click()
   await press(page, '00')
@@ -85,7 +89,7 @@ test('score sheet with multipliers: Szybka kawka counts tiles ×2', async ({ pag
 test('Rummikub: the round winner takes the others’ minus points', async ({ page }) => {
   await startGame(page, 'builtin:rummikub', ['Anna', 'Bartek', 'Cleo'])
 
-  await button(page, /Dodaj rundę/).click()
+  await button(page, /^Runda \d/).click()
   await dialog(page).getByRole('button', { name: /^Bartek/ }).first().click()
   await press(page, '-12')
   await dialog(page).getByRole('button', { name: /^Cleo/ }).first().click()
@@ -111,7 +115,8 @@ test('winner-only: Gorący ziemniak counts who lost, fewest losses wins', async 
   expect((await session(page, 'builtin:hot-potato')).rounds).toHaveLength(2)
 
   await finishGame(page)
-  await expect(page.locator('main')).toContainText('🥇')
+  await expect(page.getByText('Zwycięzca')).toBeVisible()
+  await expect(page.locator('main')).toContainText('Ola')
   await expect(page.getByText('Zwycięzca')).toBeVisible()
 })
 

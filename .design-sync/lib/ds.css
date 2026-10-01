@@ -25,5 +25,8 @@
 /* Type. */
 @source inline("text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl,left,center,right} font-{normal,medium,semibold,bold,extrabold,black} leading-{none,tight,snug,normal} tracking-{tight,wide,wider} {uppercase,truncate,tabular-nums,line-clamp-2,whitespace-nowrap}");
 
+/* Big-type tiles: the counter grid/table views, the home quick start and resume card. */
+@source inline("text-8xl rotate-90 rotate-180 grid-rows-2 grid-rows-3 h-13 h-21 !px-3");
+
 /* Skin building blocks, motion and tilt. */
 @source inline("{surface,surface-flat,press,btn-cta,chip-on,emoji-tile,avatar-ring,display,section-title,skin-bg,nav-dock,nav-on} animate-{pop,rise,roll,wiggle} {,-}rotate-{1,2,3,6,12}");

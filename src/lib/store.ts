@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { detectLang } from '../i18n'
-import type { Doc, GameDef, Player, Session, Settings } from '../types'
+import type { CounterView, Doc, GameDef, Player, Session, Settings } from '../types'
 
 /**
  * Local-first store: everything lives in localStorage and the app works fully
@@ -171,6 +171,20 @@ export function updateSession(id: string, fn: (s: Session) => Session) {
   if (cur) {
     saveSession(fn(cur))
   }
+}
+
+/** The table view needs someone on each side: 2–6 seats. */
+export const tableFits = (s: Session) => s.seats.length >= 2 && s.seats.length <= 6
+
+/** How a counter game is laid out; a stored table that no longer fits falls back to the grid. */
+export function counterViewOf(s: Session): CounterView {
+  const view = s.counterView ?? 'list'
+
+  return view === 'table' && !tableFits(s) ? 'grid' : view
+}
+
+export function setCounterView(id: string, view: CounterView) {
+  updateSession(id, (s) => ({ ...s, counterView: view }))
 }
 
 export function setSettings(patch: Partial<Settings>) {

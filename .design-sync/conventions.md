@@ -8,6 +8,7 @@ A mobile-first score keeper for board games. Design for a phone (≈390–430 px
 - **Skin**: set `data-skin` on `<html>` (or any wrapper) to `arcade` (default: ink outlines, hard shadows, lime CTA), `bubble` (Y2K gloss: gradient mesh, frosted cards, gradient CTA) or `classic` (cream and red). Everything below restyles itself per skin; never hard-code a skin's colours.
 - **Dark mode**: add the class `dark` on `<html>`. Pair light/dark text as `text-ink/60 dark:text-white/60`.
 - Mount `<DialogHost />` once at the root, then call `confirm('…', { confirmLabel, danger })` (returns a Promise<boolean>) or `toast('…')` from anywhere.
+- Counter games have three views: `session.counterView` picks `list` (default), `grid` or `table`; `CounterGrid` / `CounterTable` render one directly.
 - Icons: `const { Icons } = window.DiceAndDigitsUi` → `<Icons.Plus className="size-5" />` (lucide; the set the app uses).
 
 ### Styling idiom: Tailwind utilities, precompiled

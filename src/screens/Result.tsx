@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Crown, RotateCcw, Share2, Trash2, Undo2 } from 'lucide-react'
+import { ChevronDown, Crown, RotateCcw, Share2, Trash2, Undo2 } from 'lucide-react'
 import { useI18n } from '../i18n'
-import { leaders, standings } from '../lib/scoring'
+import { gapsToLeader, leaders, marginOfVictory, standings } from '../lib/scoring'
 import { findGame, startSession } from '../lib/games'
 import { getState, removeSession, updateSession, useStore } from '../lib/store'
 import { navigate } from '../hooks/useRoute'
 import { confirm, toast } from '../components/dialogs'
 import { RoundsTable } from '../components/play/RoundsBoard'
 import { SheetTable } from '../components/play/SheetBoard'
-import { Avatar, Button, Card, Empty, IconButton, Page, Section, cx } from '../components/ui'
+import { Avatar, BottomBar, Button, Card, Empty, Page, Section, cx } from '../components/ui'
 import type { Session, Standing } from '../types'
 
 const MEDAL = ['🥇', '🥈', '🥉']
@@ -59,7 +59,7 @@ function resultText(s: Session, i18n: ReturnType<typeof useI18n>) {
 
 export function Result({ id }: { id: string }) {
   const i18n = useI18n()
-  const { t, text, num, day, time, duration } = i18n
+  const { t, tp, text, num, day, time, duration } = i18n
   const session = useStore((s) => s.sessions[id])
   const [notes, setNotes] = useState(session?.notes ?? '')
 
@@ -88,6 +88,16 @@ export function Result({ id }: { id: string }) {
     table.filter((r) => r.total === table[0]?.total).map((r) => r.seat.id),
   )
   const winners = table.filter((r) => r.rank === 1)
+  const gaps = gapsToLeader(table)
+  const others = table.map((r, i) => ({ ...r, gap: gaps[i] })).filter((r) => r.rank !== 1)
+  const margin = marginOfVictory(table)
+  const mode = session.rules.mode
+  const breakdown =
+    mode === 'sheet'
+      ? t('scoreSheetSummary', { n: session.rules.categories?.length ?? 0 })
+      : (mode === 'rounds' || mode === 'winner') && session.rounds.length > 0
+        ? tp('nRounds', session.rounds.length)
+        : null
 
   const playAgain = () => {
     const game = findGame(session.gameId)
@@ -144,11 +154,6 @@ export function Result({ id }: { id: string }) {
           <span className="truncate">{text(session.rules.name)}</span>
         </span>
       }
-      actions={
-        <IconButton label={t('shareResults')} onClick={share}>
-          <Share2 className="size-5" />
-        </IconButton>
-      }
     >
       <p className="px-1 text-sm font-semibold text-ink/55 dark:text-white/55">
         {capitalize(day(session.finishedAt ?? session.startedAt))} · {time(session.startedAt)}
@@ -156,14 +161,19 @@ export function Result({ id }: { id: string }) {
       </p>
 
       {session.seats.length > 1 ? (
-        <>
-          <Podium table={table} />
-          <p className="mt-4 text-center">
-            <span className="chip-on display inline-block -rotate-3 rounded-full px-4 py-1 text-sm font-extrabold tracking-wide uppercase">
-              {winners.length > 1 ? t('shared') : t('winner')}
-            </span>
-          </p>
-        </>
+        <div className="mt-3 surface flex flex-col items-center rounded-3xl !bg-[color-mix(in_oklab,var(--color-gold)_75%,var(--color-card))] px-[18px] pt-[18px] pb-4 text-ink">
+          <span className="chip-on display -rotate-3 rounded-full px-3.5 py-1 text-[13px] font-extrabold tracking-[0.06em] uppercase">
+            {winners.length > 1 ? t('shared') : t('winner')}
+          </span>
+          <span className="mt-3 flex -space-x-2">
+            {winners.map((r) => (
+              <Avatar key={r.seat.id} name={r.seat.name} color={r.seat.color} size="lg" />
+            ))}
+          </span>
+          <span className="display mt-1.5 max-w-full truncate text-[30px] font-extrabold">{winners.map((r) => r.seat.name).join(', ')}</span>
+          <span className="display text-[112px] leading-[0.9] font-black tabular-nums">{num(winners[0].total)}</span>
+          {margin > 0 && <span className="mt-2 text-[15px] font-bold">{tp('nPointsAhead', margin)}</span>}
+        </div>
       ) : (
         <div className="py-6 text-center">
           <Avatar name={table[0].seat.name} color={table[0].seat.color} size="lg" />
@@ -199,28 +209,29 @@ export function Result({ id }: { id: string }) {
         </button>
       )}
 
-      <Section title={t('results')}>
-        <Card className="!p-2">
-          {table.map((r) => (
-            <div key={r.seat.id} className="flex items-center gap-3 rounded-2xl px-2 py-2">
-              <span className="w-7 text-center text-lg font-black tabular-nums">{MEDAL[r.rank - 1] ?? r.rank}</span>
+      {(others.length > 0 || breakdown) && (
+        <div className="mt-3 surface overflow-hidden rounded-3xl">
+          {others.map((r) => (
+            <div key={r.seat.id} className="flex items-center gap-3 border-b border-edge px-3.5 py-2.5 last:border-0 dark:border-white/8">
+              <span className="display w-5 text-xl font-black text-ink/40 dark:text-white/40">{r.rank}</span>
               <Avatar name={r.seat.name} color={r.seat.color} size="sm" />
-              <span className="min-w-0 flex-1 truncate font-bold">{r.seat.name}</span>
-              <span className="display text-xl font-black tabular-nums">{num(r.total)}</span>
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="block truncate text-[17px] font-extrabold">{r.seat.name}</span>
+                <span className="block text-[13px] font-semibold text-ink/55 dark:text-white/55">{t('behindWinner', { n: num(r.gap) })}</span>
+              </span>
+              <span className="display text-[40px] leading-none font-black tabular-nums">{num(r.total)}</span>
             </div>
           ))}
-        </Card>
-      </Section>
-
-      {(session.rules.mode === 'rounds' || session.rules.mode === 'winner') && session.rounds.length > 0 && (
-        <Section title={i18n.tp('nRounds', session.rounds.length)}>
-          <RoundsTable session={session} />
-        </Section>
-      )}
-      {session.rules.mode === 'sheet' && (
-        <Section title={t('modeSheet')}>
-          <SheetTable session={session} />
-        </Section>
+          {breakdown && (
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between px-3.5 py-3 text-[15px] font-extrabold [&::-webkit-details-marker]:hidden">
+                {breakdown}
+                <ChevronDown className="size-5 transition group-open:rotate-180" />
+              </summary>
+              <div className="px-4 pb-3">{mode === 'sheet' ? <SheetTable session={session} /> : <RoundsTable session={session} />}</div>
+            </details>
+          )}
+        </div>
       )}
 
       <Section title={t('notes')}>
@@ -234,19 +245,23 @@ export function Result({ id }: { id: string }) {
         />
       </Section>
 
-      <div className="mt-6 grid gap-3">
-        <Button variant="primary" size="lg" onClick={playAgain}>
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <Button onClick={resume}>
+          <Undo2 className="size-5" /> {t('resume')}
+        </Button>
+        <Button variant="danger" onClick={del}>
+          <Trash2 className="size-5" /> {t('delete')}
+        </Button>
+      </div>
+
+      <BottomBar>
+        <Button size="lg" onClick={share} aria-label={t('shareResults')} className="shrink-0 !px-4">
+          <Share2 className="size-5" />
+        </Button>
+        <Button variant="primary" size="lg" className="flex-1" onClick={playAgain}>
           <RotateCcw className="size-5" strokeWidth={2.5} /> {t('playAgain')}
         </Button>
-        <div className="grid grid-cols-2 gap-3">
-          <Button onClick={resume}>
-            <Undo2 className="size-5" /> {t('resume')}
-          </Button>
-          <Button variant="danger" onClick={del}>
-            <Trash2 className="size-5" /> {t('delete')}
-          </Button>
-        </div>
-      </div>
+      </BottomBar>
     </Page>
   )
 }

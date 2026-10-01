@@ -157,3 +157,40 @@ export function isEmpty(s: Scored): boolean {
       return Object.values(s.sheet).every((row) => Object.keys(row).length === 0)
   }
 }
+
+/** Distance to the target, 0 once reached; null without a target. */
+export function toTarget(total: number, target?: number): number | null {
+  if (target == null) {
+    return null
+  }
+
+  return Math.max(0, target - total)
+}
+
+/** 0..1 fill for a progress bar; null without a target. Negative totals clamp to 0. */
+export function targetProgress(total: number, target?: number): number | null {
+  if (target == null) {
+    return null
+  }
+
+  if (target <= 0) {
+    return 1
+  }
+
+  return Math.min(1, Math.max(0, total / target))
+}
+
+/** Each row's distance from rank 1 (always ≥ 0, respects lowWins). */
+export function gapsToLeader(table: Standing[]): number[] {
+  const top = table[0]?.total ?? 0
+
+  return table.map((r) => Math.abs(r.total - top))
+}
+
+/** How far rank 1 is ahead of the runner-up; 0 for a tie or a single player. */
+export function marginOfVictory(table: Standing[]): number {
+  const [top, next] = table
+
+  // A tie at the top (even one settled by a tie-break) leaves no margin.
+  return top && next ? Math.abs(top.total - next.total) : 0
+}

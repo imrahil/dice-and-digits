@@ -8,22 +8,81 @@
   "srcDir": "../../src/components",
   "cssEntry": "dist/style.css",
   "readmeHeader": ".design-sync/conventions.md",
-  "provider": { "component": "I18nProvider", "props": { "lang": "en" } },
+  "provider": {
+    "component": "I18nProvider",
+    "props": {
+      "lang": "en"
+    }
+  },
   "overrides": {
-    "SessionRow": { "cardMode": "column" },
-    "CounterBoard": { "cardMode": "column" },
-    "Logo": { "cardMode": "column" },
-    "Page": { "cardMode": "column" },
-    "Section": { "cardMode": "column" },
-    "RoundsTable": { "cardMode": "column" },
-    "SheetBoard": { "cardMode": "column" },
-    "SheetTable": { "cardMode": "column" },
-    "WinnerBoard": { "cardMode": "column" },
-    "Sheet": { "cardMode": "single", "primaryStory": "GameMenu", "viewport": "480x600" },
-    "BottomBar": { "cardMode": "single", "primaryStory": "TwoActions", "viewport": "480x340" },
-    "DialogHost": { "cardMode": "single", "primaryStory": "Confirm", "viewport": "480x440" },
-    "QrShareSheet": { "cardMode": "single", "primaryStory": "LiveGame", "viewport": "480x760" },
-    "RoundsBoard": { "cardMode": "single", "primaryStory": "EnteringRound", "viewport": "480x900" }
+    "SessionRow": {
+      "cardMode": "column"
+    },
+    "CounterBoard": {
+      "cardMode": "column"
+    },
+    "Logo": {
+      "cardMode": "column"
+    },
+    "Page": {
+      "cardMode": "column"
+    },
+    "Section": {
+      "cardMode": "column"
+    },
+    "RoundsTable": {
+      "cardMode": "column"
+    },
+    "SheetBoard": {
+      "cardMode": "column"
+    },
+    "SheetTable": {
+      "cardMode": "column"
+    },
+    "WinnerBoard": {
+      "cardMode": "column"
+    },
+    "Sheet": {
+      "cardMode": "single",
+      "primaryStory": "GameMenu",
+      "viewport": "480x600"
+    },
+    "BottomBar": {
+      "cardMode": "single",
+      "primaryStory": "TwoActions",
+      "viewport": "480x340"
+    },
+    "DialogHost": {
+      "cardMode": "single",
+      "primaryStory": "Confirm",
+      "viewport": "480x440"
+    },
+    "QrShareSheet": {
+      "cardMode": "single",
+      "primaryStory": "LiveGame",
+      "viewport": "480x760"
+    },
+    "RoundsBoard": {
+      "cardMode": "single",
+      "primaryStory": "EnteringRound",
+      "viewport": "480x900"
+    },
+    "ActiveGameCard": {
+      "cardMode": "column"
+    },
+    "SeatControls": {
+      "cardMode": "column"
+    },
+    "CounterGrid": {
+      "cardMode": "single",
+      "primaryStory": "FourSeats",
+      "viewport": "480x900"
+    },
+    "CounterTable": {
+      "cardMode": "single",
+      "primaryStory": "FourSeats",
+      "viewport": "480x900"
+    }
   },
   "componentSrcMap": {
     "I18nProvider": null,
@@ -44,6 +103,9 @@
     "QrShareSheet": "../../src/components/QrShare.tsx",
     "DialogHost": "../../src/components/dialogs.tsx",
     "RoundsTable": "../../src/components/play/RoundsBoard.tsx",
-    "SheetTable": "../../src/components/play/SheetBoard.tsx"
+    "SheetTable": "../../src/components/play/SheetBoard.tsx",
+    "CounterGrid": "../../src/components/play/CounterBoard.tsx",
+    "CounterTable": "../../src/components/play/CounterBoard.tsx",
+    "SeatControls": "../../src/components/play/CounterBoard.tsx"
   }
 }

@@ -28,6 +28,7 @@ export const en = {
   // home
   newGame: 'New game',
   inProgress: 'In progress',
+  resumeGame: 'Back to game',
   quickStart: 'Quick start',
   recentResults: 'Recent results',
   seeAll: 'See all',
@@ -79,10 +80,9 @@ export const en = {
 
   // play
   roundN: 'Round {n}',
-  addRound: 'Add round',
   editRound: 'Edit round {n}',
   deleteRound: 'Delete round',
-  noRoundsYet: 'No rounds yet. Tap “Add round” after the first one.',
+  noRoundsYet: 'No rounds yet. Tap “Round 1” after the first one.',
   finishGame: 'Finish game',
   finishConfirm: 'Finish the game and save the result?',
   finishEmpty: 'Nobody has scored yet. Finish anyway?',
@@ -91,6 +91,18 @@ export const en = {
   targetReachedBanner: '{name} reached {target}!',
   leader: 'Leader',
   customAmount: 'Custom amount',
+  view: 'View',
+  viewList: 'List',
+  viewGrid: 'Grid',
+  viewTable: 'Table',
+  viewTableHint: 'Lay the phone between you: the top half faces the players opposite.',
+  toTarget: '{n} to go',
+  endShort: 'End',
+  leadsBy: 'leads by {n}',
+  behindLeader: '−{n} behind the leader',
+  toTargetValue: 'to {n}',
+  behindWinner: '−{n} behind the winner',
+  scoreSheetSummary: 'Score sheet: {n} categories',
   history: 'History',
   bonusNeeded: '{n} more for the bonus',
   bonusEarned: 'Bonus earned',
@@ -274,6 +286,7 @@ export const en = {
   nWins: { one: '{n} win', other: '{n} wins' } as Plural,
   nLosses: { one: '{n} loss', other: '{n} losses' } as Plural,
   nPhones: { one: '{n} phone connected', other: '{n} phones connected' } as Plural,
+  nPointsAhead: { one: '{n} point ahead', other: '{n} points ahead' } as Plural,
 }
 
 export type Dict = typeof en

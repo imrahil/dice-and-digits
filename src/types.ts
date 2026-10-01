@@ -94,7 +94,11 @@ export type Session = Doc & {
   notes?: string
   /** Ids of the most recent ops applied from joined phones (dedupes resends). */
   ops?: string[]
+  /** Counter mode: how the board is laid out on this phone (missing = list). */
+  counterView?: CounterView
 }
+
+export type CounterView = 'list' | 'grid' | 'table'
 
 export type Standing = {
   seat: Seat
