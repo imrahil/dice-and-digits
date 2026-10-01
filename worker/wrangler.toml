@@ -1,0 +1,21 @@
+name = "dice-and-digits-api"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+
+# Daily sweep of live scoreboards idle for 48 h.
+[triggers]
+crons = ["17 3 * * *"]
+
+# Create once with:  npx wrangler d1 create dice-and-digits
+# then paste the printed database_id below and apply the schema:
+#   npx wrangler d1 migrations apply dice-and-digits --remote
+[[d1_databases]]
+binding = "DB"
+database_name = "dice-and-digits"
+database_id = "REPLACE_WITH_DATABASE_ID"
+migrations_dir = "migrations"
+
+[vars]
+# Origins allowed to write (create groups, sync, run a live scoreboard).
+# Reads (viewing a live scoreboard) stay open to everyone.
+ALLOWED_ORIGINS = "https://imrahil.github.io,http://localhost:5173,http://localhost:4173"
