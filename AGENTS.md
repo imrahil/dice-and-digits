@@ -8,14 +8,34 @@ in [`README.md`](README.md) and [`worker/README.md`](worker/README.md).
 ```sh
 npm install
 npm run dev      # Vite dev server
-npm test         # Vitest — pure logic only (scoring, stats, i18n)
+npm test         # Vitest: logic, store, and group sync against the real worker
 npm run build    # tsc -b (type-check) + production build to dist/
 npm run lint     # ESLint for src/ and worker/ (lint:fix auto-fixes almost everything)
+npm run e2e      # Playwright: real app + `wrangler dev`, several phones (~1 min)
+npm run coverage # unit-test coverage report (text + coverage/index.html)
 ```
 
 `npm run lint`, `npm test` and `npm run build` are the checks; run all three
-before declaring work done (`npm run lint:fix` first). CI runs them plus the
-worker tests.
+before declaring work done (`npm run lint:fix` first). Run `npm run e2e` too
+when touching screens, sync or live games. CI (`.github/workflows/ci.yml`)
+runs all of them, plus the worker tests, on every pull request and before
+every deploy.
+
+### Tests
+
+- **Unit (Vitest, `src/**/*.test.ts`)**: pure logic in the default node
+  environment. Files that need `localStorage`/`window` start with
+  `// @vitest-environment happy-dom`. The store reads storage at import, so
+  tests import it fresh after `vi.resetModules()`.
+- **Sync (`src/lib/cloud.test.ts`)**: several "phones" (a swapped-in
+  localStorage each) sync through the real `worker/src/worker.js` in-process,
+  on node:sqlite via `worker/test/d1.mjs`. No mocked server.
+- **E2E (`e2e/*.spec.ts`)**: `playwright.config.ts` starts `wrangler dev`
+  (fresh local D1/DO state in `worker/.wrangler/e2e`) and a production build
+  with `VITE_API_URL` pointing at it. Each phone is its own browser context
+  (`newPhone()` in `e2e/helpers.ts`). The UI is Polish by default there.
+  Locally, Playwright's browsers live in `/opt/pw-browsers` in the Claude
+  cloud environment (`PLAYWRIGHT_BROWSERS_PATH`).
 
 Worker commands run from `worker/`:
 

@@ -10,7 +10,7 @@ import tseslint from 'typescript-eslint'
  * run `npm run lint:fix` before committing.
  */
 export default tseslint.config(
-  { ignores: ['dist', 'dev-dist', 'node_modules', 'worker/.wrangler', 'worker/node_modules'] },
+  { ignores: ['dist', 'dist-e2e', 'dev-dist', 'test-results', 'playwright-report', 'node_modules', 'worker/.wrangler', 'worker/node_modules'] },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,

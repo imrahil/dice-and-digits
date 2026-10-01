@@ -101,8 +101,10 @@ last-write-wins per document on its `updatedAt`.
 ```sh
 npm install
 npm run dev      # Vite dev server
-npm test         # Vitest: scoring, stats, i18n
+npm test         # Vitest: scoring, stats, i18n, store, group sync
 npm run lint     # ESLint (npm run lint:fix to auto-fix)
+npm run e2e      # Playwright end-to-end, starts wrangler dev itself
+npm run coverage # unit-test coverage report
 npm run build    # type-check + production build to dist/
 npm run preview  # serve the production build
 ```
@@ -121,8 +123,10 @@ in `.env.local`.
 
 ## Deployment
 
-**Frontend**: push to `main`. `.github/workflows/deploy.yml` runs both test
-suites, builds, and publishes `dist/` to GitHub Pages. Enable Pages once under
+**Frontend**: push to `main`. `.github/workflows/deploy.yml` first runs the
+whole CI workflow (lint, unit and worker tests, build, Playwright end-to-end;
+the same workflow also checks every pull request), then builds and publishes
+`dist/` to GitHub Pages. Enable Pages once under
 *Settings → Pages → Source: GitHub Actions*. The app lands at
 `https://imrahil.github.io/dice-and-digits/`.
 
