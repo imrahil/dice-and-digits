@@ -216,7 +216,7 @@ export function Segmented<T extends string>({
   grid,
 }: {
   value: T
-  options: { value: T; label: ReactNode }[]
+  options: { value: T; label: ReactNode; disabled?: boolean }[]
   onChange: (v: T) => void
   className?: string
   /** Two columns instead of one row, for longer labels. */
@@ -229,9 +229,10 @@ export function Segmented<T extends string>({
           key={o.value}
           role="radio"
           aria-checked={o.value === value}
+          disabled={o.disabled}
           onClick={() => onChange(o.value)}
           className={cx(
-            'flex-1 rounded-xl px-2 py-2 text-sm leading-tight font-bold transition',
+            'flex-1 rounded-xl px-2 py-2 text-sm leading-tight font-bold transition disabled:opacity-35',
             o.value === value ? 'chip-on' : 'border-[length:var(--bw-flat)] border-transparent text-ink/60 dark:text-white/60',
           )}
         >

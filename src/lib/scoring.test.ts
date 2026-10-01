@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BUILTIN_GAMES } from '../data/presets'
 import type { Rules, Session } from '../types'
-import { isEmpty, leaders, standings, targetReached, totals } from './scoring'
+import { gapsToLeader, isEmpty, leaders, standings, targetProgress, targetReached, toTarget, totals } from './scoring'
 
 const seats = [
   { id: 'a', name: 'Anna', color: '#e4572e' },
@@ -124,5 +124,27 @@ describe('target and emptiness', () => {
   it('knows when nothing was scored', () => {
     expect(isEmpty(session({ mode: 'sheet' }, { sheet: { x: {} } }))).toBe(true)
     expect(isEmpty(session({ mode: 'sheet' }, { sheet: { x: { a: 0 } } }))).toBe(false)
+  })
+})
+
+describe('distance to the target and the leader', () => {
+  it('counts down to the target and stops at 0', () => {
+    expect(toTarget(8, 10)).toBe(2)
+    expect(toTarget(12, 10)).toBe(0)
+    expect(toTarget(5)).toBeNull()
+  })
+
+  it('fills a progress bar from 0 to 1', () => {
+    expect(targetProgress(-40, 1000)).toBe(0)
+    expect(targetProgress(500, 1000)).toBe(0.5)
+    expect(targetProgress(1200, 1000)).toBe(1)
+    expect(targetProgress(5)).toBeNull()
+  })
+
+  it('measures each gap from rank 1, whichever way the game is won', () => {
+    expect(gapsToLeader(standings(session({}, { rounds: [{ a: 8, b: 6, c: 5 }] })))).toEqual([0, 2, 3])
+    expect(gapsToLeader(standings(session({ lowWins: true }, { rounds: [{ a: 23, b: 31, c: 40 }] })))).toEqual([0, 8, 17])
+    expect(gapsToLeader(standings(session({}, { rounds: [{ a: 9, b: 9, c: 4 }] })))).toEqual([0, 0, 5])
+    expect(gapsToLeader([])).toEqual([])
   })
 })

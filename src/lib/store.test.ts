@@ -291,3 +291,30 @@ describe('settings and startup', () => {
     expect(s.uid()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
   })
 })
+
+describe('counter view', () => {
+  const two = [
+    { id: 'a', name: 'A', color: '#000' },
+    { id: 'b', name: 'B', color: '#fff' },
+  ]
+
+  it('is remembered per game and defaults to the list', async () => {
+    const s = await freshStore()
+
+    s.saveSession(session('one', { seats: two }))
+    s.saveSession(session('two', { seats: two }))
+    expect(s.counterViewOf(s.getState().sessions.one)).toBe('list')
+
+    s.setCounterView('one', 'table')
+    expect(s.counterViewOf(s.getState().sessions.one)).toBe('table')
+    expect(stored('sessions').one.counterView).toBe('table')
+    expect(s.counterViewOf(s.getState().sessions.two)).toBe('list')
+  })
+
+  it('falls back to the grid when the table no longer fits the seats', async () => {
+    const s = await freshStore()
+
+    s.saveSession(session('solo', { counterView: 'table' }))
+    expect(s.counterViewOf(s.getState().sessions.solo)).toBe('grid')
+  })
+})
