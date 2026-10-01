@@ -23,6 +23,7 @@ export const pl: Dict = {
   total: 'Suma',
 
   newGame: 'Nowa gra',
+  resumeGame: 'Wróć do gry',
   inProgress: 'W trakcie',
   quickStart: 'Szybki start',
   recentResults: 'Ostatnie wyniki',

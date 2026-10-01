@@ -6,6 +6,7 @@ import { finished } from '../lib/stats'
 import { useStore } from '../lib/store'
 import { cloudEnabled } from '../lib/cloud'
 import { navigate } from '../hooks/useRoute'
+import { ActiveGameCard } from '../components/ActiveGameCard'
 import { SessionRow } from '../components/SessionRow'
 import { Logo } from '../components/Logo'
 import { Button, Empty, Page, Section, Sheet, cx, inputClass } from '../components/ui'
@@ -25,6 +26,9 @@ const STARTERS = [
 /** Quick-start tiles cycle through the skin's candy colours. */
 const CANDY = ['!bg-candy-a', '!bg-candy-b', '!bg-candy-c', '!bg-candy-d', '!bg-candy-e']
 
+/** Quick start fills two rows of four. */
+const QUICK = 8
+
 export function Home() {
   const { t, text } = useI18n()
   const sessions = useStore((s) => s.sessions)
@@ -34,60 +38,72 @@ export function Home() {
 
   const [joining, setJoining] = useState(false)
   const games = allGames(custom)
-  const recentIds = recentGameIds(sessions)
-  const quick = (recentIds.length ? recentIds : STARTERS)
+  const recentIds = recentGameIds(sessions, QUICK)
+  // Recently played first, topped up with the starters so both rows stay full.
+  const quick = [...new Set([...recentIds, ...STARTERS])]
     .map((id) => games.find((g) => g.id === id))
     .filter((g) => g !== undefined)
+    .slice(0, QUICK)
+  // The game started last gets the big card; any others are listed further down.
+  const [current, ...others] = [...active].sort((a, b) => b.startedAt - a.startedAt)
 
   return (
     <Page>
-      <div className="flex items-center gap-3 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-2">
-        <Logo className="size-16 shrink-0 -rotate-6" />
-        <div className="min-w-0">
-          <h1 className="text-[34px] leading-[0.95] font-extrabold">{t('appName')}</h1>
-          <p className="chip-on mt-2 inline-block -rotate-2 rounded-full px-3 py-0.5 text-sm font-bold">{t('tagline')}</p>
-        </div>
+      <div className="flex items-center gap-2.5 pt-[calc(env(safe-area-inset-top)+0.5rem)]">
+        <Logo className="size-10 shrink-0 -rotate-6" />
+        <h1 className="min-w-0 flex-1 truncate text-2xl font-extrabold">{t('appName')}</h1>
+        {cloudEnabled && (
+          <Button className="!px-3" onClick={() => setJoining(true)} aria-label={t('joinGame')} title={t('joinGame')}>
+            <ScanLine className="size-5" />
+          </Button>
+        )}
       </div>
-
-      <Button variant="primary" size="lg" className="mt-6 h-16 w-full !rounded-3xl !text-xl" onClick={() => navigate('new')}>
-        <Plus className="size-7" strokeWidth={3} />
-        {t('newGame')}
-      </Button>
-      {cloudEnabled && (
-        <Button variant="secondary" className="mt-3 w-full" onClick={() => setJoining(true)}>
-          <ScanLine className="size-5" /> {t('joinGame')}
-        </Button>
-      )}
       <JoinByCode open={joining} onClose={() => setJoining(false)} />
 
-      {active.length > 0 && (
-        <Section title={t('inProgress')}>
-          <div className="space-y-2">
-            {active.map((s) => (
-              <SessionRow key={s.id} session={s} onClick={() => navigate(`play/${s.id}`)} />
-            ))}
+      {current ? (
+        <>
+          <div className="mt-4">
+            <ActiveGameCard session={current} />
           </div>
-        </Section>
+          <Button size="lg" className="mt-4 w-full" onClick={() => navigate('new')}>
+            <Plus className="size-6" strokeWidth={3} />
+            {t('newGame')}
+          </Button>
+        </>
+      ) : (
+        <Button variant="primary" size="lg" className="mt-4 h-16 w-full !rounded-3xl !text-xl" onClick={() => navigate('new')}>
+          <Plus className="size-7" strokeWidth={3} />
+          {t('newGame')}
+        </Button>
       )}
 
       <Section title={recentIds.length ? t('quickStart') : t('builtinGames')}>
-        <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pt-1 pb-2 [scrollbar-width:none]">
+        <div className="grid grid-cols-4 gap-2.5">
           {quick.map((g, i) => (
             <button
               key={g.id}
               onClick={() => navigate(`new/${encodeURIComponent(g.id)}`)}
               className={cx(
-                'surface press my-1 flex w-24 shrink-0 snap-start flex-col items-center gap-1.5 rounded-3xl px-2 py-3 text-ink',
+                'surface press flex h-21 flex-col items-center justify-center gap-1 rounded-3xl px-1 text-ink',
                 CANDY[i % CANDY.length],
-                i % 2 ? 'rotate-2' : '-rotate-2',
               )}
             >
-              <span className="text-4xl drop-shadow-[0_2px_0_rgb(0_0_0/0.12)]">{g.emoji}</span>
+              <span className="text-[28px] leading-none drop-shadow-[0_2px_0_rgb(0_0_0/0.12)]">{g.emoji}</span>
               <span className="line-clamp-2 text-center text-xs leading-tight font-bold">{text(g.name)}</span>
             </button>
           ))}
         </div>
       </Section>
+
+      {others.length > 0 && (
+        <Section title={t('inProgress')}>
+          <div className="space-y-2">
+            {others.map((s) => (
+              <SessionRow key={s.id} session={s} onClick={() => navigate(`play/${s.id}`)} />
+            ))}
+          </div>
+        </Section>
+      )}
 
       {recent.length > 0 ? (
         <Section
@@ -105,7 +121,7 @@ export function Home() {
           </div>
         </Section>
       ) : (
-        active.length === 0 && (
+        !current && (
           <Empty icon="🎲" title={t('emptyHomeTitle')}>
             {t('emptyHomeBody')}
           </Empty>

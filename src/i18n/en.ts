@@ -28,6 +28,7 @@ export const en = {
   // home
   newGame: 'New game',
   inProgress: 'In progress',
+  resumeGame: 'Back to game',
   quickStart: 'Quick start',
   recentResults: 'Recent results',
   seeAll: 'See all',
