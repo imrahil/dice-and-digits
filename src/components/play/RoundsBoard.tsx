@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ArrowRight, Check, Crown, Trash2, Trophy } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { buzz } from '../../lib/haptics'
-import { standings } from '../../lib/scoring'
+import { gapsToLeader, marginOfVictory, standings, targetProgress, toTarget } from '../../lib/scoring'
 import { updateSession } from '../../lib/store'
 import { zeroSumWinner } from '../../lib/ops'
 import type { Scorer } from '../../lib/scorer'
@@ -10,57 +10,153 @@ import type { Session } from '../../types'
 import { Keypad, parseKeypad } from '../Keypad'
 import { Avatar, Button, IconButton, Sheet, cx } from '../ui'
 
-/** Score grid shared by the rounds board and the result screen. */
-export function RoundsTable({ session, onRow }: { session: Session; onRow?: (i: number) => void }) {
+/**
+ * Score grid shared by the rounds board and the result screen. `compact`
+ * (the board) drops avatars and totals from the header, since the standing
+ * cards above it already show them.
+ */
+export function RoundsTable({
+  session,
+  onRow,
+  compact,
+  highlightLast,
+}: {
+  session: Session
+  onRow?: (i: number) => void
+  compact?: boolean
+  /** Tint the latest round so the table shows where the game is. */
+  highlightLast?: boolean
+}) {
   const { t, num } = useI18n()
   const table = standings(session)
   const byId = Object.fromEntries(table.map((r) => [r.seat.id, r]))
-  const cols = `2.75rem repeat(${session.seats.length}, minmax(4.25rem, 1fr))`
-  const scored = session.rounds.length > 0 && session.seats.length > 1
+  const n = session.seats.length
+  const fit = compact && n < 5
+  const cols = `2.75rem repeat(${n}, ${fit ? 'minmax(0, 1fr)' : 'minmax(4.25rem, 1fr)'})`
+  const scored = session.rounds.length > 0 && n > 1
   const winner = session.rules.mode === 'winner'
+  const lastIndex = session.rounds.length - 1
 
   return (
-    <div className="-mx-4 overflow-x-auto px-4 pb-2">
+    <div className={cx(!fit && '-mx-4 overflow-x-auto px-4 pb-2')}>
       <div className="surface min-w-fit overflow-hidden rounded-3xl">
-        <div className="grid border-b border-edge dark:border-white/8" style={{ gridTemplateColumns: cols }}>
-          <span />
-          {session.seats.map((s) => {
-            const lead = scored && byId[s.id].rank === 1
-
-            return (
-              <div key={s.id} className={cx('flex flex-col items-center gap-1 px-1 pt-3 pb-2', lead && 'bg-gold/12')}>
-                <span className="relative">
-                  <Avatar name={s.name} color={s.color} size="sm" />
-                  {lead && <Crown className="absolute -top-2.5 -right-2 size-4 rotate-12 text-gold" fill="currentColor" />}
-                </span>
-                <span className="w-full truncate text-center text-xs font-bold">{s.name}</span>
-                <span className="display text-2xl font-black tabular-nums">{num(byId[s.id].total)}</span>
-              </div>
-            )
-          })}
-        </div>
-        {session.rounds.map((r, i) => (
-          <button
-            key={i}
-            disabled={!onRow}
-            onClick={() => onRow?.(i)}
-            className="grid w-full items-center border-b border-edge/70 py-2 last:border-0 active:bg-ink/5 dark:border-white/5 dark:active:bg-white/5"
-            style={{ gridTemplateColumns: cols }}
-            aria-label={onRow ? t('editRound', { n: i + 1 }) : undefined}
-          >
-            <span className="text-center text-xs font-black text-ink/40 tabular-nums dark:text-white/40">{i + 1}</span>
+        {compact ? (
+          <div className="grid border-b border-edge py-2 dark:border-white/8" style={{ gridTemplateColumns: cols }}>
+            <span />
+            {session.seats.map((s) => (
+              <span key={s.id} className="truncate px-1 text-center text-[13px] font-extrabold text-ink/60 dark:text-white/60">
+                {s.name}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="grid border-b border-edge dark:border-white/8" style={{ gridTemplateColumns: cols }}>
+            <span />
             {session.seats.map((s) => {
-              const v = r[s.id]
+              const lead = scored && byId[s.id].rank === 1
 
               return (
-                <span key={s.id} className={cx('text-center text-lg font-bold tabular-nums', v != null && v < 0 && 'text-danger')}>
-                  {v == null ? '·' : winner ? (v ? (session.rules.lowWins ? '🔥' : '🏆') : '·') : num(v)}
-                </span>
+                <div key={s.id} className={cx('flex flex-col items-center gap-1 px-1 pt-3 pb-2', lead && 'bg-gold/12')}>
+                  <span className="relative">
+                    <Avatar name={s.name} color={s.color} size="sm" />
+                    {lead && <Crown className="absolute -top-2.5 -right-2 size-4 rotate-12 text-gold" fill="currentColor" />}
+                  </span>
+                  <span className="w-full truncate text-center text-xs font-bold">{s.name}</span>
+                  <span className="display text-2xl font-black tabular-nums">{num(byId[s.id].total)}</span>
+                </div>
               )
             })}
-          </button>
-        ))}
+          </div>
+        )}
+        {session.rounds.map((r, i) => {
+          const latest = highlightLast && i === lastIndex
+
+          return (
+            <button
+              key={i}
+              disabled={!onRow}
+              onClick={() => onRow?.(i)}
+              className={cx(
+                'grid w-full items-center border-b border-edge/70 last:border-0 active:bg-ink/5 dark:border-white/5 dark:active:bg-white/5',
+                compact ? 'py-[3px]' : 'py-2',
+                latest && 'bg-accent/15',
+              )}
+              style={{ gridTemplateColumns: cols }}
+              aria-label={onRow ? t('editRound', { n: i + 1 }) : undefined}
+              aria-current={latest ? 'true' : undefined}
+            >
+              <span className="text-center text-xs font-black text-ink/40 tabular-nums dark:text-white/40">{i + 1}</span>
+              {session.seats.map((s) => {
+                const v = r[s.id]
+
+                return (
+                  <span
+                    key={s.id}
+                    className={cx('text-center font-bold tabular-nums', compact ? 'text-[19px]' : 'text-lg', v != null && v < 0 && 'text-danger')}
+                  >
+                    {v == null ? '·' : winner ? (v ? (session.rules.lowWins ? '🔥' : '🏆') : '·') : num(v)}
+                  </span>
+                )
+              })}
+            </button>
+          )
+        })}
       </div>
+    </div>
+  )
+}
+
+/** One card per player, best first: gap to the leader and progress to the target. */
+function StandingCards({ session }: { session: Session }) {
+  const { t, num } = useI18n()
+  const table = standings(session)
+  const gaps = gapsToLeader(table)
+  const margin = marginOfVictory(table)
+  const target = session.rules.target
+  const scored = session.rounds.length > 0
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      {table.map((r, i) => {
+        const lead = scored && r.rank === 1 && table.length > 1
+        const left = toTarget(r.total, target)
+        const progress = targetProgress(r.total, target)
+
+        return (
+          <div
+            key={r.seat.id}
+            className={cx(
+              'surface flex flex-col gap-1.5 rounded-3xl px-3.5 pt-2 pb-2.5',
+              lead && '!bg-[color-mix(in_oklab,var(--color-gold)_30%,var(--color-card))]',
+            )}
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="display w-5 text-xl font-black text-ink/40 dark:text-white/40">{r.rank}</span>
+              <Avatar name={r.seat.name} color={r.seat.color} size="sm" />
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="display block truncate text-[19px] font-extrabold">{r.seat.name}</span>
+                {scored && r.rank === 1 && (margin > 0 || left !== null) && (
+                  <span className="block text-[13px] font-bold text-mint">
+                    {[margin > 0 && t('leadsBy', { n: num(margin) }), left !== null && t('toTarget', { n: num(left) })].filter(Boolean).join(' · ')}
+                  </span>
+                )}
+                {scored && r.rank !== 1 && (
+                  <span className="block truncate text-[13px] font-bold text-ink/60 dark:text-white/60">{t('behindLeader', { n: num(gaps[i]) })}</span>
+                )}
+              </span>
+              <span className="display text-5xl leading-[0.9] font-black tabular-nums">{num(r.total)}</span>
+            </div>
+            {progress !== null && (
+              <div className="h-2 overflow-hidden rounded-full bg-ink/10 dark:bg-white/10" aria-hidden>
+                <div
+                  className={cx('h-full rounded-full', session.rules.lowWins && 'opacity-60')}
+                  style={{ width: `${progress * 100}%`, background: r.seat.color }}
+                />
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -80,8 +176,14 @@ export function RoundsBoard({
 
   return (
     <>
-      <RoundsTable session={session} onRow={setEntry} />
-      {session.rounds.length === 0 && <p className="px-4 py-6 text-center text-ink/55 dark:text-white/55">{t('noRoundsYet')}</p>}
+      <StandingCards session={session} />
+      {session.rounds.length > 0 ? (
+        <div className="mt-4">
+          <RoundsTable session={session} onRow={setEntry} compact highlightLast />
+        </div>
+      ) : (
+        <p className="px-4 py-6 text-center text-ink/55 dark:text-white/55">{t('noRoundsYet')}</p>
+      )}
       {entry !== null && <RoundEntry key={entry} session={session} scorer={scorer} index={entry} onClose={() => setEntry(null)} />}
     </>
   )

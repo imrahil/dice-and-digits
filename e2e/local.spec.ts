@@ -46,7 +46,7 @@ test('remembers the last lineup for the next game', async ({ page }) => {
 test('rounds: negative scores on the keypad, edit a past round', async ({ page }) => {
   await startGame(page, 'builtin:1000', ['Anna', 'Bartek'])
 
-  await button(page, /Dodaj rundę/).click()
+  await button(page, /^Runda \d/).click()
   await press(page, '120')
   await dialog(page).getByRole('button', { name: 'Bartek', exact: true }).click()
   await press(page, '-60')
@@ -85,7 +85,7 @@ test('score sheet with multipliers: Szybka kawka counts tiles ×2', async ({ pag
 test('Rummikub: the round winner takes the others’ minus points', async ({ page }) => {
   await startGame(page, 'builtin:rummikub', ['Anna', 'Bartek', 'Cleo'])
 
-  await button(page, /Dodaj rundę/).click()
+  await button(page, /^Runda \d/).click()
   await dialog(page).getByRole('button', { name: /^Bartek/ }).first().click()
   await press(page, '-12')
   await dialog(page).getByRole('button', { name: /^Cleo/ }).first().click()

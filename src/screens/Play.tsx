@@ -46,7 +46,7 @@ export function Play({ id }: { id: string }) {
 }
 
 function Board({ session }: { session: Session }) {
-  const { t, text, duration } = useI18n()
+  const { t, tp, text, num, duration } = useI18n()
   const keepAwake = useStore((s) => s.settings.keepAwake)
   const now = useNow(15000)
   const [menu, setMenu] = useState(false)
@@ -228,12 +228,24 @@ function Board({ session }: { session: Session }) {
           <span className="truncate">{text(session.rules.name)}</span>
         </span>
       }
+      subtitle={
+        mode === 'rounds' &&
+        [
+          tp('nRounds', session.rounds.length),
+          duration(now - session.startedAt),
+          session.rules.target != null && t('toTargetValue', { n: num(session.rules.target) }),
+        ]
+          .filter(Boolean)
+          .join(' · ')
+      }
       actions={
         <>
           {liveBadge}
-          <span className="px-1 text-sm font-bold text-ink/50 tabular-nums dark:text-white/50">
-            {duration(now - session.startedAt)}
-          </span>
+          {mode !== 'rounds' && (
+            <span className="px-1 text-sm font-bold text-ink/50 tabular-nums dark:text-white/50">
+              {duration(now - session.startedAt)}
+            </span>
+          )}
           {(mode === 'counter' || mode === 'winner') && (
             <IconButton label={t('undo')} onClick={undo} disabled={!canUndo} className="disabled:opacity-30">
               <Undo2 className="size-5" />
@@ -274,7 +286,7 @@ function Board({ session }: { session: Session }) {
               <Flag className="size-5" />
             </Button>
             <Button variant="primary" size="lg" className="flex-1" onClick={() => setEntry(nextRound(session))}>
-              <Plus className="size-6" strokeWidth={3} /> {t('addRound')}
+              <Plus className="size-6" strokeWidth={3} /> {t('roundN', { n: nextRound(session) + 1 })}
             </Button>
           </>
         ) : (

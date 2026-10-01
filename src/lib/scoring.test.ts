@@ -146,6 +146,8 @@ describe('distance to the target and the leader', () => {
     expect(gapsToLeader(standings(session({ lowWins: true }, { rounds: [{ a: 23, b: 31, c: 40 }] })))).toEqual([0, 8, 17])
     expect(gapsToLeader(standings(session({}, { rounds: [{ a: 9, b: 9, c: 4 }] })))).toEqual([0, 0, 5])
     expect(gapsToLeader([])).toEqual([])
+    // Tysiąc can go negative: −100 sorts last and sits 150 behind.
+    expect(gapsToLeader(standings(session({}, { seats: seats.slice(0, 2), rounds: [{ a: -100, b: 50 }] })))).toEqual([0, 150])
   })
 })
 

@@ -7,12 +7,15 @@ export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Bool
 
 export function Page({
   title,
+  subtitle,
   back,
   actions,
   children,
   bare,
 }: {
   title?: ReactNode
+  /** A second, smaller line under the title. */
+  subtitle?: ReactNode
   /** Fallback route when there is no in-app history; omit for top-level tabs. */
   back?: string
   actions?: ReactNode
@@ -31,9 +34,16 @@ export function Page({
               <ChevronLeft className="size-6" />
             </IconButton>
           )}
-          <h1 className={cx('min-w-0 flex-1 truncate text-(length:--title-size) font-extrabold', back === undefined && 'pl-1')}>
-            {title}
-          </h1>
+          {subtitle ? (
+            <div className={cx('flex min-w-0 flex-1 flex-col leading-tight', back === undefined && 'pl-1')}>
+              <h1 className="truncate text-(length:--title-size) font-extrabold">{title}</h1>
+              <p className="truncate text-xs font-bold text-ink/50 dark:text-white/50">{subtitle}</p>
+            </div>
+          ) : (
+            <h1 className={cx('min-w-0 flex-1 truncate text-(length:--title-size) font-extrabold', back === undefined && 'pl-1')}>
+              {title}
+            </h1>
+          )}
           {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
         </header>
       )}

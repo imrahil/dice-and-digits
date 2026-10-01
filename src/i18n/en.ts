@@ -79,10 +79,9 @@ export const en = {
 
   // play
   roundN: 'Round {n}',
-  addRound: 'Add round',
   editRound: 'Edit round {n}',
   deleteRound: 'Delete round',
-  noRoundsYet: 'No rounds yet. Tap “Add round” after the first one.',
+  noRoundsYet: 'No rounds yet. Tap “Round 1” after the first one.',
   finishGame: 'Finish game',
   finishConfirm: 'Finish the game and save the result?',
   finishEmpty: 'Nobody has scored yet. Finish anyway?',
@@ -98,6 +97,9 @@ export const en = {
   viewTableHint: 'Lay the phone between you: the top half faces the players opposite.',
   toTarget: '{n} to go',
   endShort: 'End',
+  leadsBy: 'leads by {n}',
+  behindLeader: '−{n} behind the leader',
+  toTargetValue: 'to {n}',
   behindWinner: '−{n} behind the winner',
   scoreSheetSummary: 'Score sheet: {n} categories',
   history: 'History',

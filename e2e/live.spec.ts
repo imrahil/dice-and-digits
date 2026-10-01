@@ -91,7 +91,7 @@ test('rounds merge: a player’s own entry and the host’s land in the same rou
   await expect(async () => {
     expect((await session(host, 'builtin:1000')).rounds).toHaveLength(1)
   }).toPass()
-  await button(host, /Dodaj rundę/).click()
+  await button(host, /^Runda \d/).click()
   await expect(dialog(host).getByText('-40')).toBeVisible()
   await press(host, '120')
   await dialog(host).getByRole('button', { name: 'Bartek', exact: true }).click()
