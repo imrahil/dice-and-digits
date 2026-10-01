@@ -14,7 +14,14 @@ const MAX_CELLS = 4
 const onSheet = (s: Session, seat: Seat) => Object.values(s.sheet).some((row) => row[seat.id] != null)
 
 /** The game in progress on the home screen: who's winning, and a way back in. */
-export function ActiveGameCard({ session }: { session: Session }) {
+export function ActiveGameCard({
+  session,
+  live = Boolean(liveHandle(session.id)),
+}: {
+  session: Session
+  /** Shared live right now (defaults to this phone's live handle for the game). */
+  live?: boolean
+}) {
   const { t, text, num, duration } = useI18n()
   const now = useNow(15000)
   const table = standings(session)
@@ -33,7 +40,7 @@ export function ActiveGameCard({ session }: { session: Session }) {
           <span className="display block truncate text-xl font-extrabold">{text(session.rules.name)}</span>
           <span className="block truncate text-[13px] font-semibold text-ink/60 dark:text-white/60">{meta.filter(Boolean).join(' · ')}</span>
         </span>
-        {liveHandle(session.id) && (
+        {live && (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-danger px-2.5 py-1 text-xs font-black text-white">
             <span className="size-1.5 animate-pulse rounded-full bg-white" /> LIVE
           </span>

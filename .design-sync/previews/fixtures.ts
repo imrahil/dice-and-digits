@@ -85,6 +85,21 @@ export const kittens: Session = {
   rounds: [{ [maja]: 1 }, { [ola]: 1 }, { [maja]: 1 }, { [tomek]: 1 }, { [maja]: 1 }],
 }
 
+/** Catan for four laid out as tiles (the grid view); Ola is one point from winning. */
+export const catanGrid: Session = {
+  ...catan,
+  id: 's-catan-grid',
+  counterView: 'grid',
+  seats,
+  log: taps([[ola, 2], [kuba, 2], [maja, 2], [tomek, 2], [ola, 2], [kuba, 2], [maja, 1], [ola, 2], [tomek, 1], [ola, 3]]),
+}
+
+/** The same game in table mode: the phone lies between the players. */
+export const catanTable: Session = { ...catanGrid, id: 's-catan-table', counterView: 'table' }
+
+/** Thousand, shared live from this phone (pass `live` to ActiveGameCard). */
+export const thousandLive: Session = { ...thousand, id: 's-1000-live' }
+
 /** Finished: Ola won Catan 40 minutes after the start. */
 export const catanFinished: Session = { ...catan, id: 's-catan-done', finishedAt: T0 + 40 * min, log: [...catan.log, { p: ola, d: 2, t: T0 + 39 * min }] }
 

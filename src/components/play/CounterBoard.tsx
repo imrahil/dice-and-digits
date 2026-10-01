@@ -92,8 +92,8 @@ export function CounterBoard({ session, scorer, toolbar }: { session: Session; s
   return (
     <>
       {view === 'list' && <CounterList kit={kit} />}
-      {view === 'grid' && <CounterGrid kit={kit} />}
-      {view === 'table' && <CounterTable kit={kit} toolbar={toolbar} />}
+      {view === 'grid' && <GridView kit={kit} />}
+      {view === 'table' && <TableView kit={kit} toolbar={toolbar} />}
 
       {session.log.length > 0 && (
         <details className={cx('surface mt-5 rounded-3xl p-4', view === 'table' && 'mx-3.5 mb-5')}>
@@ -366,8 +366,21 @@ function TargetProgress({ total, target, color }: { total: number; target: numbe
 
 const COLS = ['grid-cols-1', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3']
 
+/** The counter board as a grid of big tiles, whatever view the session has stored. */
+export function CounterGrid({ session, scorer }: { session: Session; scorer: Scorer }) {
+  return <CounterBoard session={{ ...session, counterView: 'grid' }} scorer={scorer} />
+}
+
+/**
+ * The counter board in table mode (2–6 seats, full screen): the top half faces
+ * the players opposite, `toolbar` sits between the halves.
+ */
+export function CounterTable({ session, scorer, toolbar }: { session: Session; scorer: Scorer; toolbar?: ReactNode }) {
+  return <CounterBoard session={{ ...session, counterView: 'table' }} scorer={scorer} toolbar={toolbar} />
+}
+
 /** Tiles filling the screen between the header and the bottom bar. */
-function CounterGrid({ kit }: { kit: Kit }) {
+function GridView({ kit }: { kit: Kit }) {
   const n = kit.session.seats.length
   const cols = n === 1 ? 1 : n <= 6 ? 2 : 3
   const rows = Math.ceil(n / cols)
@@ -391,7 +404,7 @@ function CounterGrid({ kit }: { kit: Kit }) {
  * Full screen for a phone lying between the players: the top half is turned
  * round to face the people opposite, the toolbar sits in the middle.
  */
-function CounterTable({ kit, toolbar }: { kit: Kit; toolbar?: ReactNode }) {
+function TableView({ kit, toolbar }: { kit: Kit; toolbar?: ReactNode }) {
   const seats = kit.session.seats
   const half = Math.floor(seats.length / 2)
   const top = seats.slice(0, half)

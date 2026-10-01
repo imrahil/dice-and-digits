@@ -237,7 +237,7 @@ function RoundEntry({ session, scorer, index, onClose }: { session: Session; sco
         <span className="flex items-center gap-2">
           {editing ? t('editRound', { n: index + 1 }) : t('roundN', { n: index + 1 })}
           {editing && everyone && (
-            <IconButton label={t('deleteRound')} onClick={remove} className="ml-auto text-danger dark:text-[#ff8a93]">
+            <IconButton label={t('deleteRound')} onClick={remove} className="ml-auto !text-danger dark:!text-[#ff8a93]">
               <Trash2 className="size-5" />
             </IconButton>
           )}

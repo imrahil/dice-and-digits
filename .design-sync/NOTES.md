@@ -15,10 +15,6 @@
 - `DialogHost` previews call `confirm()` / `toast()` in an effect; their state is module-level in the bundle, so it works across the shared global.
 - Board-width components (420 px cells) are `cardMode: column`.
 
-## Findings
-
-- `IconButton className="text-danger"` does **not** turn red: Tailwind v4 orders `text-ink/80` (built in) after `text-danger`. Use `!text-danger`. The app itself has this bug in `RoundsBoard`'s delete-round button (`src/components/play/RoundsBoard.tsx`).
-
 ## Known render warns
 
 - `[RENDER_THIN]` on `IconButton`: icon-only 40 px buttons paint little and carry no text by design; the captured sheet shows all three cells correctly.

@@ -54,6 +54,10 @@ test('rounds: negative scores on the keypad, edit a past round', async ({ page }
 
   // Edit round 1: Anna 120 → 100.
   await page.getByRole('button', { name: 'Edytuj rundę 1' }).click()
+
+  const del = dialog(page).getByRole('button', { name: 'Usuń rundę' })
+
+  await expect(del).toHaveCSS('color', 'rgb(236, 48, 72)') // arcade light --color-danger
   await button(page, 'Backspace').click()
   await button(page, 'Backspace').click()
   await press(page, '00')
