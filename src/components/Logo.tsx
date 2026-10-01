@@ -1,0 +1,33 @@
+/** The app mark: a red die and a tally-mark score card. Same drawing as public/icons/icon.svg. */
+export function Logo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="64 64 384 384" className={className} aria-hidden>
+      <LogoShapes />
+    </svg>
+  )
+}
+
+export function LogoShapes() {
+  return (
+    <>
+      <g transform="rotate(-10 205 215)">
+        <rect x="90" y="100" width="230" height="230" rx="52" fill="#c4431e" />
+        <rect x="90" y="92" width="230" height="230" rx="52" fill="#e4572e" />
+        <circle cx="150" cy="152" r="22" fill="#fff" />
+        <circle cx="205" cy="207" r="22" fill="#fff" />
+        <circle cx="260" cy="262" r="22" fill="#fff" />
+      </g>
+      <g transform="rotate(8 330 320)">
+        <rect x="222" y="218" width="210" height="196" rx="40" fill="#d8ccb4" />
+        <rect x="222" y="210" width="210" height="196" rx="40" fill="#f6f1e7" />
+        <g stroke="#1f1a2e" strokeWidth="18" strokeLinecap="round">
+          <line x1="268" y1="256" x2="268" y2="360" />
+          <line x1="306" y1="256" x2="306" y2="360" />
+          <line x1="344" y1="256" x2="344" y2="360" />
+          <line x1="382" y1="256" x2="382" y2="360" />
+        </g>
+        <line x1="248" y1="342" x2="404" y2="272" stroke="#f2b134" strokeWidth="20" strokeLinecap="round" />
+      </g>
+    </>
+  )
+}

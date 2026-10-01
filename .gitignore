@@ -1,0 +1,14 @@
+node_modules
+dist
+.wrangler/
+.dev.vars
+dist-ssr
+*.local
+.DS_Store
+.vite
+*.tsbuildinfo
+.claude/settings.local.json
+dist-e2e
+test-results
+playwright-report
+coverage
