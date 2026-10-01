@@ -315,6 +315,7 @@ const PRESETS: Preset[] = [
     name: name('Hot Potato', 'Gorący ziemniak'),
     mode: 'winner',
     lowWins: true, // records who got burnt; fewest burns wins
+    timer: { hidden: true, min: 10, max: 30 },
   },
   {
     id: 'builtin:scrabble',

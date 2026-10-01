@@ -100,6 +100,16 @@ export const catanTable: Session = { ...catanGrid, id: 's-catan-table', counterV
 /** Thousand, shared live from this phone (pass `live` to ActiveGameCard). */
 export const thousandLive: Session = { ...thousand, id: 's-1000-live' }
 
+/** Hot Potato with its round timer (mirrors presets.ts); burns so far 2 / 0 / 3 / 1, Kuba leads. */
+export const potato: Session = {
+  ...kittens,
+  id: 's-potato',
+  gameId: 'builtin:hot-potato',
+  emoji: '🥔',
+  rules: { name: { en: 'Hot Potato', pl: 'Gorący ziemniak' }, mode: 'winner', lowWins: true, timer: { hidden: true, min: 10, max: 30 } },
+  rounds: [{ [ola]: 1 }, { [maja]: 1 }, { [maja]: 1 }, { [tomek]: 1 }, { [ola]: 1 }, { [maja]: 1 }],
+}
+
 /** Finished: Ola won Catan 40 minutes after the start. */
 export const catanFinished: Session = { ...catan, id: 's-catan-done', finishedAt: T0 + 40 * min, log: [...catan.log, { p: ola, d: 2, t: T0 + 39 * min }] }
 

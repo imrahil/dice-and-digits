@@ -9,6 +9,7 @@ A mobile-first score keeper for board games. Design for a phone (≈390–430 px
 - **Dark mode**: add the class `dark` on `<html>`. Pair light/dark text as `text-ink/60 dark:text-white/60`.
 - Mount `<DialogHost />` once at the root, then call `confirm('…', { confirmLabel, danger })` (returns a Promise<boolean>) or `toast('…')` from anywhere.
 - Counter games have three views: `session.counterView` picks `list` (default), `grid` or `table`; `CounterGrid` / `CounterTable` render one directly.
+- Hot Potato (`rules.timer`) adds a round timer: `PotatoTimer` shows it, `WinnerBoard` records the loser.
 - Icons: `const { Icons } = window.DiceAndDigitsUi` → `<Icons.Plus className="size-5" />` (lucide; the set the app uses).
 
 ### Styling idiom: Tailwind utilities, precompiled
