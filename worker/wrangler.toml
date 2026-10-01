@@ -8,7 +8,7 @@ compatibility_date = "2026-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "dice-and-digits"
-database_id = "REPLACE_WITH_DATABASE_ID"
+database_id = "f0c2cdf0-294a-4d34-b97e-5ed9b749bc95"
 migrations_dir = "migrations"
 
 # One Room per live game (src/room.js): WebSockets for the host, players who
