@@ -50,6 +50,9 @@ function setCloud(patch: Partial<CloudState>) {
   listeners.forEach((l) => l())
 }
 
+/** Current cloud status outside React (tests, logging). */
+export const getCloud = (): CloudState => cloud
+
 export function useCloud(): CloudState {
   return useSyncExternalStore(
     (l) => {

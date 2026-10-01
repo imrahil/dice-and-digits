@@ -2,6 +2,8 @@
 // migrations/ instead of a hand-written mock.
 import { DatabaseSync } from 'node:sqlite'
 import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 class Stmt {
   constructor(db, sql, args = []) {
@@ -31,10 +33,12 @@ class Stmt {
 
 export function createD1() {
   const db = new DatabaseSync(':memory:')
-  const dir = new URL('../migrations/', import.meta.url)
+  // A path rather than a URL object: this helper also runs under Vitest's
+  // happy-dom, whose URL class node:fs does not accept.
+  const dir = join(fileURLToPath(import.meta.url), '../../migrations')
 
   for (const f of readdirSync(dir).sort()) {
-    db.exec(readFileSync(new URL(f, dir), 'utf8'))
+    db.exec(readFileSync(join(dir, f), 'utf8'))
   }
 
   return {

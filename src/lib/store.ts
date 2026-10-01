@@ -125,7 +125,10 @@ const shareable = (kind: Kind, doc: Doc) =>
 
 function put<K extends Kind>(kind: K, doc: Doc) {
   const col = COLLECTION[kind]
-  const stamped = { ...doc, updatedAt: Date.now() }
+  const prev = state[col][doc.id]?.updatedAt ?? 0
+  // Strictly increasing per doc: two edits in the same millisecond must still
+  // differ, or clearDirty() would mistake the second one for already sent.
+  const stamped = { ...doc, updatedAt: Math.max(Date.now(), prev + 1) }
 
   set({
     [col]: { ...state[col], [doc.id]: stamped },

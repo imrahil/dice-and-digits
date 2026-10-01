@@ -251,6 +251,28 @@ export async function sync(request, env) {
 
   const nextCursor = rows.length ? rows[rows.length - 1].rev : cursor
 
+  // A pushed doc the server kept a newer version of (e.g. this phone's clock is
+  // behind) is not in the pull when its rev is at or below the cursor. Send
+  // the winning version back anyway, or this phone would keep showing its own.
+  if (docs.length) {
+    const sent = new Map(docs.map((d) => [`${d.kind}:${d.id}`, d.updatedAt]))
+    const inPull = new Set(rows.map((r) => `${r.kind}:${r.id}`))
+    const { results: current } = await env.DB.prepare(
+      `SELECT kind, id, updated_at, rev, data FROM docs
+       WHERE group_id = ?1 AND kind || ':' || id IN (SELECT value FROM json_each(?2))`,
+    )
+      .bind(group.id, JSON.stringify([...sent.keys()]))
+      .all()
+
+    for (const r of current) {
+      const key = `${r.kind}:${r.id}`
+
+      if (r.updated_at > sent.get(key) && !inPull.has(key)) {
+        rows.push(r)
+      }
+    }
+  }
+
   return json({
     group: { id: group.id, name: group.name },
     cursor: nextCursor,

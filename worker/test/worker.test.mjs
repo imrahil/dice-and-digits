@@ -121,6 +121,17 @@ test('last write wins: an older edit never overwrites a newer one', async () => 
   assert.equal(stale.body.docs[0].updatedAt, 500)
 })
 
+test('a phone with a slow clock gets the newer server version back', async () => {
+  const { call } = setup()
+  const token = await newGroup(call)
+  const a = await call('POST', '/api/sync', { token, body: { cursor: 0, docs: [doc('anna', 500, { name: 'New' })] } })
+  // Phone B is already up to date (cursor past anna) and pushes an older edit.
+  const b = await call('POST', '/api/sync', { token, body: { cursor: a.body.cursor, docs: [doc('anna', 300, { name: 'Old' })] } })
+
+  assert.deepEqual(b.body.docs.map((d) => [d.id, d.data.name, d.updatedAt]), [['anna', 'New', 500]])
+  assert.equal(b.body.cursor, a.body.cursor, 'the cursor is not moved by returned winners')
+})
+
 test('groups are isolated from each other', async () => {
   const { call } = setup()
   const g1 = await newGroup(call, 'one')
