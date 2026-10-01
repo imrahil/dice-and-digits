@@ -1,0 +1,29 @@
+/*
+ * The app's stylesheet (tokens, skins, fonts, utilities), compiled for the
+ * Claude Design bundle. Tailwind only emits classes it finds in source, so
+ * besides the app and the authored previews this safelists the layout and
+ * token vocabulary the design agent is told it may use (.design-sync/conventions.md).
+ */
+@import "../../src/index.css";
+
+@source "../../src";
+@source "../previews";
+
+/* Token colours, with the opacity steps the app itself uses. Dark mode
+   overrides follow the app's idiom: white text/borders at an opacity. */
+@source inline("{bg,text,border}-{paper,card,ink,night,slate,edge,accent,accent-dark,gold,mint,danger,candy-a,candy-b,candy-c,candy-d,candy-e,white,transparent}{,/10,/15,/20,/30,/50,/60,/70}");
+@source inline("{ring,fill,stroke,from,to,via}-{paper,card,ink,night,slate,accent,gold,mint,danger,candy-a,candy-b,candy-c,candy-d,candy-e,white,transparent}");
+@source inline("dark:{bg,text,border}-{white,slate,night}{,/5,/10,/15,/20,/50,/60,/70}");
+
+/* Spacing, sizing and layout. */
+@source inline("{p,px,py,pt,pb,pl,pr,m,mx,my,mt,mb,ml,mr,gap,gap-x,gap-y,space-y,space-x,-mt,-mx}-{0,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,10,12,14,16,20,24}");
+@source inline("{w,h,size,min-w,min-h}-{0,1,2,3,4,5,6,7,8,9,10,11,12,14,16,20,24,28,32,40,48,56,64,full,screen,fit}");
+@source inline("max-w-{xs,sm,md,lg,xl,2xl,3xl,full}");
+@source inline("{flex,inline-flex,grid,block,inline-block,hidden} flex-{1,col,row,wrap} items-{start,center,end,baseline,stretch} justify-{start,center,end,between,around} self-{start,center,end} grid-cols-{1,2,3,4,5,6} col-span-{1,2,3,full} shrink-0 grow mx-auto");
+@source inline("rounded-{none,md,lg,xl,2xl,3xl,full} overflow-{hidden,auto,x-auto,y-auto} {relative,absolute,fixed,sticky} inset-{0,x-0,y-0} {top,bottom,left,right}-{0,1,2,3,4} z-{10,20,30,40,50} opacity-{40,50,60,70,80}");
+
+/* Type. */
+@source inline("text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl,left,center,right} font-{normal,medium,semibold,bold,extrabold,black} leading-{none,tight,snug,normal} tracking-{tight,wide,wider} {uppercase,truncate,tabular-nums,line-clamp-2,whitespace-nowrap}");
+
+/* Skin building blocks, motion and tilt. */
+@source inline("{surface,surface-flat,press,btn-cta,chip-on,emoji-tile,avatar-ring,display,section-title,skin-bg,nav-dock,nav-on} animate-{pop,rise,roll,wiggle} {,-}rotate-{1,2,3,6,12}");

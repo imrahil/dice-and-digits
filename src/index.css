@@ -155,7 +155,7 @@
 
 /* ── Bubblegum: Y2K gloss. Gradient mesh, frosted cards, chrome-candy CTA. ── */
 [data-skin="bubble"] {
-  --font-sans: "Nunito Variable", "Nunito", ui-rounded, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "Nunito Variable", ui-rounded, ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Unbounded Variable", "Nunito Variable", ui-rounded, sans-serif;
   --display-tracking: -0.01em;
   --title-size: 18px; /* Unbounded runs wide */
@@ -244,8 +244,8 @@
 
 /* ── Classic: the original cream card stock, meeple red and gold crown. ── */
 [data-skin="classic"] {
-  --font-sans: "Nunito Variable", "Nunito", ui-rounded, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Nunito Variable", "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Nunito Variable", ui-rounded, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Nunito Variable", ui-rounded, ui-sans-serif, system-ui, sans-serif;
   --display-tracking: -0.02em;
   --title-size: 22px;
   --radius-xl: 0.75rem;

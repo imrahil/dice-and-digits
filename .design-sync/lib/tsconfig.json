@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.app.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "rootDir": "../..",
+    "outDir": "types",
+    "tsBuildInfoFile": null
+  },
+  "include": ["index.ts", "../../src/vite-env.d.ts", "../../src/test-modules.d.ts"]
+}
