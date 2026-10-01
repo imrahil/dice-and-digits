@@ -10,8 +10,17 @@ import { SessionRow } from '../components/SessionRow'
 import { Logo } from '../components/Logo'
 import { Button, Empty, Page, Section, Sheet, cx, inputClass } from '../components/ui'
 
-/** Shown before anything has been played: a mix of all three scoring modes. */
-const STARTERS = ['builtin:catan', 'builtin:1000', 'builtin:7wonders', 'builtin:carcassonne', 'builtin:yahtzee', 'builtin:ttr', 'builtin:uno', 'builtin:wingspan']
+/** Shown before anything has been played: a mix of every scoring mode. */
+const STARTERS = [
+  'builtin:6nimmt',
+  'builtin:ttr-europe',
+  'builtin:splendor',
+  'builtin:rummikub',
+  'builtin:dream-home',
+  'builtin:exploding-kittens',
+  'builtin:1000',
+  'builtin:7wonders',
+]
 
 export function Home() {
   const { t, text } = useI18n()

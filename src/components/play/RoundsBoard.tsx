@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { ArrowRight, Check, Crown, Trash2 } from 'lucide-react'
+import { ArrowRight, Check, Crown, Trash2, Trophy } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { buzz } from '../../lib/haptics'
 import { standings } from '../../lib/scoring'
 import { updateSession } from '../../lib/store'
+import { zeroSumWinner } from '../../lib/ops'
 import type { Scorer } from '../../lib/scorer'
 import type { Session } from '../../types'
 import { Keypad, parseKeypad } from '../Keypad'
@@ -16,6 +17,7 @@ export function RoundsTable({ session, onRow }: { session: Session; onRow?: (i: 
   const byId = Object.fromEntries(table.map((r) => [r.seat.id, r]))
   const cols = `2.75rem repeat(${session.seats.length}, minmax(4.25rem, 1fr))`
   const scored = session.rounds.length > 0 && session.seats.length > 1
+  const winner = session.rules.mode === 'winner'
 
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-2">
@@ -50,7 +52,7 @@ export function RoundsTable({ session, onRow }: { session: Session; onRow?: (i: 
               const v = r[s.id]
               return (
                 <span key={s.id} className={cx('text-center text-lg font-bold tabular-nums', v != null && v < 0 && 'text-danger')}>
-                  {v == null ? '·' : num(v)}
+                  {v == null ? '·' : winner ? (v ? (session.rules.lowWins ? '🔥' : '🏆') : '·') : num(v)}
                 </span>
               )
             })}
@@ -154,6 +156,23 @@ function RoundEntry({ session, scorer, index, onClose }: { session: Session; sco
           )
         })}
       </div>
+      {session.rules.zeroSum && everyone && (
+        <button
+          className="mb-2 flex w-full items-center gap-3 rounded-2xl bg-gold/12 px-3 py-2 text-left transition active:scale-[0.98]"
+          onClick={() => {
+            const others = seats.filter((s) => s.id !== seat.id).map((s) => parseKeypad(shown(s.id)) ?? 0)
+            setTyped((x) => ({ ...x, [seat.id]: String(zeroSumWinner(others)) }))
+          }}
+        >
+          <Trophy className="size-5 shrink-0 text-gold" />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-extrabold">
+              {t('roundWinner')}: {seat.name}
+            </span>
+            <span className="block text-xs text-ink/55 dark:text-white/55">{t('roundWinnerHint')}</span>
+          </span>
+        </button>
+      )}
       <Keypad value={shown(seat.id)} onChange={(v) => setTyped((x) => ({ ...x, [seat.id]: v }))} />
       <div className="mt-3 flex gap-3">
         {!last && (

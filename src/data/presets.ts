@@ -1,7 +1,10 @@
 import type { Category, GameDef, Text } from '../types'
 
-const cat = (id: string, en: string, pl: string, negative?: boolean): Category =>
-  negative ? { id, name: { en, pl }, negative } : { id, name: { en, pl } }
+const cat = (id: string, en: string, pl: string, opts: Omit<Category, 'id' | 'name'> = {}): Category => ({
+  id,
+  name: { en, pl },
+  ...opts,
+})
 
 type Preset = Omit<GameDef, 'updatedAt' | 'builtin'>
 
@@ -64,7 +67,7 @@ const PRESETS: Preset[] = [
     lowWins: false,
     categories: [
       cat('military', 'Military', 'Konflikty militarne'),
-      cat('coins', 'Treasury', 'Skarbiec'),
+      cat('coins', 'Treasury (coins)', 'Skarbiec (monety)', { div: 3 }),
       cat('wonder', 'Wonder', 'Cud'),
       cat('civil', 'Civilian (blue)', 'Budynki cywilne (niebieskie)'),
       cat('science', 'Science (green)', 'Nauka (zielone)'),
@@ -111,7 +114,7 @@ const PRESETS: Preset[] = [
     categories: [
       cat('routes', 'Routes', 'Trasy'),
       cat('tickets', 'Completed tickets', 'Zrealizowane bilety'),
-      cat('failed', 'Failed tickets', 'Niezrealizowane bilety', true),
+      cat('failed', 'Failed tickets', 'Niezrealizowane bilety', { negative: true }),
       cat('longest', 'Longest route bonus', 'Premia za najdłuższą trasę'),
     ],
   },
@@ -177,6 +180,141 @@ const PRESETS: Preset[] = [
     mode: 'rounds',
     lowWins: false,
     target: 1000,
+  },
+  {
+    id: 'builtin:6nimmt',
+    emoji: '🐮',
+    name: name('6 nimmt!', '6 bierze'),
+    mode: 'rounds',
+    lowWins: true,
+    target: 66,
+  },
+  {
+    id: 'builtin:lato-z-komarami',
+    emoji: '🦟',
+    name: name('Lato z komarami (L.L.A.M.A.)', 'Lato z komarami'),
+    mode: 'rounds',
+    lowWins: true,
+    target: 40,
+  },
+  {
+    id: 'builtin:rummikub',
+    emoji: '🔢',
+    name: name('Rummikub', 'Rummikub'),
+    mode: 'rounds',
+    lowWins: false,
+    zeroSum: true,
+  },
+  {
+    id: 'builtin:ttr-europe',
+    emoji: '🚄',
+    name: name('Ticket to Ride: Europe', 'Wsiąść do pociągu: Europa'),
+    mode: 'sheet',
+    lowWins: false,
+    categories: [
+      cat('routes', 'Routes', 'Trasy'),
+      cat('tickets', 'Completed tickets', 'Zrealizowane bilety'),
+      cat('failed', 'Failed tickets', 'Niezrealizowane bilety', { negative: true }),
+      cat('stations', 'Unused train stations', 'Niewykorzystane stacje', { per: 4 }),
+      cat('express', 'European Express bonus', 'Premia Ekspres Europejski'),
+    ],
+  },
+  {
+    id: 'builtin:dream-home',
+    emoji: '🏡',
+    name: name('Dream Home', 'Domek'),
+    mode: 'sheet',
+    lowWins: false,
+    categories: [
+      cat('rooms', 'Rooms', 'Pokoje'),
+      cat('decor', 'Decor', 'Dekoracje'),
+      cat('roof', 'Roof (with windows)', 'Dach (z oknami)'),
+      cat('function', 'Functional home bonuses', 'Premie za funkcjonalność'),
+    ],
+  },
+  {
+    id: 'builtin:coffee-rush',
+    emoji: '☕',
+    name: name('Coffee Rush', 'Szybka kawka'),
+    mode: 'sheet',
+    lowWins: false,
+    categories: [
+      cat('orders', 'Fulfilled orders', 'Zrealizowane zamówienia'),
+      cat('upgrades', 'Upgrade tiles', 'Kafelki ulepszeń', { per: 2 }),
+      cat('bad', 'Bad reviews', 'Złe opinie', { negative: true }),
+    ],
+  },
+  {
+    id: 'builtin:zuuupa',
+    emoji: '🍲',
+    name: name('Zuuupa!', 'Zuuupa!'),
+    mode: 'sheet',
+    lowWins: false,
+    // Enter how many cards of each vegetable you collected; a double card still counts once.
+    categories: [
+      cat('tomato', 'Tomatoes', 'Pomidory', { per: 3 }),
+      cat('cucumber', 'Cucumbers', 'Ogórki', { per: 4 }),
+      cat('beet', 'Beetroots', 'Buraki', { per: 5 }),
+      cat('pumpkin', 'Pumpkins', 'Dynie', { per: 6 }),
+      cat('mushroom', 'Mushrooms', 'Grzyby', { per: 7 }),
+    ],
+  },
+  {
+    id: 'builtin:cortex',
+    emoji: '🧠',
+    name: name('Cortex Challenge', 'Cortex'),
+    mode: 'counter',
+    lowWins: false,
+    target: 4,
+    steps: [1],
+  },
+  {
+    id: 'builtin:bug-hotel',
+    emoji: '🕸️',
+    name: name('Hotel pod Pajęczą Siecią', 'Hotel pod Pajęczą Siecią'),
+    mode: 'counter',
+    lowWins: false,
+    target: 6,
+    steps: [1],
+  },
+  {
+    id: 'builtin:killer-shrimp',
+    emoji: '🦐',
+    name: name('Mordercze krewetki', 'Mordercze krewetki'),
+    mode: 'counter',
+    lowWins: false,
+    target: 10,
+    steps: [1, 2, 3, 4],
+  },
+  {
+    id: 'builtin:bohnanza',
+    emoji: '🫘',
+    name: name('Bohnanza', 'Fasolki'),
+    mode: 'counter',
+    lowWins: false,
+    steps: [1, 2, 3, 4],
+  },
+  {
+    id: 'builtin:capybara',
+    emoji: '🍪',
+    name: name('Capybara Cookie Club', 'Kapibary herbaciary'),
+    mode: 'counter',
+    lowWins: false,
+    steps: [1, 2, 3, 5],
+  },
+  {
+    id: 'builtin:exploding-kittens',
+    emoji: '💣',
+    name: name('Exploding Kittens', 'Eksplodujące kotki'),
+    mode: 'winner',
+    lowWins: false,
+  },
+  {
+    id: 'builtin:hot-potato',
+    emoji: '🥔',
+    name: name('Hot Potato', 'Gorący ziemniak'),
+    mode: 'winner',
+    lowWins: true, // records who got burnt; fewest burns wins
   },
   {
     id: 'builtin:scrabble',

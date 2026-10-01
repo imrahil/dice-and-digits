@@ -200,14 +200,17 @@ export function Segmented<T extends string>({
   options,
   onChange,
   className,
+  grid,
 }: {
   value: T
   options: { value: T; label: ReactNode }[]
   onChange: (v: T) => void
   className?: string
+  /** Two columns instead of one row, for longer labels. */
+  grid?: boolean
 }) {
   return (
-    <div className={cx('flex rounded-2xl bg-ink/6 p-1 dark:bg-white/8', className)} role="radiogroup">
+    <div className={cx(grid ? 'grid grid-cols-2 gap-1' : 'flex', 'rounded-2xl bg-ink/6 p-1 dark:bg-white/8', className)} role="radiogroup">
       {options.map((o) => (
         <button
           key={o.value}

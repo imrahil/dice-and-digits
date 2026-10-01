@@ -16,6 +16,7 @@ import { QrShareSheet } from '../components/QrShare'
 import { CounterBoard } from '../components/play/CounterBoard'
 import { RoundsBoard } from '../components/play/RoundsBoard'
 import { SheetBoard } from '../components/play/SheetBoard'
+import { WinnerBoard } from '../components/play/WinnerBoard'
 import { Avatar, BottomBar, Button, Empty, IconButton, Page, Sheet, cx } from '../components/ui'
 import type { Session } from '../types'
 
@@ -78,8 +79,9 @@ function Board({ session }: { session: Session }) {
 
   const undo = () => {
     buzz()
-    updateSession(session.id, (s) => ({ ...s, log: s.log.slice(0, -1) }))
+    updateSession(session.id, (s) => (mode === 'winner' ? { ...s, rounds: s.rounds.slice(0, -1) } : { ...s, log: s.log.slice(0, -1) }))
   }
+  const canUndo = mode === 'winner' ? session.rounds.length > 0 : session.log.length > 0
 
   const goLive = async () => {
     setMenu(false)
@@ -131,8 +133,8 @@ function Board({ session }: { session: Session }) {
           <span className="px-1 text-sm font-bold text-ink/50 tabular-nums dark:text-white/50">
             {duration(now - session.startedAt)}
           </span>
-          {mode === 'counter' && (
-            <IconButton label={t('undo')} onClick={undo} disabled={!session.log.length} className="disabled:opacity-30">
+          {(mode === 'counter' || mode === 'winner') && (
+            <IconButton label={t('undo')} onClick={undo} disabled={!canUndo} className="disabled:opacity-30">
               <Undo2 className="size-5" />
             </IconButton>
           )}
@@ -162,6 +164,7 @@ function Board({ session }: { session: Session }) {
       {mode === 'counter' && <CounterBoard session={session} scorer={scorer} />}
       {mode === 'rounds' && <RoundsBoard session={session} scorer={scorer} entry={entry} setEntry={setEntry} />}
       {mode === 'sheet' && <SheetBoard session={session} scorer={scorer} />}
+      {mode === 'winner' && <WinnerBoard session={session} scorer={scorer} />}
 
       <BottomBar>
         {mode === 'rounds' ? (

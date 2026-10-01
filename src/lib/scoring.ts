@@ -1,21 +1,40 @@
-import type { Rules, Session, Standing } from '../types'
+import type { Category, Rules, Session, Standing } from '../types'
 
 type Scored = Pick<Session, 'rules' | 'seats' | 'rounds' | 'log' | 'sheet' | 'tieBreak'>
+
+/**
+ * Points for what was entered in one sheet cell. With `per`/`div` the entry is
+ * a count (3 upgrade tiles, 14 coins) and the app does the maths.
+ */
+export function cellPoints(c: Category, v: number): number {
+  const pts = c.div ? Math.floor(v / c.div) : v * (c.per ?? 1)
+  return c.negative ? -Math.abs(pts) : pts
+}
+
+/** Does entering a value in this category mean "a count", not "points"? */
+export const isCount = (c: Category) => Boolean((c.per && c.per !== 1) || c.div)
+
+function bonusBase(rules: Rules, sheet: Session['sheet'], playerId: string): number {
+  const cats = rules.categories ?? []
+  return (rules.bonus?.of ?? []).reduce((acc, id) => {
+    const c = cats.find((x) => x.id === id)
+    const v = sheet[id]?.[playerId]
+    return c && v != null ? acc + cellPoints(c, v) : acc
+  }, 0)
+}
 
 /** The bonus a player has earned on a score sheet (0 when not reached). */
 export function sheetBonus(rules: Rules, sheet: Session['sheet'], playerId: string): number {
   const b = rules.bonus
   if (!b) return 0
-  const sum = b.of.reduce((acc, c) => acc + (sheet[c]?.[playerId] ?? 0), 0)
-  return sum >= b.atLeast ? b.points : 0
+  return bonusBase(rules, sheet, playerId) >= b.atLeast ? b.points : 0
 }
 
 /** How far a player still is from the bonus threshold (0 = reached). */
 export function bonusMissing(rules: Rules, sheet: Session['sheet'], playerId: string): number {
   const b = rules.bonus
   if (!b) return 0
-  const sum = b.of.reduce((acc, c) => acc + (sheet[c]?.[playerId] ?? 0), 0)
-  return Math.max(0, b.atLeast - sum)
+  return Math.max(0, b.atLeast - bonusBase(rules, sheet, playerId))
 }
 
 export function playerTotal(s: Scored, playerId: string): number {
@@ -23,12 +42,13 @@ export function playerTotal(s: Scored, playerId: string): number {
     case 'counter':
       return s.log.reduce((acc, e) => (e.p === playerId ? acc + e.d : acc), 0)
     case 'rounds':
+    case 'winner': // a round won is stored as 1 for the winner
       return s.rounds.reduce((acc, r) => acc + (r[playerId] ?? 0), 0)
     case 'sheet': {
       let total = 0
       for (const c of s.rules.categories ?? []) {
-        const v = s.sheet[c.id]?.[playerId] ?? 0
-        total += c.negative ? -Math.abs(v) : v
+        const v = s.sheet[c.id]?.[playerId]
+        if (v != null) total += cellPoints(c, v)
       }
       return total + sheetBonus(s.rules, s.sheet, playerId)
     }
@@ -88,6 +108,7 @@ export function isEmpty(s: Scored): boolean {
     case 'counter':
       return s.log.length === 0
     case 'rounds':
+    case 'winner':
       return s.rounds.length === 0
     case 'sheet':
       return Object.values(s.sheet).every((row) => Object.keys(row).length === 0)

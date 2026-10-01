@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react'
 import { useI18n } from '../i18n'
-import { allGames } from '../lib/games'
+import { allGames, sortBuiltins } from '../lib/games'
 import { useStore } from '../lib/store'
 import { navigate } from '../hooks/useRoute'
 import { ModeBadge } from '../components/ModeBadge'
@@ -8,11 +8,11 @@ import { Card, IconButton, Page, Section } from '../components/ui'
 import type { GameDef } from '../types'
 
 export function Games() {
-  const { t, text } = useI18n()
+  const { t, text, locale } = useI18n()
   const custom = useStore((s) => s.games)
   const games = allGames(custom)
   const mine = games.filter((g) => !g.builtin)
-  const builtin = games.filter((g) => g.builtin)
+  const builtin = sortBuiltins(games.filter((g) => g.builtin), (g) => text(g.name), locale)
 
   const row = (g: GameDef) => (
     <Card key={g.id} onClick={() => navigate(`games/${encodeURIComponent(g.id)}`)} className="flex items-center gap-3 !p-3">

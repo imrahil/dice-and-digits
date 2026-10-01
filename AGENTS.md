@@ -33,8 +33,12 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
   `useSyncExternalStore`. Every write goes through `put()`, which stamps
   `updatedAt` and marks the doc **dirty** for sync.
 - **`src/lib/scoring.ts`** computes totals, standings and the tie-break for all
-  three modes (`counter` = tap log, `rounds` = array of per-round maps, `sheet`
-  = category × player). Screens never sum scores themselves.
+  four modes (`counter` = tap log, `rounds` = array of per-round maps, `sheet`
+  = category × player, `winner` = rounds holding a 1 for whoever won, or lost
+  when `lowWins`). Screens never sum scores themselves.
+- **Sheet cells store what was entered, not points.** A category with
+  `per`/`div` stores the count (3 tiles, 14 coins); `cellPoints()` turns it
+  into points. Don't pre-multiply when saving.
 - **`src/lib/ops.ts`**: every score change is an *op* (`add` / `cell` /
   `round`) applied by `applyOp()`. Boards take a `Scorer` (`src/lib/scorer.ts`:
   `canEdit(seat)` + `apply(ops)`), so the same UI serves the host (all seats,

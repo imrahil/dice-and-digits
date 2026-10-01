@@ -64,6 +64,8 @@ function BuiltinView({ game }: { game: GameDef }) {
                 <span className={cx('size-1.5 rounded-full', c.negative ? 'bg-danger' : 'bg-accent')} />
                 {text(c.name)}
                 {c.negative && <span className="text-danger">(−)</span>}
+                {c.per && c.per !== 1 && <span className="text-accent">×{c.per}</span>}
+                {c.div && <span className="text-accent">÷{c.div}</span>}
               </li>
             ))}
             {game.bonus && (
@@ -74,6 +76,8 @@ function BuiltinView({ game }: { game: GameDef }) {
             )}
           </ul>
         )}
+        {game.zeroSum && <p className="mt-3 text-sm font-semibold text-ink/60 dark:text-white/60">🏆 {t('zeroSumHint')}</p>}
+        {game.mode === 'winner' && <p className="mt-3 text-sm font-semibold text-ink/60 dark:text-white/60">{t('modeWinnerHint')}</p>}
         {game.steps && (
           <p className="mt-3 text-sm font-semibold text-ink/60 dark:text-white/60">
             {t('quickButtons')}: {game.steps.map((s) => `+${s}`).join(' ')}
@@ -121,6 +125,7 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
       steps: g.mode === 'counter' ? (steps.length ? steps : [1]) : undefined,
       categories: g.mode === 'sheet' ? validCats.map((c) => ({ ...c, name: text(c.name).trim() })) : undefined,
       bonus: g.mode === 'sheet' ? g.bonus : undefined,
+      zeroSum: g.mode === 'rounds' ? g.zeroSum : undefined,
     })
     goBack('games')
   }
@@ -135,8 +140,9 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
     { value: 'counter', label: t('modeCounter') },
     { value: 'rounds', label: t('modeRounds') },
     { value: 'sheet', label: t('modeSheet') },
+    { value: 'winner', label: t('modeWinner') },
   ]
-  const hint = { counter: t('modeCounterHint'), rounds: t('modeRoundsHint'), sheet: t('modeSheetHint') }[g.mode]
+  const hint = { counter: t('modeCounterHint'), rounds: t('modeRoundsHint'), sheet: t('modeSheetHint'), winner: t('modeWinnerHint') }[g.mode]
 
   return (
     <Page
@@ -168,7 +174,7 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
       </Section>
 
       <Section title={t('scoringMode')}>
-        <Segmented value={g.mode} onChange={(mode) => patch({ mode })} options={modes} />
+        <Segmented grid value={g.mode} onChange={(mode) => patch({ mode })} options={modes} />
         <p className="mt-2 px-1 text-sm text-ink/60 dark:text-white/60">{hint}</p>
       </Section>
 
@@ -184,6 +190,28 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
                   maxLength={40}
                   onChange={(e) => setCat(i, { name: e.target.value })}
                 />
+                {c.div ? (
+                  <span className="flex h-11 w-14 shrink-0 items-center justify-center rounded-xl text-sm font-black text-accent ring-1 ring-edge dark:ring-white/10">
+                    ÷{c.div}
+                  </span>
+                ) : (
+                  <label className="flex h-11 w-16 shrink-0 items-center rounded-xl pl-2 ring-1 ring-edge focus-within:ring-2 focus-within:ring-accent dark:ring-white/10" title={t('perItem')}>
+                    <span className="text-sm font-black text-ink/40 dark:text-white/40">×</span>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      aria-label={t('perItem')}
+                      className="w-full bg-transparent px-1 text-center font-bold outline-none"
+                      value={c.per ?? ''}
+                      placeholder="1"
+                      onChange={(e) => {
+                        const n = parseInt(e.target.value, 10)
+                        setCat(i, { per: Number.isFinite(n) && n > 1 ? n : undefined })
+                      }}
+                    />
+                  </label>
+                )}
                 <button
                   onClick={() => setCat(i, { negative: !c.negative })}
                   aria-pressed={!!c.negative}
@@ -216,6 +244,11 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
       <Section title={t('options')}>
         <Card className="!py-2">
           <Toggle checked={g.lowWins} onChange={(lowWins) => patch({ lowWins })} label={t('lowestWins')} />
+          {g.mode === 'rounds' && (
+            <div className="border-t border-edge dark:border-white/8">
+              <Toggle checked={!!g.zeroSum} onChange={(zeroSum) => patch({ zeroSum })} label={t('zeroSum')} hint={t('zeroSumHint')} />
+            </div>
+          )}
           <label className="flex items-center gap-3 border-t border-edge py-3 dark:border-white/8">
             <span className="flex-1 font-semibold">{t('targetScore')}</span>
             <input type="number" inputMode="numeric" min={1} className={cx(inputClass, '!w-28 text-right')} value={target} onChange={(e) => setTarget(e.target.value)} placeholder="—" />

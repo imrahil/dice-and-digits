@@ -192,7 +192,7 @@ export function Result({ id }: { id: string }) {
         </Card>
       </Section>
 
-      {session.rules.mode === 'rounds' && session.rounds.length > 0 && (
+      {(session.rules.mode === 'rounds' || session.rules.mode === 'winner') && session.rounds.length > 0 && (
         <Section title={i18n.tp('nRounds', session.rounds.length)}>
           <RoundsTable session={session} />
         </Section>

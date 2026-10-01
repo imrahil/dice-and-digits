@@ -63,6 +63,16 @@ export const en = {
   modeCounter: 'Counter',
   modeRounds: 'Rounds',
   modeSheet: 'Score sheet',
+  modeWinner: 'Winner only',
+  modeWinnerHint: 'No points: tap who won each round. With “lowest score wins” it counts who lost instead.',
+  whoWon: 'Who won this round?',
+  whoLost: 'Who lost this round?',
+  countsLosses: 'Counts who lost',
+  roundWinner: 'Round winner',
+  roundWinnerHint: 'Takes the sum of everyone else’s minus points',
+  zeroSum: 'Round winner takes the others’ minus points',
+  zeroSumHint: 'Like Rummikub: losers enter minus points, the winner gets their sum',
+  perItem: 'Points each',
   modeCounterHint: 'Tap +/− as points happen during the game.',
   modeRoundsHint: 'Enter everyone’s points after each round.',
   modeSheetHint: 'Fill in a category sheet at the end.',
@@ -254,7 +264,9 @@ export const en = {
   // plurals
   nGames: { one: '{n} game', other: '{n} games' } as Plural,
   nRounds: { one: '{n} round', other: '{n} rounds' } as Plural,
+  nPoints: { one: '{n} point', other: '{n} points' } as Plural,
   nWins: { one: '{n} win', other: '{n} wins' } as Plural,
+  nLosses: { one: '{n} loss', other: '{n} losses' } as Plural,
   nPhones: { one: '{n} phone connected', other: '{n} phones connected' } as Plural,
 }
 

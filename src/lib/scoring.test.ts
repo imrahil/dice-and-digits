@@ -53,6 +53,34 @@ describe('totals', () => {
   })
 })
 
+describe('category multipliers', () => {
+  const rules = {
+    mode: 'sheet' as const,
+    categories: [
+      { id: 'up', name: 'Upgrades', per: 2 },
+      { id: 'bad', name: 'Bad reviews', negative: true },
+      { id: 'coins', name: 'Coins', div: 3 },
+      { id: 'st', name: 'Stations', per: 4, negative: true },
+    ],
+  }
+  it('turns counts into points', () => {
+    const s = session(rules, { sheet: { up: { a: 3 }, bad: { a: 2 }, coins: { a: 14 }, st: { a: 1 } } })
+    // 3×2 − 2 + floor(14/3) − 4
+    expect(totals(s).a).toBe(6 - 2 + 4 - 4)
+  })
+  it('counts empty cells as nothing', () => {
+    expect(totals(session(rules)).a).toBe(0)
+  })
+})
+
+describe('winner mode', () => {
+  it('counts rounds won, and with lowWins the fewest losses wins', () => {
+    const rounds: Record<string, number>[] = [{ a: 1 }, { b: 1 }, { a: 1 }]
+    expect(totals(session({ mode: 'winner' }, { rounds }))).toEqual({ a: 2, b: 1, c: 0 })
+    expect(standings(session({ mode: 'winner', lowWins: true }, { rounds }))[0].seat.id).toBe('c')
+  })
+})
+
 describe('standings', () => {
   it('ranks high-wins with shared ranks for ties', () => {
     const s = session({}, { rounds: [{ a: 10, b: 10, c: 5 }] })

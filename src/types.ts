@@ -7,14 +7,20 @@ export type Text = string | { en: string; pl: string }
  * - counter: big +/- buttons per player, every tap is logged (Catan, Carcassonne)
  * - rounds:  a row of scores per round, running totals (Uno, Tysiąc, Rummy)
  * - sheet:   end-of-game score pad, one row per category (7 Wonders, Wingspan)
+ * - winner:  no points, just who won each round (Exploding Kittens); with
+ *            lowWins it records who *lost* instead (Hot Potato)
  */
-export type ScoringMode = 'counter' | 'rounds' | 'sheet'
+export type ScoringMode = 'counter' | 'rounds' | 'sheet' | 'winner'
 
 export type Category = {
   id: string
   name: Text
   /** Entered as a positive number, counted as minus (e.g. failed tickets). */
   negative?: boolean
+  /** What you enter is a count worth `per` points each (3 upgrades × 2). */
+  per?: number
+  /** What you enter is divided, rounded down (7 Wonders: 1 point per 3 coins). */
+  div?: number
 }
 
 /** "Score at least `atLeast` across `of` → +`points`" (Yahtzee upper section). */
@@ -36,6 +42,11 @@ export type Rules = {
   bonus?: Bonus
   /** Quick-add buttons for counter mode. */
   steps?: number[]
+  /**
+   * Rounds mode: one player per round takes the sum of everyone else's minus
+   * points (Rummikub). Adds a "winner takes the rest" button to round entry.
+   */
+  zeroSum?: boolean
 }
 
 /** Fields every synced document carries (last-write-wins on updatedAt). */

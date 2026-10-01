@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Check, Plus, Search, Shuffle, Sparkles, X } from 'lucide-react'
 import { PLAYER_COLORS } from '../data/presets'
 import { useI18n } from '../i18n'
-import { allGames, recentGameIds, startSession } from '../lib/games'
+import { allGames, recentGameIds, sortBuiltins, startSession } from '../lib/games'
 import { getState, savePlayer, uid, useStore } from '../lib/store'
 import { buzz } from '../lib/haptics'
 import { navigate } from '../hooks/useRoute'
@@ -18,7 +18,7 @@ export function NewGame({ gameId }: { gameId?: string }) {
 }
 
 function GamePicker() {
-  const { t, text } = useI18n()
+  const { t, text, locale } = useI18n()
   const custom = useStore((s) => s.games)
   const sessions = useStore((s) => s.sessions)
   const [q, setQ] = useState('')
@@ -33,7 +33,7 @@ function GamePicker() {
     .map((id) => games.find((g) => g.id === id))
     .filter((g): g is GameDef => !!g && match(g))
   const mine = games.filter((g) => !g.builtin && match(g))
-  const builtin = games.filter((g) => g.builtin && match(g))
+  const builtin = sortBuiltins(games.filter((g) => g.builtin && match(g)), (g) => text(g.name), locale)
 
   const row = (g: GameDef) => (
     <Card key={g.id} onClick={() => navigate(`new/${encodeURIComponent(g.id)}`, { replace: true })} className="flex items-center gap-3 !p-3">

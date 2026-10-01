@@ -6,18 +6,25 @@ Cloudflare Worker for shared groups and live scoreboards.
 
 ## Features
 
-**Scoring: three modes cover almost every game**
+**Scoring: four modes cover almost every game**
 
-| Mode            | How it works                                                   | Good for                                |
-| --------------- | -------------------------------------------------------------- | --------------------------------------- |
-| **Counter**     | Big `+`/`−` buttons per player, quick steps, every tap logged  | Catan, Carcassonne, Splendor            |
-| **Rounds**      | Enter everyone's points after each round; edit any past round  | Tysiąc, Uno, Scrabble, Rummy            |
-| **Score sheet** | Category × player pad filled in at the end, with auto bonuses  | 7 Wonders, Wingspan, Yahtzee, Cascadia  |
+| Mode            | How it works                                                   | Good for                                     |
+| --------------- | -------------------------------------------------------------- | -------------------------------------------- |
+| **Counter**     | Big `+`/`−` buttons per player, quick steps, every tap logged  | Catan, Splendor, Cortex, Mordercze krewetki  |
+| **Rounds**      | Enter everyone's points after each round; edit any past round  | Tysiąc, 6 bierze, Lato z komarami, Rummikub  |
+| **Score sheet** | Category × player pad filled in at the end, with auto bonuses  | 7 Wonders, Domek, Szybka kawka, Zuuupa!      |
+| **Winner only** | No points: tap who won the round (or who lost it)              | Eksplodujące kotki, Gorący ziemniak          |
 
-- **14 built-in games** with their real score categories (7 Cudów Świata, Na
-  skrzydłach, Terraformacja Marsa, Wsiąść do pociągu, Tysiąc, Yahtzee with the
-  upper-section +35 bonus, …), plus **your own games** with custom categories,
-  "counts as minus" categories, quick buttons, a target score and lowest-wins.
+- **28 built-in games** with their real scoring: 7 Cudów Świata, Na
+  skrzydłach, Terraformacja Marsa, Wsiąść do pociągu (+ Europa with stations),
+  Tysiąc, 6 bierze, Rummikub, Domek, Szybka kawka, Zuuupa!, Yahtzee with the
+  upper-section +35 bonus, and more. Plus **your own games** with custom
+  categories, quick buttons, a target score and lowest-wins.
+- **Count, don't calculate**: a category can be worth ×n per item (3 upgrade
+  tiles ×2, unused stations ×4, Zuuupa! vegetables ×3…×7) or ÷n (7 Wonders:
+  1 point per 3 coins). You enter what's on the table; the app does the maths.
+- **Zero-sum rounds** (Rummikub): losers enter their minus points, one tap gives
+  the round's winner their sum.
 - **Own number pad**, because the iOS numeric keyboard has no minus key and
   negative scores are routine (Tysiąc, failed tickets).
 - Leader crown, a target-reached banner, undo, a per-tap history, and a

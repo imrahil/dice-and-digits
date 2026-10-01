@@ -2,6 +2,18 @@ import { BUILTIN_GAMES } from '../data/presets'
 import type { GameDef, Player, Session } from '../types'
 import { getState, saveSession, uid, useStore, type State } from './store'
 
+const GENERIC = ['builtin:counter', 'builtin:rounds']
+
+/** Built-ins for a list: the generic counter and rounds first, the rest A–Z in the current language. */
+export function sortBuiltins(games: GameDef[], label: (g: GameDef) => string, locale: string): GameDef[] {
+  return [...games].sort((a, b) => {
+    const ga = GENERIC.indexOf(a.id)
+    const gb = GENERIC.indexOf(b.id)
+    if (ga !== -1 || gb !== -1) return (ga === -1 ? 99 : ga) - (gb === -1 ? 99 : gb)
+    return label(a).localeCompare(label(b), locale)
+  })
+}
+
 /** Built-ins plus the user's own games (custom ones first). */
 export function allGames(custom: State['games']): GameDef[] {
   const mine = Object.values(custom)
@@ -50,6 +62,7 @@ export function startSession(game: GameDef, players: Player[], opts: { lowWins: 
       categories: game.categories,
       bonus: game.bonus,
       steps: game.steps,
+      zeroSum: game.zeroSum,
     },
     seats: players.map((p) => ({ id: p.id, name: p.name, color: p.color })),
     rounds: [],

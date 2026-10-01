@@ -37,8 +37,9 @@ export function applyOp(s: Session, op: OpBody & { at?: number }): Session | nul
       // Rounds are numbered in real life, so an index means "round N" for
       // everyone: a player's score and the host's entry for the same round
       // land in the same row. The next new round is the only gap allowed.
-      if (s.rules.mode !== 'rounds' || !Number.isInteger(op.index) || op.index < 0 || op.index > s.rounds.length) return null
+      if ((s.rules.mode !== 'rounds' && s.rules.mode !== 'winner') || !Number.isInteger(op.index) || op.index < 0 || op.index > s.rounds.length) return null
       if (!Number.isFinite(op.v)) return null
+      if (s.rules.mode === 'winner' && op.v !== 0 && op.v !== 1) return null // a round is won or not
       const rounds = [...s.rounds]
       rounds[op.index] = { ...(rounds[op.index] ?? {}), [op.p]: op.v }
       return { ...s, rounds }
@@ -73,6 +74,12 @@ export function nextRoundFor(s: Session, p: string): number {
   const gap = s.rounds.findIndex((r) => r[p] == null)
   return gap === -1 ? s.rounds.length : gap
 }
+
+/**
+ * Rummikub-style round: the winner scores the others' penalties as plus.
+ * `others` are the other players' entries for this round.
+ */
+export const zeroSumWinner = (others: number[]) => 0 - others.reduce((a, b) => a + b, 0)
 
 /** The round the host's "Add round" opens: the first incomplete one, else a new one. */
 export function nextRound(s: Session): number {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Rules, Session } from '../types'
-import { applyOp, applyRemote, nextRound, nextRoundFor, type Op } from './ops'
+import { applyOp, applyRemote, nextRound, nextRoundFor, zeroSumWinner, type Op } from './ops'
 import { totals } from './scoring'
 
 const seats = [
@@ -49,6 +49,21 @@ describe('applyOp', () => {
     expect(applyOp(make({ mode: 'rounds' }), { kind: 'add', p: 'a', d: 1 })).toBeNull()
     expect(applyOp(make({}), { kind: 'add', p: 'zz', d: 1 })).toBeNull()
     expect(applyOp(make({}, { finishedAt: 1 }), { kind: 'add', p: 'a', d: 1 })).toBeNull()
+  })
+})
+
+describe('winner mode ops', () => {
+  it('a new round with the winner, and only 0/1 values', () => {
+    const s = applyOp(make({ mode: 'winner' }), { kind: 'round', p: 'b', index: 0, v: 1 })!
+    expect(s.rounds).toEqual([{ b: 1 }])
+    expect(applyOp(s, { kind: 'round', p: 'a', index: 1, v: 5 })).toBeNull()
+  })
+})
+
+describe('zeroSumWinner', () => {
+  it('gives the winner the others’ penalties as plus', () => {
+    expect(zeroSumWinner([-12, -7, -3])).toBe(22)
+    expect(zeroSumWinner([])).toBe(0)
   })
 })
 

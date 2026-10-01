@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { ArrowDown, Check, Crown } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { buzz } from '../../lib/haptics'
-import { bonusMissing, sheetBonus, standings } from '../../lib/scoring'
+import { bonusMissing, cellPoints, isCount, sheetBonus, standings } from '../../lib/scoring'
 import type { Scorer } from '../../lib/scorer'
-import type { Session } from '../../types'
+import type { Category, Session } from '../../types'
 import { Keypad, KeypadDisplay, parseKeypad } from '../Keypad'
 import { Avatar, Button, Sheet, cx } from '../ui'
 
@@ -54,9 +54,10 @@ export function SheetTable({
         {cats.map((c, ci) => (
           <div key={c.id}>
             <div className="grid border-b border-edge/70 dark:border-white/5" style={{ gridTemplateColumns: cols }}>
-              <span className="flex items-center py-2 pr-1 pl-3 text-[13px] leading-tight font-bold">
+              <span className="flex flex-wrap items-center gap-x-1 py-2 pr-1 pl-3 text-[13px] leading-tight font-bold">
                 {text(c.name)}
-                {c.negative && <span className="ml-1 text-danger">−</span>}
+                {c.negative && <span className="text-danger">−</span>}
+                {isCount(c) && <RateBadge c={c} />}
               </span>
               {session.seats.map((s, si) => {
                 const v = session.sheet[c.id]?.[s.id]
@@ -74,7 +75,19 @@ export function SheetTable({
                       c.negative && v ? 'text-danger' : '',
                     )}
                   >
-                    {v == null ? <span className="text-ink/20 dark:text-white/20">–</span> : num(c.negative ? -Math.abs(v) : v)}
+                    {v == null ? (
+                      <span className="text-ink/20 dark:text-white/20">–</span>
+                    ) : (
+                      <>
+                        {num(cellPoints(c, v))}
+                        {isCount(c) && (
+                          <span className="block text-[10px] leading-none font-bold text-ink/45 dark:text-white/45">
+                            {num(v)}
+                            {rate(c)}
+                          </span>
+                        )}
+                      </>
+                    )}
                   </button>
                 )
               })}
@@ -121,8 +134,15 @@ export function SheetTable({
   )
 }
 
+/** "×4" for counts worth 4 points each, "÷3" for 1 point per 3. */
+const rate = (c: Category) => (c.div ? `÷${c.div}` : `×${c.per}`)
+
+function RateBadge({ c }: { c: Category }) {
+  return <span className="rounded-md bg-accent/12 px-1 text-[11px] font-black text-accent tabular-nums">{rate(c)}</span>
+}
+
 export function SheetBoard({ session, scorer }: { session: Session; scorer: Scorer }) {
-  const { t, text } = useI18n()
+  const { t, tp, text } = useI18n()
   const cats = session.rules.categories ?? []
   const [cell, setCell] = useState<Cell | null>(null)
   const [value, setValue] = useState('')
@@ -175,7 +195,13 @@ export function SheetBoard({ session, scorer }: { session: Session; scorer: Scor
         }
       >
         <KeypadDisplay value={value} prefix={cat ? text(cat.name) + (cat.negative ? ' (−)' : '') : ''} />
-        <Keypad value={value} onChange={setValue} allowNegative={!cat?.negative} />
+        {cat && isCount(cat) && (
+          <p className="-mt-1 mb-3 flex items-center justify-end gap-2 px-1 text-sm font-bold text-ink/60 dark:text-white/60">
+            <RateBadge c={cat} />
+            <span className="tabular-nums">= {tp('nPoints', cellPoints(cat, parseKeypad(value) ?? 0))}</span>
+          </p>
+        )}
+        <Keypad value={value} onChange={setValue} allowNegative={!cat?.negative && !(cat && isCount(cat))} />
         <div className="mt-3 flex gap-3">
           {next && (
             <Button size="lg" className="flex-1" onClick={() => commit(false)}>

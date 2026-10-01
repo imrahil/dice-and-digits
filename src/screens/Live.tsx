@@ -10,6 +10,7 @@ import { toast } from '../components/dialogs'
 import { CounterBoard } from '../components/play/CounterBoard'
 import { RoundsBoard, RoundsTable } from '../components/play/RoundsBoard'
 import { SheetBoard, SheetTable } from '../components/play/SheetBoard'
+import { WinnerBoard } from '../components/play/WinnerBoard'
 import { Avatar, BottomBar, Button, Card, Empty, Page, Section, cx } from '../components/ui'
 import type { Session } from '../types'
 import { Podium } from './Result'
@@ -201,6 +202,8 @@ function GuestBoard({
       return <RoundsBoard session={session} scorer={room.scorer} entry={entry} setEntry={setEntry} />
     case 'sheet':
       return <SheetBoard session={session} scorer={room.scorer} />
+    case 'winner':
+      return <WinnerBoard session={session} scorer={room.scorer} />
   }
 }
 
@@ -229,7 +232,7 @@ function Leaderboard({ session }: { session: Session }) {
 
 function Tables({ session }: { session: Session }) {
   const { t } = useI18n()
-  if (session.rules.mode === 'rounds' && session.rounds.length > 0) {
+  if ((session.rules.mode === 'rounds' || session.rules.mode === 'winner') && session.rounds.length > 0) {
     return (
       <Section title={t('modeRounds')}>
         <RoundsTable session={session} />
