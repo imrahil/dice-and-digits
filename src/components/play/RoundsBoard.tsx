@@ -21,7 +21,7 @@ export function RoundsTable({ session, onRow }: { session: Session; onRow?: (i: 
 
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-2">
-      <div className="min-w-fit overflow-hidden rounded-3xl bg-card ring-1 ring-edge dark:bg-slate dark:ring-white/8">
+      <div className="surface min-w-fit overflow-hidden rounded-3xl">
         <div className="grid border-b border-edge dark:border-white/8" style={{ gridTemplateColumns: cols }}>
           <span />
           {session.seats.map((s) => {
@@ -34,7 +34,7 @@ export function RoundsTable({ session, onRow }: { session: Session; onRow?: (i: 
                   {lead && <Crown className="absolute -top-2.5 -right-2 size-4 rotate-12 text-gold" fill="currentColor" />}
                 </span>
                 <span className="w-full truncate text-center text-xs font-bold">{s.name}</span>
-                <span className="text-2xl font-black tabular-nums">{num(byId[s.id].total)}</span>
+                <span className="display text-2xl font-black tabular-nums">{num(byId[s.id].total)}</span>
               </div>
             )
           })}
@@ -157,7 +157,7 @@ function RoundEntry({ session, scorer, index, onClose }: { session: Session; sco
             >
               <Avatar name={s.name} color={s.color} size="sm" />
               <span className="min-w-0 flex-1 truncate text-sm font-bold">{s.name}</span>
-              <span className={cx('text-xl font-black tabular-nums', v === '' && 'text-ink/25 dark:text-white/25', v.startsWith('-') && 'text-danger')}>
+              <span className={cx('display text-xl font-black tabular-nums', v === '' && 'text-ink/25 dark:text-white/25', v.startsWith('-') && 'text-danger')}>
                 {v || '0'}
               </span>
             </button>

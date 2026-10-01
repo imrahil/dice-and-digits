@@ -174,8 +174,8 @@ function SeatPicker({ session, room }: { session: Session; room: RoomView }) {
               disabled={taken || !ready}
               onClick={() => room.claim(seat.id)}
               className={cx(
-                'flex h-14 items-center gap-2 rounded-2xl px-2 text-left ring-1 transition active:scale-95 disabled:active:scale-100',
-                taken ? 'opacity-45 ring-edge dark:ring-white/8' : 'bg-paper ring-edge dark:bg-night dark:ring-white/10',
+                'flex h-14 items-center gap-2 rounded-2xl px-2 text-left',
+                taken ? 'surface-flat opacity-45' : 'surface press',
               )}
             >
               <Avatar name={seat.name} color={seat.color} size="sm" />
@@ -236,7 +236,7 @@ function Leaderboard({ session }: { session: Session }) {
               {r.seat.name}
               {r.rank === 1 && anyScore && <Crown className="size-4 shrink-0 text-gold" fill="currentColor" />}
             </span>
-            <span className="text-3xl font-black tabular-nums">{num(r.total)}</span>
+            <span className="display text-3xl font-black tabular-nums">{num(r.total)}</span>
           </div>
         ))}
       </Card>

@@ -70,18 +70,15 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
           return (
             <div
               key={seat.id}
-              className={cx(
-                'relative overflow-hidden rounded-3xl bg-card p-3 ring-1 transition dark:bg-slate',
-                lead ? 'ring-2 ring-gold' : 'ring-edge dark:ring-white/8',
-              )}
+              className={cx('surface relative rounded-3xl p-3 transition', lead && '!bg-gold/20 dark:!bg-gold/12')}
+              style={{ backgroundImage: `linear-gradient(105deg, color-mix(in oklab, ${seat.color} 24%, transparent), transparent 60%)` }}
             >
-              <span className="absolute inset-y-0 left-0 w-1.5" style={{ backgroundColor: seat.color }} />
-              <div className="flex items-center gap-3 pl-1.5">
+              <div className="flex items-center gap-3">
                 <Avatar name={seat.name} color={seat.color} />
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5 truncate text-lg font-extrabold">
+                  <span className="display flex items-center gap-1.5 truncate text-lg font-extrabold">
                     {seat.name}
-                    {lead && <Crown className="size-4 shrink-0 text-gold" fill="currentColor" aria-label={t('leader')} />}
+                    {lead && <Crown className="size-5 shrink-0 rotate-12 text-gold drop-shadow-[1px_1px_0_var(--line)]" fill="currentColor" aria-label={t('leader')} />}
                   </span>
                 </span>
                 <span className="relative">
@@ -89,8 +86,8 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
                     <span
                       key={b.key}
                       className={cx(
-                        'absolute -top-1 right-full mr-2 animate-pop rounded-full px-2 py-0.5 text-sm font-black tabular-nums',
-                        b.sum >= 0 ? 'bg-mint/15 text-mint' : 'bg-danger/15 text-danger',
+                        'surface-flat absolute -top-1 right-full mr-2 -rotate-6 animate-pop rounded-full px-2 py-0.5 text-sm font-black text-white tabular-nums',
+                        b.sum >= 0 ? '!bg-mint' : '!bg-danger',
                       )}
                     >
                       {b.sum > 0 ? '+' : ''}
@@ -104,18 +101,18 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
                       setPad(seat)
                     }}
                     aria-label={t('customAmount')}
-                    className="min-w-16 rounded-2xl px-2 text-right text-4xl font-black tabular-nums active:bg-ink/5 dark:active:bg-white/5"
+                    className="display min-w-16 rounded-2xl px-2 text-right text-5xl font-black tabular-nums active:bg-ink/5 dark:active:bg-white/5"
                   >
                     {num(row.total)}
                   </button>
                 </span>
               </div>
               {editable && (
-                <div className="mt-3 flex gap-2 pl-1.5">
+                <div className="mt-3 flex gap-2">
                   <button
                     onClick={() => add(seat.id, -steps[0])}
                     aria-label={`−${steps[0]}`}
-                    className="flex h-12 w-14 shrink-0 items-center justify-center rounded-2xl bg-ink/6 text-ink/70 transition active:scale-90 dark:bg-white/8 dark:text-white/70"
+                    className="surface-flat press flex h-12 w-14 shrink-0 items-center justify-center rounded-2xl text-ink/70 dark:text-white/70"
                   >
                     <Minus className="size-6" strokeWidth={3} />
                   </button>
@@ -124,10 +121,10 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
                       key={st}
                       onClick={() => add(seat.id, st)}
                       className={cx(
-                        'flex h-12 flex-1 items-center justify-center gap-0.5 rounded-2xl text-lg font-black tabular-nums transition active:scale-90',
-                        i === 0 ? 'text-white' : 'bg-ink/6 dark:bg-white/8',
+                        'surface-flat press display flex h-12 flex-1 items-center justify-center gap-0.5 rounded-2xl text-lg font-black tabular-nums',
+                        i === 0 && 'text-white [text-shadow:0_1px_0_rgb(0_0_0/0.25)]',
                       )}
-                      style={i === 0 ? { backgroundColor: seat.color } : undefined}
+                      style={i === 0 ? { background: seat.color } : undefined}
                     >
                       {i === 0 ? <Plus className="size-6" strokeWidth={3} /> : `+${st}`}
                       {i === 0 && st !== 1 && st}
@@ -141,7 +138,7 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
       </div>
 
       {session.log.length > 0 && (
-        <details className="mt-5 rounded-3xl bg-card p-4 ring-1 ring-edge dark:bg-slate dark:ring-white/8">
+        <details className="surface mt-5 rounded-3xl p-4">
           <summary className="cursor-pointer font-extrabold">
             {t('history')} <span className="font-semibold text-ink/50 dark:text-white/50">({session.log.length})</span>
           </summary>

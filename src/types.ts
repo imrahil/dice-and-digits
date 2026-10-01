@@ -104,9 +104,13 @@ export type Standing = {
 
 export type Theme = 'auto' | 'light' | 'dark'
 
+/** Visual skin; each one is a block of CSS variables in src/index.css. */
+export type Skin = 'arcade' | 'bubble' | 'classic'
+
 export type Settings = {
   lang: Lang
   theme: Theme
+  skin: Skin
   keepAwake: boolean
   haptics: boolean
 }

@@ -179,7 +179,7 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
             <button
               key={e}
               onClick={() => patch({ emoji: e })}
-              className={cx('flex aspect-square items-center justify-center rounded-xl text-2xl transition', g.emoji === e ? 'bg-accent/15 ring-2 ring-accent' : 'bg-card ring-1 ring-edge dark:bg-slate dark:ring-white/8')}
+              className={cx('flex aspect-square items-center justify-center rounded-xl text-2xl transition', g.emoji === e ? 'bg-accent/15 ring-2 ring-accent' : 'surface-flat')}
             >
               {e}
             </button>

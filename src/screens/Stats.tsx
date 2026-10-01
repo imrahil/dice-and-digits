@@ -8,7 +8,7 @@ import { Avatar, Card, Empty, Page, Section, cx } from '../components/ui'
 function Tile({ label, value }: { label: string; value: string }) {
   return (
     <Card className="!p-3">
-      <span className="block text-2xl font-black tabular-nums">{value}</span>
+      <span className="block display text-2xl font-black tabular-nums">{value}</span>
       <span className="block text-xs font-bold text-ink/55 dark:text-white/55">{label}</span>
     </Card>
   )
@@ -86,11 +86,11 @@ export function Stats() {
             ) : (
               <>
                 <div className="mt-4 flex items-end justify-between">
-                  <span className="text-3xl font-black tabular-nums">{num(h2h.aAhead)}</span>
+                  <span className="display text-3xl font-black tabular-nums">{num(h2h.aAhead)}</span>
                   <span className="pb-1 text-xs font-bold text-ink/55 dark:text-white/55">
                     {tp('nGames', h2h.games)} · {t('draws')}: {num(h2h.draws)}
                   </span>
-                  <span className="text-3xl font-black tabular-nums">{num(h2h.bAhead)}</span>
+                  <span className="display text-3xl font-black tabular-nums">{num(h2h.bAhead)}</span>
                 </div>
                 <div className="mt-2 flex h-2.5 gap-0.5 overflow-hidden rounded-full">
                   {h2h.aAhead > 0 && <span style={{ flex: h2h.aAhead, backgroundColor: pa.color }} className="rounded-l-full" />}
@@ -108,7 +108,7 @@ export function Stats() {
           {games.map((g) => (
             <Card key={g.gameId} className="!p-3">
               <div className="flex items-center gap-3">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-paper text-2xl dark:bg-night">{g.emoji}</span>
+                <span className="flex size-11 shrink-0 items-center justify-center emoji-tile rounded-2xl text-2xl">{g.emoji}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-extrabold">{text(g.name)}</span>
                   <span className="block text-xs font-semibold text-ink/55 dark:text-white/55">

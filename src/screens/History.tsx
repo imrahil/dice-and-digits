@@ -55,10 +55,8 @@ export function History() {
                     key={g.gameId}
                     onClick={() => setFilter(g.gameId)}
                     className={cx(
-                      'shrink-0 rounded-full px-3.5 py-1.5 text-sm font-bold whitespace-nowrap ring-1 transition',
-                      filter === g.gameId
-                        ? 'bg-ink text-white ring-ink dark:bg-white dark:text-ink dark:ring-white'
-                        : 'bg-card ring-edge dark:bg-slate dark:ring-white/10',
+                      'shrink-0 rounded-full px-3.5 py-1.5 text-sm font-bold whitespace-nowrap transition active:scale-95',
+                      filter === g.gameId ? 'chip-on' : 'surface-flat',
                     )}
                   >
                     {g.emoji} {g.name}

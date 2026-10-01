@@ -1,4 +1,7 @@
-/** The app mark: a red die and a tally-mark score card. Same drawing as public/icons/icon.svg. */
+/**
+ * The app mark: a die and a tally-mark score card. Same drawing as
+ * public/icons/icon.svg; in the app the die takes the skin's accent (red in Classic).
+ */
 export function Logo({ className }: { className?: string }) {
   return (
     <svg viewBox="64 64 384 384" className={className} aria-hidden>
@@ -11,8 +14,8 @@ export function LogoShapes() {
   return (
     <>
       <g transform="rotate(-10 205 215)">
-        <rect x="90" y="100" width="230" height="230" rx="52" fill="#c4431e" />
-        <rect x="90" y="92" width="230" height="230" rx="52" fill="#e4572e" />
+        <rect x="90" y="100" width="230" height="230" rx="52" style={{ fill: 'var(--color-accent-dark, #c4431e)' }} />
+        <rect x="90" y="92" width="230" height="230" rx="52" style={{ fill: 'var(--color-accent, #e4572e)' }} />
         <circle cx="150" cy="152" r="22" fill="#fff" />
         <circle cx="205" cy="207" r="22" fill="#fff" />
         <circle cx="260" cy="262" r="22" fill="#fff" />

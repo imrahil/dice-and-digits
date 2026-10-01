@@ -48,6 +48,7 @@ function write(key: string, value: unknown) {
 const defaultSettings = (): Settings => ({
   lang: detectLang(),
   theme: 'auto',
+  skin: 'arcade',
   keepAwake: true,
   haptics: true,
 })

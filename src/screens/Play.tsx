@@ -270,7 +270,7 @@ function JoinedSeats({ session, room, onStop }: { session: Session; room: HostRo
           const joined = room.seats[s.id]
 
           return (
-            <div key={s.id} className="flex items-center gap-3 rounded-2xl bg-card px-2 py-1.5 ring-1 ring-edge dark:bg-night dark:ring-white/8">
+            <div key={s.id} className="surface-flat flex items-center gap-3 rounded-2xl px-2 py-1.5">
               <Avatar name={s.name} color={s.color} size="sm" />
               <span className="min-w-0 flex-1 truncate font-bold">{s.name}</span>
               {joined ? (

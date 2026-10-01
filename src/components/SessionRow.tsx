@@ -13,7 +13,7 @@ export function SessionRow({ session, onClick }: { session: Session; onClick: ()
 
   return (
     <Card onClick={onClick} className="flex items-center gap-3 !p-3">
-      <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-paper text-2xl dark:bg-night">
+      <span className="flex size-12 shrink-0 items-center justify-center emoji-tile rounded-2xl text-2xl">
         {session.emoji}
       </span>
       <span className="min-w-0 flex-1">
@@ -37,7 +37,7 @@ export function SessionRow({ session, onClick }: { session: Session; onClick: ()
       {top[0] && (
         <span className="flex shrink-0 flex-col items-end">
           <Crown className="size-4 text-gold" fill="currentColor" />
-          <span className="text-xl font-black tabular-nums">{num(top[0].total)}</span>
+          <span className="display text-xl font-black tabular-nums">{num(top[0].total)}</span>
         </span>
       )}
     </Card>

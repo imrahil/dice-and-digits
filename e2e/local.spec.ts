@@ -69,10 +69,10 @@ test('score sheet with multipliers: Szybka kawka counts tiles ×2', async ({ pag
 
   await emptyCells(page).first().click()
   await press(page, '5')
-  await dialog(page).locator('button.bg-accent').click() // ↓ next category
+  await dialog(page).locator('button.btn-cta').click() // ↓ next category
   await press(page, '3')
   await expect(dialog(page)).toContainText('= 6 punktów')
-  await dialog(page).locator('button.bg-accent').click()
+  await dialog(page).locator('button.btn-cta').click()
   await press(page, '2')
   await dialog(page).getByRole('button', { name: /Gotowe/ }).click()
 

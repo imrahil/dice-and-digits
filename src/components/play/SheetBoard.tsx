@@ -34,7 +34,7 @@ export function SheetTable({
 
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-2">
-      <div className="min-w-fit overflow-hidden rounded-3xl bg-card ring-1 ring-edge dark:bg-slate dark:ring-white/8">
+      <div className="surface min-w-fit overflow-hidden rounded-3xl">
         <div className="grid border-b border-edge dark:border-white/8" style={{ gridTemplateColumns: cols }}>
           <span />
           {session.seats.map((s) => {
@@ -127,7 +127,7 @@ export function SheetTable({
         <div className="grid bg-ink/4 dark:bg-white/4" style={{ gridTemplateColumns: cols }}>
           <span className="flex items-center py-3 pl-3 text-sm font-black uppercase tracking-wide">{t('total')}</span>
           {session.seats.map((s) => (
-            <span key={s.id} className="py-2 text-center text-2xl font-black tabular-nums">
+            <span key={s.id} className="py-2 text-center display text-2xl font-black tabular-nums">
               {num(byId[s.id].total)}
             </span>
           ))}

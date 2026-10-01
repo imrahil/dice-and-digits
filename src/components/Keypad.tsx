@@ -43,8 +43,8 @@ export function Keypad({ value, onChange, allowNegative = true }: { value: strin
             onClick={() => press(k)}
             aria-label={k === 'back' ? 'Backspace' : k === 'sign' ? '±' : k}
             className={cx(
-              'flex h-14 items-center justify-center rounded-2xl text-2xl font-extrabold transition active:scale-95 active:bg-ink/10 dark:active:bg-white/15',
-              k === 'back' || k === 'sign' ? 'bg-ink/5 text-ink/70 dark:bg-white/6 dark:text-white/70' : 'bg-card ring-1 ring-edge dark:bg-night dark:ring-white/8',
+              'display flex h-14 items-center justify-center rounded-2xl text-2xl font-extrabold',
+              k === 'back' || k === 'sign' ? 'surface press !bg-accent/15 text-accent' : 'surface press',
             )}
           >
             {k === 'back' ? <Delete className="size-6" /> : k === 'sign' ? '±' : k}
@@ -68,9 +68,9 @@ export const parseKeypad = (v: string): number | null => {
 /** The big read-out above the pad. */
 export function KeypadDisplay({ value, prefix, placeholder = '0' }: { value: string; prefix?: string; placeholder?: string }) {
   return (
-    <div className="mb-3 flex h-16 items-center justify-end rounded-2xl bg-ink/5 px-4 text-4xl font-black tabular-nums dark:bg-white/6">
-      {prefix && <span className="mr-auto text-lg font-bold text-ink/50 dark:text-white/50">{prefix}</span>}
-      {value ? value : <span className="text-ink/25 dark:text-white/25">{placeholder}</span>}
+    <div className="display mb-3 flex h-16 items-center justify-end rounded-2xl border-[length:var(--bw)] border-(--line) bg-ink px-4 text-4xl font-black text-candy-e tabular-nums shadow-[inset_0_2px_10px_rgb(0_0_0/0.5)] [text-shadow:0_0_14px_color-mix(in_oklab,var(--color-candy-e)_55%,transparent)] dark:bg-black/60">
+      {prefix && <span className="mr-auto text-lg font-bold text-white/55 [text-shadow:none]">{prefix}</span>}
+      {value ? value : <span className="text-white/25 [text-shadow:none]">{placeholder}</span>}
     </div>
   )
 }

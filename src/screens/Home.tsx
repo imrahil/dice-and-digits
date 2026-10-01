@@ -22,6 +22,9 @@ const STARTERS = [
   'builtin:7wonders',
 ]
 
+/** Quick-start tiles cycle through the skin's candy colours. */
+const CANDY = ['!bg-candy-a', '!bg-candy-b', '!bg-candy-c', '!bg-candy-d', '!bg-candy-e']
+
 export function Home() {
   const { t, text } = useI18n()
   const sessions = useStore((s) => s.sessions)
@@ -38,16 +41,16 @@ export function Home() {
 
   return (
     <Page>
-      <div className="flex items-center gap-3 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-2">
-        <Logo className="size-12" />
-        <div>
-          <h1 className="text-2xl leading-tight font-black tracking-tight">{t('appName')}</h1>
-          <p className="text-sm text-ink/60 dark:text-white/60">{t('tagline')}</p>
+      <div className="flex items-center gap-3 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-2">
+        <Logo className="size-16 shrink-0 -rotate-6" />
+        <div className="min-w-0">
+          <h1 className="text-[34px] leading-[0.95] font-extrabold">{t('appName')}</h1>
+          <p className="chip-on mt-2 inline-block -rotate-2 rounded-full px-3 py-0.5 text-sm font-bold">{t('tagline')}</p>
         </div>
       </div>
 
-      <Button variant="primary" size="lg" className="mt-5 w-full" onClick={() => navigate('new')}>
-        <Plus className="size-6" strokeWidth={3} />
+      <Button variant="primary" size="lg" className="mt-6 h-16 w-full !rounded-3xl !text-xl" onClick={() => navigate('new')}>
+        <Plus className="size-7" strokeWidth={3} />
         {t('newGame')}
       </Button>
       {cloudEnabled && (
@@ -68,14 +71,18 @@ export function Home() {
       )}
 
       <Section title={recentIds.length ? t('quickStart') : t('builtinGames')}>
-        <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-          {quick.map((g) => (
+        <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pt-1 pb-2 [scrollbar-width:none]">
+          {quick.map((g, i) => (
             <button
               key={g.id}
               onClick={() => navigate(`new/${encodeURIComponent(g.id)}`)}
-              className="flex w-24 shrink-0 snap-start flex-col items-center gap-1.5 rounded-3xl bg-card px-2 py-3 ring-1 ring-edge transition active:scale-95 dark:bg-slate dark:ring-white/8"
+              className={cx(
+                'surface press my-1 flex w-24 shrink-0 snap-start flex-col items-center gap-1.5 rounded-3xl px-2 py-3 text-ink',
+                CANDY[i % CANDY.length],
+                i % 2 ? 'rotate-2' : '-rotate-2',
+              )}
             >
-              <span className="text-3xl">{g.emoji}</span>
+              <span className="text-4xl drop-shadow-[0_2px_0_rgb(0_0_0/0.12)]">{g.emoji}</span>
               <span className="line-clamp-2 text-center text-xs leading-tight font-bold">{text(g.name)}</span>
             </button>
           ))}
