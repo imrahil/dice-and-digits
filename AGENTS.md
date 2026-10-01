@@ -25,7 +25,8 @@ npx wrangler deploy  # CI does NOT deploy the worker
 
 ## Architecture
 
-Local-first React SPA on GitHub Pages plus an optional Cloudflare Worker with D1.
+Local-first React SPA on GitHub Pages plus an optional Cloudflare Worker with
+D1 (shared groups) and one Durable Object per live game (`Room`).
 
 - **`src/lib/store.ts`** is the single source of truth. It holds localStorage
   collections (`players`, `games` = custom only, `sessions`) behind
@@ -34,10 +35,18 @@ Local-first React SPA on GitHub Pages plus an optional Cloudflare Worker with D1
 - **`src/lib/scoring.ts`** computes totals, standings and the tie-break for all
   three modes (`counter` = tap log, `rounds` = array of per-round maps, `sheet`
   = category × player). Screens never sum scores themselves.
-- **`src/lib/cloud.ts`** handles groups, sync and live scoreboards. Everything
-  is a no-op when `VITE_API_URL` is empty (`cloudEnabled`).
-- **`worker/src/worker.js`** runs on D1 with three tables (see
-  `worker/migrations/`).
+- **`src/lib/ops.ts`**: every score change is an *op* (`add` / `cell` /
+  `round`) applied by `applyOp()`. Boards take a `Scorer` (`src/lib/scorer.ts`:
+  `canEdit(seat)` + `apply(ops)`), so the same UI serves the host (all seats,
+  local store) and a joined phone (own seat, ops sent to the room).
+- **`src/lib/cloud.ts`** handles groups, sync and live-game HTTP calls.
+  Everything is a no-op when `VITE_API_URL` is empty (`cloudEnabled`).
+- **`src/lib/room.ts`** (reconnecting WebSocket), **`src/hooks/useLiveHost.ts`**
+  (host side, on the Play screen) and **`src/hooks/useRoom.ts`** (watching or
+  joined phone, on the Live screen).
+- **`worker/src/worker.js`** is the router plus groups and sync on D1 (see
+  `worker/migrations/`). **`worker/src/room.js`** is the Room Durable Object;
+  its WebSocket protocol is documented at the top of the file.
 - Routing is hash-based (`src/hooks/useRoute.ts`, `App.tsx`'s `Router`).
 
 ## Conventions and constraints
@@ -58,8 +67,32 @@ Local-first React SPA on GitHub Pages plus an optional Cloudflare Worker with D1
 - **The app works without the backend.** Gate every cloud UI on `cloudEnabled`.
 - **`VITE_API_URL` is baked in at build time.** `.env` is committed on purpose:
   the URL is public and the Pages build passes no env of its own.
+- **QR codes are generated on the phone** (`uqr`, `components/QrShare.tsx`).
+  Never send a link to a QR web service: a group invite link *is* the key.
 - **No passwords or accounts.** A group is a capability: whoever has the invite
   link is in. Only secret hashes are stored server-side.
+
+## Live games (join to score)
+
+- **The host phone is authoritative.** The room never interprets ops beyond a
+  shape check (`validOp`). It queues them and relays them to the host, which
+  applies them with `applyRemote()` and pushes the new session. Don't move
+  scoring rules into the worker.
+- **Ops are idempotent by id.** The host remembers applied ids in
+  `session.ops`, and the room drops ids already queued or applied. Guests keep
+  unapplied ops in localStorage (`dice-digits:guest:<code>`) and resend them
+  after a reconnect.
+- **A joined phone may only edit its own seat.** This is enforced in the room
+  (op `p` must equal the claimed seat) and in the UI (`scorer.canEdit`).
+  Host-only actions (undo, deleting a round, freeing a seat) stay outside ops.
+- **A rounds op's `index` means "round N" for everyone**, so a player's entry
+  and the host's entry for the same round merge into one row. `RoundEntry`
+  sends only rows that were typed in or are still empty, so it never
+  overwrites a value that arrived from a player while it was open.
+- **The Room uses the Hibernation API and keeps no state in memory**; storage
+  is the truth. The router calls it via internal `fetch` (`/rpc/<name>`), not
+  Workers RPC, so `room.js` needs no `cloudflare:workers` import and is tested
+  in `node:test` with `worker/test/do.mjs`.
 
 ## i18n
 

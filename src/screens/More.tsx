@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ChevronRight, Cloud, Download, Gamepad2, Link2, LogOut, RefreshCw, Upload, Users } from 'lucide-react'
+import { ChevronRight, Cloud, Download, Gamepad2, LogOut, QrCode, RefreshCw, Upload, Users } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { cloudEnabled, createGroup, inviteLink, leaveGroup, syncNow, useCloud } from '../lib/cloud'
 import { exportBackup, importBackup, setSettings, useStore } from '../lib/store'
@@ -7,7 +7,7 @@ import { navigate } from '../hooks/useRoute'
 import { confirm, toast } from '../components/dialogs'
 import { Logo } from '../components/Logo'
 import { Button, Card, Page, Section, Segmented, Toggle, cx, inputClass } from '../components/ui'
-import { shareLink } from './Play'
+import { QrShareSheet } from '../components/QrShare'
 import type { Lang, Theme } from '../types'
 
 function LinkRow({ icon, label, detail, onClick }: { icon: ReactNode; label: string; detail?: string; onClick: () => void }) {
@@ -129,6 +129,7 @@ function CloudSection() {
   const { group, syncing, error } = useCloud()
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
+  const [qr, setQr] = useState(false)
 
   const create = async () => {
     if (!name.trim()) return
@@ -172,8 +173,8 @@ function CloudSection() {
               </Button>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <Button onClick={() => shareLink(inviteLink(group), group.name, t('linkCopied'))}>
-                <Link2 className="size-5" /> {t('invite')}
+              <Button onClick={() => setQr(true)}>
+                <QrCode className="size-5" /> {t('invite')}
               </Button>
               <Button variant="danger" onClick={leave}>
                 <LogOut className="size-5" /> {t('leaveGroup')}
@@ -205,6 +206,9 @@ function CloudSection() {
           </>
         )}
       </Card>
+      {group && (
+        <QrShareSheet open={qr} onClose={() => setQr(false)} title={group.name} caption={t('scanToJoinGroup')} url={inviteLink(group)} />
+      )}
     </Section>
   )
 }

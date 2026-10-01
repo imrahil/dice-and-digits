@@ -1,12 +1,14 @@
-import { ChevronRight, Plus } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronRight, Plus, ScanLine } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { allGames, recentGameIds, useActiveSessions } from '../lib/games'
 import { finished } from '../lib/stats'
 import { useStore } from '../lib/store'
+import { cloudEnabled } from '../lib/cloud'
 import { navigate } from '../hooks/useRoute'
 import { SessionRow } from '../components/SessionRow'
 import { Logo } from '../components/Logo'
-import { Button, Empty, Page, Section } from '../components/ui'
+import { Button, Empty, Page, Section, Sheet, cx, inputClass } from '../components/ui'
 
 /** Shown before anything has been played: a mix of all three scoring modes. */
 const STARTERS = ['builtin:catan', 'builtin:1000', 'builtin:7wonders', 'builtin:carcassonne', 'builtin:yahtzee', 'builtin:ttr', 'builtin:uno', 'builtin:wingspan']
@@ -18,6 +20,7 @@ export function Home() {
   const active = useActiveSessions()
   const recent = finished(Object.values(sessions)).slice(0, 3)
 
+  const [joining, setJoining] = useState(false)
   const games = allGames(custom)
   const recentIds = recentGameIds(sessions)
   const quick = (recentIds.length ? recentIds : STARTERS)
@@ -38,6 +41,12 @@ export function Home() {
         <Plus className="size-6" strokeWidth={3} />
         {t('newGame')}
       </Button>
+      {cloudEnabled && (
+        <Button variant="secondary" className="mt-3 w-full" onClick={() => setJoining(true)}>
+          <ScanLine className="size-5" /> {t('joinGame')}
+        </Button>
+      )}
+      <JoinByCode open={joining} onClose={() => setJoining(false)} />
 
       {active.length > 0 && (
         <Section title={t('inProgress')}>
@@ -87,5 +96,43 @@ export function Home() {
         )
       )}
     </Page>
+  )
+}
+
+/** For when the camera won't scan: type the code shown under the host's QR. */
+function JoinByCode({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useI18n()
+  const [code, setCode] = useState('')
+  const valid = /^[A-Z2-9]{6}$/.test(code)
+  return (
+    <Sheet open={open} onClose={onClose} title={t('joinGame')}>
+      <p className="mb-3 text-sm text-ink/60 dark:text-white/60">{t('enterCode')}</p>
+      <form
+        className="flex gap-2"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (!valid) return
+          onClose()
+          navigate(`live/${code}`)
+        }}
+      >
+        <input
+          className={cx(inputClass, 'text-center font-mono text-2xl tracking-[0.3em] uppercase')}
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+          placeholder="ABC234"
+          autoCapitalize="characters"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          inputMode="text"
+          autoFocus
+          aria-label={t('gameCode')}
+        />
+        <Button type="submit" variant="primary" className="!h-12 shrink-0" disabled={!valid}>
+          {t('join')}
+        </Button>
+      </form>
+    </Sheet>
   )
 }

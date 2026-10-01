@@ -3,15 +3,25 @@ import { ArrowDown, Check, Crown } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { buzz } from '../../lib/haptics'
 import { bonusMissing, sheetBonus, standings } from '../../lib/scoring'
-import { updateSession } from '../../lib/store'
+import type { Scorer } from '../../lib/scorer'
 import type { Session } from '../../types'
 import { Keypad, KeypadDisplay, parseKeypad } from '../Keypad'
 import { Avatar, Button, Sheet, cx } from '../ui'
 
 type Cell = { cat: number; seat: number }
 
-/** Category × player grid. Read-only without `onCell` (result screen). */
-export function SheetTable({ session, onCell, active }: { session: Session; onCell?: (c: Cell) => void; active?: Cell | null }) {
+/** Category × player grid. Read-only without `onCell` (result screen); `canEdit` limits it to some columns. */
+export function SheetTable({
+  session,
+  onCell,
+  canEdit = () => true,
+  active,
+}: {
+  session: Session
+  onCell?: (c: Cell) => void
+  canEdit?: (seatId: string) => boolean
+  active?: Cell | null
+}) {
   const { t, text, num } = useI18n()
   const cats = session.rules.categories ?? []
   const bonus = session.rules.bonus
@@ -51,15 +61,16 @@ export function SheetTable({ session, onCell, active }: { session: Session; onCe
               {session.seats.map((s, si) => {
                 const v = session.sheet[c.id]?.[s.id]
                 const on = active?.cat === ci && active?.seat === si
+                const tap = onCell && canEdit(s.id)
                 return (
                   <button
                     key={s.id}
-                    disabled={!onCell}
+                    disabled={!tap}
                     onClick={() => onCell?.({ cat: ci, seat: si })}
                     className={cx(
                       'm-0.5 rounded-xl py-2 text-center text-lg font-bold tabular-nums transition',
-                      onCell && 'active:scale-95',
-                      on ? 'bg-accent/15 ring-2 ring-accent' : onCell && 'bg-ink/3 dark:bg-white/4',
+                      tap && 'active:scale-95',
+                      on ? 'bg-accent/15 ring-2 ring-accent' : tap && 'bg-ink/3 dark:bg-white/4',
                       c.negative && v ? 'text-danger' : '',
                     )}
                   >
@@ -110,7 +121,7 @@ export function SheetTable({ session, onCell, active }: { session: Session; onCe
   )
 }
 
-export function SheetBoard({ session }: { session: Session }) {
+export function SheetBoard({ session, scorer }: { session: Session; scorer: Scorer }) {
   const { t, text } = useI18n()
   const cats = session.rules.categories ?? []
   const [cell, setCell] = useState<Cell | null>(null)
@@ -122,26 +133,21 @@ export function SheetBoard({ session }: { session: Session }) {
     setCell(c)
   }
 
+  /** The next cell this scorer may fill: down the column, then the next editable player's column. */
+  const after = (c: Cell): Cell | null => {
+    if (c.cat < cats.length - 1) return { cat: c.cat + 1, seat: c.seat }
+    for (let si = c.seat + 1; si < session.seats.length; si++) if (scorer.canEdit(session.seats[si].id)) return { cat: 0, seat: si }
+    return null
+  }
+
   /** Store the value, then walk down the player's column (the way people fill a score pad). */
   const commit = (advance: boolean) => {
     if (!cell) return
     const cat = cats[cell.cat]
     const seat = session.seats[cell.seat]
-    const n = parseKeypad(value)
     buzz(8)
-    updateSession(session.id, (s) => {
-      const row = { ...(s.sheet[cat.id] ?? {}) }
-      if (n === null) delete row[seat.id]
-      else row[seat.id] = n
-      return { ...s, sheet: { ...s.sheet, [cat.id]: row } }
-    })
-    if (!advance) return setCell(null)
-    const next =
-      cell.cat < cats.length - 1
-        ? { cat: cell.cat + 1, seat: cell.seat }
-        : cell.seat < session.seats.length - 1
-          ? { cat: 0, seat: cell.seat + 1 }
-          : null
+    scorer.apply([{ kind: 'cell', p: seat.id, cat: cat.id, v: parseKeypad(value) }])
+    const next = advance ? after(cell) : null
     if (next) {
       const v = session.sheet[cats[next.cat].id]?.[session.seats[next.seat].id]
       setValue(v == null ? '' : String(v))
@@ -151,11 +157,11 @@ export function SheetBoard({ session }: { session: Session }) {
 
   const cat = cell ? cats[cell.cat] : null
   const seat = cell ? session.seats[cell.seat] : null
-  const isLast = cell ? cell.cat === cats.length - 1 && cell.seat === session.seats.length - 1 : false
+  const next = cell ? after(cell) : null
 
   return (
     <>
-      <SheetTable session={session} onCell={open} active={cell} />
+      <SheetTable session={session} onCell={open} canEdit={scorer.canEdit} active={cell} />
       <Sheet
         open={!!cell}
         onClose={() => setCell(null)}
@@ -171,20 +177,20 @@ export function SheetBoard({ session }: { session: Session }) {
         <KeypadDisplay value={value} prefix={cat ? text(cat.name) + (cat.negative ? ' (−)' : '') : ''} />
         <Keypad value={value} onChange={setValue} allowNegative={!cat?.negative} />
         <div className="mt-3 flex gap-3">
-          {!isLast && (
+          {next && (
             <Button size="lg" className="flex-1" onClick={() => commit(false)}>
               <Check className="size-5" /> {t('done')}
             </Button>
           )}
-          <Button variant="primary" size="lg" className="flex-1" onClick={() => commit(!isLast)}>
-            {isLast ? (
+          <Button variant="primary" size="lg" className="flex-1" onClick={() => commit(!!next)}>
+            {!next ? (
               <>
                 <Check className="size-5" strokeWidth={3} /> {t('done')}
               </>
             ) : (
               <>
                 <span className="truncate">
-                  {cell && cell.cat === cats.length - 1 ? session.seats[cell.seat + 1].name : text(cats[(cell?.cat ?? 0) + 1].name)}
+                  {next.cat === 0 ? session.seats[next.seat].name : text(cats[next.cat].name)}
                 </span>
                 <ArrowDown className="size-5 shrink-0" strokeWidth={3} />
               </>

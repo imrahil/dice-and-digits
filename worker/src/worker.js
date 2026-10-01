@@ -1,17 +1,23 @@
 /**
- * Dice & Digits API — Cloudflare Worker + D1.
+ * Dice & Digits API — Cloudflare Worker + D1 + a Durable Object per live game.
  *
  *   POST   /api/groups          { name }            → { id, secret, name }
  *   GET    /api/groups/me       (auth)              → { id, name }
  *   POST   /api/sync            (auth) { cursor, docs } → { cursor, docs, more }
- *   POST   /api/live            { data }            → { code, token }
- *   GET    /api/live/:code                          → { data, updatedAt }
- *   PUT    /api/live/:code      (live token) { data }
+ *   POST   /api/live            { data: { session } } → { code, token }
+ *   GET    /api/live/:code                          → { data: { session }, updatedAt, host }
+ *   PUT    /api/live/:code      (live token) { data: { session } }
  *   DELETE /api/live/:code      (live token)
+ *   GET    /api/live/:code/ws   WebSocket — see src/room.js for the protocol
  *
  * Group auth is `Authorization: Bearer <groupId>.<secret>`; the secret travels
  * in the invite link and only its SHA-256 is stored.
  */
+
+import { randomString, sameHash, sha256 } from './crypto.js'
+import { Room } from './room.js'
+
+export { Room }
 
 export const LIMITS = {
   bodyBytes: 512 * 1024,
@@ -19,8 +25,7 @@ export const LIMITS = {
   docsPerPush: 200,
   pageSize: 500,
   docsPerGroup: 20000,
-  liveBytes: 64 * 1024,
-  liveTtlMs: 48 * 60 * 60 * 1000,
+  liveBytes: 128 * 1024,
   nameLength: 60,
 }
 
@@ -38,26 +43,9 @@ class HttpError extends Error {
 
 // ---- helpers ---------------------------------------------------------------
 
-function randomString(bytes) {
-  const b = crypto.getRandomValues(new Uint8Array(bytes))
-  return btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
 function randomCode() {
   const b = crypto.getRandomValues(new Uint8Array(6))
   return [...b].map((x) => CODE_ALPHABET[x % CODE_ALPHABET.length]).join('')
-}
-
-export async function sha256(text) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
-  return [...new Uint8Array(buf)].map((x) => x.toString(16).padStart(2, '0')).join('')
-}
-
-function sameHash(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false
-  let diff = 0
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  return diff === 0
 }
 
 function bearer(request) {
@@ -217,69 +205,68 @@ export async function sync(request, env) {
   })
 }
 
-// ---- live scoreboards ------------------------------------------------------
+// ---- live games (Durable Object rooms) -------------------------------------
 
-function liveData(body) {
-  if (!body?.data || typeof body.data !== 'object') throw new HttpError(400, 'data required')
-  const data = JSON.stringify(body.data)
-  if (data.length > LIMITS.liveBytes) throw new HttpError(413, 'Live data too large')
-  return data
+function liveSession(body) {
+  const session = body?.data?.session
+  if (!session || typeof session !== 'object' || !Array.isArray(session.seats)) throw new HttpError(400, 'data.session required')
+  if (JSON.stringify(session).length > LIMITS.liveBytes) throw new HttpError(413, 'Live data too large')
+  return session
+}
+
+const room = (env, code) => env.ROOMS.get(env.ROOMS.idFromName(code))
+
+/** Call a Room method through its internal fetch interface (see Room.fetch). */
+async function call(stub, name, args = {}) {
+  const res = await stub.fetch(
+    new Request(`https://room/rpc/${name}`, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } }),
+  )
+  if (!res.ok) throw new Error(`room ${name}: HTTP ${res.status}`)
+  return (await res.json()).result
 }
 
 async function createLive(request, env) {
-  const data = liveData(await readJson(request))
+  const session = liveSession(await readJson(request))
   const token = randomString(24)
   const hash = await sha256(token)
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = randomCode()
-    const res = await env.DB.prepare(
-      'INSERT INTO live (code, token_hash, data, updated_at) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (code) DO NOTHING',
-    )
-      .bind(code, hash, data, Date.now())
-      .run()
-    if (res.meta.changes === 1) return json({ code, token }, 201)
+    if (await call(room(env, code), 'init', { hostHash: hash, session })) return json({ code, token }, 201)
   }
   throw new HttpError(503, 'Could not allocate a code')
 }
 
-async function authLive(request, env, code) {
-  const row = await env.DB.prepare('SELECT token_hash FROM live WHERE code = ?1').bind(code).first()
-  if (!row) throw new HttpError(404, 'Not found')
-  if (!sameHash(row.token_hash, await sha256(bearer(request)))) throw new HttpError(401, 'Bad live token')
+function hostResult(result) {
+  if (result === 'missing') throw new HttpError(404, 'Not found')
+  if (result === 'unauthorized') throw new HttpError(401, 'Bad live token')
+  return json({ ok: true })
 }
 
-async function routeLive(request, env, code) {
+async function routeLive(request, env, code, ws) {
   if (!CODE_RE.test(code)) throw new HttpError(404, 'Not found')
+  const stub = room(env, code)
+  if (ws) {
+    if (request.headers.get('Upgrade') !== 'websocket') throw new HttpError(426, 'Expected WebSocket')
+    checkWriteOrigin(request, env)
+    return stub.fetch(request)
+  }
   switch (request.method) {
     case 'GET': {
-      const row = await env.DB.prepare('SELECT data, updated_at FROM live WHERE code = ?1').bind(code).first()
-      if (!row) throw new HttpError(404, 'Not found')
-      return json({ data: JSON.parse(row.data), updatedAt: row.updated_at })
+      const snap = await call(stub, 'snapshot')
+      if (!snap) throw new HttpError(404, 'Not found')
+      return json({ data: { session: snap.session }, updatedAt: snap.updatedAt, host: snap.host })
     }
     case 'PUT': {
       checkWriteOrigin(request, env)
-      await authLive(request, env, code)
-      const data = liveData(await readJson(request))
-      await env.DB.prepare('UPDATE live SET data = ?2, updated_at = ?3 WHERE code = ?1')
-        .bind(code, data, Date.now())
-        .run()
-      return json({ ok: true })
+      const session = liveSession(await readJson(request))
+      return hostResult(await call(stub, 'putState', { hostHash: await sha256(bearer(request)), session }))
     }
     case 'DELETE': {
       checkWriteOrigin(request, env)
-      await authLive(request, env, code)
-      await env.DB.prepare('DELETE FROM live WHERE code = ?1').bind(code).run()
-      return json({ ok: true })
+      return hostResult(await call(stub, 'end', { hostHash: await sha256(bearer(request)) }))
     }
   }
   throw new HttpError(405, 'Method not allowed')
-}
-
-export async function sweepLive(env, now = Date.now()) {
-  const res = await env.DB.prepare('DELETE FROM live WHERE updated_at < ?1')
-    .bind(now - LIMITS.liveTtlMs)
-    .run()
-  return res.meta.changes
 }
 
 // ---- router ----------------------------------------------------------------
@@ -304,8 +291,8 @@ async function route(request, env) {
     checkWriteOrigin(request, env)
     return createLive(request, env)
   }
-  const live = pathname.match(/^\/api\/live\/([^/]+)$/)
-  if (live) return routeLive(request, env, live[1].toUpperCase())
+  const live = pathname.match(/^\/api\/live\/([^/]+)(\/ws)?$/)
+  if (live) return routeLive(request, env, live[1].toUpperCase(), Boolean(live[2]))
   if (pathname === '/api/health') return json({ ok: true })
   throw new HttpError(404, 'Not found')
 }
@@ -316,6 +303,7 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
     try {
       const res = await route(request, env)
+      if (res.status === 101) return res // WebSocket upgrade: headers are immutable and CORS doesn't apply
       for (const [k, v] of Object.entries(cors)) res.headers.set(k, v)
       return res
     } catch (e) {
@@ -323,10 +311,5 @@ export default {
       if (status === 500) console.error(e)
       return json({ error: e instanceof HttpError ? e.message : 'Internal error' }, status, cors)
     }
-  },
-
-  async scheduled(_event, env) {
-    const n = await sweepLive(env)
-    if (n) console.log(`swept ${n} idle live games`)
   },
 }

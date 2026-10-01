@@ -2,10 +2,6 @@ name = "dice-and-digits-api"
 main = "src/worker.js"
 compatibility_date = "2026-09-01"
 
-# Daily sweep of live scoreboards idle for 48 h.
-[triggers]
-crons = ["17 3 * * *"]
-
 # Create once with:  npx wrangler d1 create dice-and-digits
 # then paste the printed database_id below and apply the schema:
 #   npx wrangler d1 migrations apply dice-and-digits --remote
@@ -15,7 +11,18 @@ database_name = "dice-and-digits"
 database_id = "REPLACE_WITH_DATABASE_ID"
 migrations_dir = "migrations"
 
+# One Room per live game (src/room.js): WebSockets for the host, players who
+# joined a seat, and viewers. SQLite-backed, which the Workers Free plan
+# supports. Rooms idle for 48 h delete themselves via an alarm.
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
 [vars]
-# Origins allowed to write (create groups, sync, run a live scoreboard).
-# Reads (viewing a live scoreboard) stay open to everyone.
+# Origins allowed to write (create groups, sync, host or join a live game).
+# Plain reads (GET /api/live/:code) stay open to everyone.
 ALLOWED_ORIGINS = "https://imrahil.github.io,http://localhost:5173,http://localhost:4173"

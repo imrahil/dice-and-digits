@@ -81,6 +81,8 @@ export type Session = Doc & {
   /** Player id picked as winner when the top score is tied. */
   tieBreak?: string
   notes?: string
+  /** Ids of the most recent ops applied from joined phones (dedupes resends). */
+  ops?: string[]
 }
 
 export type Standing = {

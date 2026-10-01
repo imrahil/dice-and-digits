@@ -4,6 +4,7 @@ import { useI18n } from '../../i18n'
 import { buzz } from '../../lib/haptics'
 import { standings } from '../../lib/scoring'
 import { updateSession } from '../../lib/store'
+import type { Scorer } from '../../lib/scorer'
 import type { Session } from '../../types'
 import { Keypad, parseKeypad } from '../Keypad'
 import { Avatar, Button, IconButton, Sheet, cx } from '../ui'
@@ -60,38 +61,52 @@ export function RoundsTable({ session, onRow }: { session: Session; onRow?: (i: 
   )
 }
 
-export function RoundsBoard({ session, entry, setEntry }: { session: Session; entry: number | null; setEntry: (i: number | null) => void }) {
+export function RoundsBoard({
+  session,
+  scorer,
+  entry,
+  setEntry,
+}: {
+  session: Session
+  scorer: Scorer
+  entry: number | null
+  setEntry: (i: number | null) => void
+}) {
   const { t } = useI18n()
   return (
     <>
       <RoundsTable session={session} onRow={setEntry} />
       {session.rounds.length === 0 && <p className="px-4 py-6 text-center text-ink/55 dark:text-white/55">{t('noRoundsYet')}</p>}
-      {entry !== null && <RoundEntry key={entry} session={session} index={entry} onClose={() => setEntry(null)} />}
+      {entry !== null && <RoundEntry key={entry} session={session} scorer={scorer} index={entry} onClose={() => setEntry(null)} />}
     </>
   )
 }
 
-/** Bottom sheet: one keypad, one row per player, "Next" walks the table. */
-function RoundEntry({ session, index, onClose }: { session: Session; index: number; onClose: () => void }) {
+/**
+ * Bottom sheet: one keypad, one row per player the scorer may edit, "Next"
+ * walks the rows. Rows nobody has touched show the live value, so a score a
+ * player sends from their own phone while this is open is neither hidden nor
+ * overwritten.
+ */
+function RoundEntry({ session, scorer, index, onClose }: { session: Session; scorer: Scorer; index: number; onClose: () => void }) {
   const { t } = useI18n()
+  const seats = session.seats.filter((s) => scorer.canEdit(s.id))
+  const everyone = seats.length === session.seats.length
   const editing = index < session.rounds.length
-  const [values, setValues] = useState<Record<string, string>>(() => {
-    const r = session.rounds[index] ?? {}
-    return Object.fromEntries(session.seats.map((s) => [s.id, r[s.id] != null ? String(r[s.id]) : '']))
-  })
+  const current = session.rounds[index] ?? {}
+  const [typed, setTyped] = useState<Record<string, string>>({})
+  const shown = (id: string) => typed[id] ?? (current[id] != null ? String(current[id]) : '')
   const [focus, setFocus] = useState(0)
-  const seat = session.seats[focus]
-  const last = focus === session.seats.length - 1
+  const seat = seats[focus]
+  const last = focus === seats.length - 1
 
   const save = () => {
-    const round: Record<string, number> = {}
-    for (const s of session.seats) round[s.id] = parseKeypad(values[s.id]) ?? 0
+    // Send what was typed, and fill still-empty rows with 0 so the round is complete.
+    const ops = seats
+      .filter((s) => s.id in typed || current[s.id] == null)
+      .map((s) => ({ kind: 'round' as const, p: s.id, index, v: parseKeypad(typed[s.id] ?? '') ?? 0 }))
     buzz([8, 40, 8])
-    updateSession(session.id, (s) => {
-      const rounds = [...s.rounds]
-      rounds[index] = round
-      return { ...s, rounds }
-    })
+    scorer.apply(ops)
     onClose()
   }
 
@@ -100,7 +115,8 @@ function RoundEntry({ session, index, onClose }: { session: Session; index: numb
     onClose()
   }
 
-  const twoCol = session.seats.length > 4
+  if (!seat) return null
+  const twoCol = seats.length > 4
 
   return (
     <Sheet
@@ -109,7 +125,7 @@ function RoundEntry({ session, index, onClose }: { session: Session; index: numb
       title={
         <span className="flex items-center gap-2">
           {editing ? t('editRound', { n: index + 1 }) : t('roundN', { n: index + 1 })}
-          {editing && (
+          {editing && everyone && (
             <IconButton label={t('deleteRound')} onClick={remove} className="ml-auto text-danger dark:text-[#ff8a93]">
               <Trash2 className="size-5" />
             </IconButton>
@@ -118,30 +134,27 @@ function RoundEntry({ session, index, onClose }: { session: Session; index: numb
       }
     >
       <div className={cx('mb-3 grid gap-1.5', twoCol && 'grid-cols-2')}>
-        {session.seats.map((s, i) => (
-          <button
-            key={s.id}
-            onClick={() => setFocus(i)}
-            className={cx(
-              'flex h-12 items-center gap-2 rounded-2xl px-2 text-left transition',
-              i === focus ? 'bg-card ring-2 ring-accent dark:bg-night' : 'bg-ink/4 dark:bg-white/5',
-            )}
-          >
-            <Avatar name={s.name} color={s.color} size="sm" />
-            <span className="min-w-0 flex-1 truncate text-sm font-bold">{s.name}</span>
-            <span
+        {seats.map((s, i) => {
+          const v = shown(s.id)
+          return (
+            <button
+              key={s.id}
+              onClick={() => setFocus(i)}
               className={cx(
-                'text-xl font-black tabular-nums',
-                values[s.id] === '' && 'text-ink/25 dark:text-white/25',
-                values[s.id].startsWith('-') && 'text-danger',
+                'flex h-12 items-center gap-2 rounded-2xl px-2 text-left transition',
+                i === focus ? 'bg-card ring-2 ring-accent dark:bg-night' : 'bg-ink/4 dark:bg-white/5',
               )}
             >
-              {values[s.id] || '0'}
-            </span>
-          </button>
-        ))}
+              <Avatar name={s.name} color={s.color} size="sm" />
+              <span className="min-w-0 flex-1 truncate text-sm font-bold">{s.name}</span>
+              <span className={cx('text-xl font-black tabular-nums', v === '' && 'text-ink/25 dark:text-white/25', v.startsWith('-') && 'text-danger')}>
+                {v || '0'}
+              </span>
+            </button>
+          )
+        })}
       </div>
-      <Keypad value={values[seat.id]} onChange={(v) => setValues((x) => ({ ...x, [seat.id]: v }))} />
+      <Keypad value={shown(seat.id)} onChange={(v) => setTyped((x) => ({ ...x, [seat.id]: v }))} />
       <div className="mt-3 flex gap-3">
         {!last && (
           <Button size="lg" className="flex-1" onClick={save}>
@@ -155,7 +168,7 @@ function RoundEntry({ session, index, onClose }: { session: Session; index: numb
             </>
           ) : (
             <>
-              {session.seats[focus + 1].name} <ArrowRight className="size-5" strokeWidth={3} />
+              <span className="truncate">{seats[focus + 1].name}</span> <ArrowRight className="size-5 shrink-0" strokeWidth={3} />
             </>
           )}
         </Button>

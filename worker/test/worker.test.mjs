@@ -1,12 +1,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import worker, { LIMITS, sweepLive } from '../src/worker.js'
+import worker, { LIMITS, Room } from '../src/worker.js'
 import { createD1 } from './d1.mjs'
+import { fakeNamespace } from './do.mjs'
 
 const APP = 'https://imrahil.github.io'
 
 function setup() {
-  const env = { DB: createD1(), ALLOWED_ORIGINS: `${APP},http://localhost:5173` }
+  const env = { DB: createD1(), ROOMS: fakeNamespace(Room), ALLOWED_ORIGINS: `${APP},http://localhost:5173` }
   const call = async (method, path, { body, token, origin = APP } = {}) => {
     const headers = { 'Content-Type': 'application/json' }
     if (token) headers.Authorization = `Bearer ${token}`
@@ -149,9 +150,11 @@ test('paging never splits a rev, so no doc is skipped', async () => {
   assert.equal(pages, 2)
 })
 
-test('live scoreboard: create, view, update with token, delete', async () => {
+const live = (total) => ({ data: { session: { id: 's', seats: [], total } } })
+
+test('live game: create, view, update with token, delete', async () => {
   const { call } = setup()
-  const created = await call('POST', '/api/live', { body: { data: { total: 1 } } })
+  const created = await call('POST', '/api/live', { body: live(1) })
   assert.equal(created.status, 201)
   const { code, token } = created.body
   assert.match(code, /^[A-Z2-9]{6}$/)
@@ -159,22 +162,30 @@ test('live scoreboard: create, view, update with token, delete', async () => {
   // Anyone can view, from any origin.
   const view = await call('GET', `/api/live/${code.toLowerCase()}`, { origin: 'https://friend.example' })
   assert.equal(view.status, 200)
-  assert.deepEqual(view.body.data, { total: 1 })
+  assert.equal(view.body.data.session.total, 1)
+  assert.equal(view.body.host, false)
 
-  assert.equal((await call('PUT', `/api/live/${code}`, { body: { data: { total: 9 } } })).status, 401)
-  assert.equal((await call('PUT', `/api/live/${code}`, { token, body: { data: { total: 2 } } })).status, 200)
-  assert.deepEqual((await call('GET', `/api/live/${code}`)).body.data, { total: 2 })
+  assert.equal((await call('PUT', `/api/live/${code}`, { body: live(9) })).status, 401)
+  assert.equal((await call('PUT', `/api/live/${code}`, { token, body: live(2) })).status, 200)
+  assert.equal((await call('GET', `/api/live/${code}`)).body.data.session.total, 2)
 
   assert.equal((await call('DELETE', `/api/live/${code}`, { token })).status, 200)
   assert.equal((await call('GET', `/api/live/${code}`)).status, 404)
 })
 
-test('idle live scoreboards are swept', async () => {
-  const { env, call } = setup()
-  const { body } = await call('POST', '/api/live', { body: { data: {} } })
-  assert.equal(await sweepLive(env, Date.now() + LIMITS.liveTtlMs - 1000), 0)
-  assert.equal(await sweepLive(env, Date.now() + LIMITS.liveTtlMs + 1000), 1)
-  assert.equal((await call('GET', `/api/live/${body.code}`)).status, 404)
+test('live game: malformed payloads and unknown codes', async () => {
+  const { call } = setup()
+  assert.equal((await call('POST', '/api/live', { body: { data: {} } })).status, 400)
+  const big = { data: { session: { seats: [], blob: 'x'.repeat(LIMITS.liveBytes) } } }
+  assert.equal((await call('POST', '/api/live', { body: big })).status, 413)
+  assert.equal((await call('GET', '/api/live/ZZZZZZ')).status, 404)
+  assert.equal((await call('GET', '/api/live/../../x')).status, 404)
+})
+
+test('the WebSocket route requires an upgrade and an allowed origin', async () => {
+  const { call } = setup()
+  const { body } = await call('POST', '/api/live', { body: live(0) })
+  assert.equal((await call('GET', `/api/live/${body.code}/ws`)).status, 426)
 })
 
 test('CORS preflight is answered', async () => {

@@ -84,10 +84,10 @@ export const en = {
   history: 'History',
   bonusNeeded: '{n} more for the bonus',
   bonusEarned: 'Bonus earned',
-  liveShare: 'Share live scoreboard',
-  liveSharing: 'Live — tap to share the link',
+  liveShare: 'Share live & let players join',
+  liveSharing: 'Live — show QR code',
   liveStop: 'Stop sharing',
-  liveHint: 'Anyone with the link can follow the scores on their phone.',
+  liveHint: 'Friends scan the QR code to follow the scores — or pick their seat and enter their own points from their phone.',
   liveError: 'Could not start live sharing. Check your connection.',
   linkCopied: 'Link copied',
   keypadAdd: 'Add',
@@ -203,11 +203,41 @@ export const en = {
   joinedGroup: 'Joined {name}',
   invalidInvite: 'This invite link is not valid.',
 
+
+  // share / QR
+  scanToFollow: 'Scan to watch or join',
+  scanToJoinGroup: 'Scan to join the group',
+  gameCode: 'Game code',
+  shareLink: 'Share link',
+  copyLink: 'Copy link',
+  playersOnPhones: 'Players on their own phones',
+  freeSeat: 'Free seat',
+  notJoined: 'scored on this phone',
+  joinGame: 'Join a game',
+  enterCode: 'Enter the 6-character code from the scorekeeper’s screen',
+  join: 'Join',
+
+  // joined phone
+  joinAsPlayer: 'Join as a player',
+  joinAsPlayerHint: 'Pick your seat to enter your own points from this phone. Or just watch.',
+  seatTaken: 'taken',
+  youScoreAs: 'You score as {name}',
+  changeSeat: 'Change seat',
+  hostOffline: 'The scorekeeper’s phone is offline. Your points are saved and will show up when it reconnects.',
+  sendingPoints: 'Sending your points…',
+  connecting: 'Connecting…',
+  reconnecting: 'Reconnecting…',
+  addMyScore: 'Add my score',
+  noticeTaken: 'Someone else took that seat.',
+  noticeRejected: 'The scorekeeper’s phone could not apply one of your entries.',
+  noticeFinished: 'The game is already finished.',
+  noticeFull: 'Too many entries are waiting. Try again in a moment.',
+
   // live viewer
   liveTitle: 'Live scoreboard',
-  liveUpdated: 'Updated {time}',
   liveNotFound: 'This live game has ended or does not exist.',
   liveFinished: 'Final result',
+  liveStopped: 'The scorekeeper stopped sharing this game. These are the last scores it sent.',
 
   // about
   about: 'About',
@@ -225,6 +255,7 @@ export const en = {
   nGames: { one: '{n} game', other: '{n} games' } as Plural,
   nRounds: { one: '{n} round', other: '{n} rounds' } as Plural,
   nWins: { one: '{n} win', other: '{n} wins' } as Plural,
+  nPhones: { one: '{n} phone connected', other: '{n} phones connected' } as Plural,
 }
 
 export type Dict = typeof en

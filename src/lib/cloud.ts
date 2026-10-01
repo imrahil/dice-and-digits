@@ -148,11 +148,11 @@ async function run() {
   }
 }
 
-// ---- live scoreboards ------------------------------------------------------
+// ---- live games ------------------------------------------------------------
+// A live game is a Room Durable Object (worker/src/room.js). These are the
+// plain HTTP calls; the WebSocket side lives in lib/room.ts.
 
-type LiveHandle = { code: string; token: string }
-
-export type LivePayload = { session: Session; sentAt: number }
+export type LiveHandle = { code: string; token: string }
 
 const liveHandles = (): Record<string, LiveHandle> => readJson(LIVE_KEY, {})
 
@@ -160,10 +160,9 @@ export function liveHandle(sessionId: string): LiveHandle | undefined {
   return liveHandles()[sessionId]
 }
 
-function setLiveHandle(sessionId: string, h: LiveHandle | null) {
+export function forgetLive(sessionId: string) {
   const all = liveHandles()
-  if (h) all[sessionId] = h
-  else delete all[sessionId]
+  delete all[sessionId]
   localStorage.setItem(LIVE_KEY, JSON.stringify(all))
 }
 
@@ -172,35 +171,29 @@ export function liveLink(code: string) {
 }
 
 export async function startLive(session: Session): Promise<LiveHandle> {
-  const h = await api<LiveHandle>('/api/live', {
-    method: 'POST',
-    body: JSON.stringify({ data: { session, sentAt: Date.now() } satisfies LivePayload }),
-  })
-  setLiveHandle(session.id, h)
+  const h = await api<LiveHandle>('/api/live', { method: 'POST', body: JSON.stringify({ data: { session } }) })
+  localStorage.setItem(LIVE_KEY, JSON.stringify({ ...liveHandles(), [session.id]: h }))
   return h
 }
 
+/** HTTP push of the whole session — used for the final state as a game ends. */
 export async function pushLive(session: Session) {
   const h = liveHandle(session.id)
   if (!h) return
   try {
-    await api(`/api/live/${h.code}`, {
-      method: 'PUT',
-      token: h.token,
-      body: JSON.stringify({ data: { session, sentAt: Date.now() } satisfies LivePayload }),
-    })
+    await api(`/api/live/${h.code}`, { method: 'PUT', token: h.token, body: JSON.stringify({ data: { session } }) })
   } catch (e) {
-    // The board was swept or deleted elsewhere: stop trying.
-    if (e instanceof Error && /not found/i.test(e.message)) setLiveHandle(session.id, null)
+    // The room expired or was ended elsewhere: stop trying.
+    if (e instanceof Error && /not found/i.test(e.message)) forgetLive(session.id)
   }
 }
 
 export async function stopLive(sessionId: string) {
   const h = liveHandle(sessionId)
-  setLiveHandle(sessionId, null)
+  forgetLive(sessionId)
   if (h) await api(`/api/live/${h.code}`, { method: 'DELETE', token: h.token }).catch(() => {})
 }
 
 export async function fetchLive(code: string) {
-  return api<{ data: LivePayload; updatedAt: number }>(`/api/live/${encodeURIComponent(code)}`)
+  return api<{ data: { session: Session }; updatedAt: number; host: boolean }>(`/api/live/${encodeURIComponent(code)}`)
 }

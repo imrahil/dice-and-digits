@@ -40,8 +40,24 @@ player (everyone touches the screen, one is chosen), and a tap-to-restart
 
 - **Shared group**: friends join by invite link; players, custom games and
   finished games sync across everyone's phones, so the stats are shared.
-- **Live scoreboard**: share a link and anyone can follow the running game on
-  their own phone.
+- **Live game with QR code**: the scorekeeper taps *Share live*, a QR code
+  (plus a 6-character code for typing in) appears, and friends scan it:
+  - **watch**: the scores update instantly on their own phone, or
+  - **join to score**: pick their seat and enter their own points, e.g. their
+    7 Wonders column at the end, their +/− in Catan, or their score for each
+    round of Tysiąc. They can only edit their own seat.
+- The group invite is a QR code too (*More → Shared group → Invite*).
+
+### How a live game works
+
+One phone is the **scorekeeper** (the host). It can edit every seat, keeps
+working offline, and remains the source of truth. Players who joined send
+small score changes ("ops") through the worker. The host applies them with the
+same rules as its own taps and broadcasts the result to everyone. If the host
+phone drops off (locked screen, no signal), players keep scoring: their entries
+wait in the room and land as soon as the host is back. Every op has an id, so a
+resend after a reconnect is never counted twice. The host can still undo, edit
+anything, or free a seat, for example when someone's battery dies.
 
 **Everything else**: PL/EN (auto-detected, switchable), auto/light/dark theme
 without a flash, JSON backup export/import, offline after first load, and an
@@ -52,19 +68,22 @@ without a flash, JSON backup export/import, offline after first load, and an
 React 19 + Vite + TypeScript + Tailwind v4, the same as
 [ev_parking_app](https://github.com/imrahil/ev_parking_app). Additions:
 `vite-plugin-pwa` (offline precache), `lucide-react` (icons), Vitest (logic
-tests). Backend: a Cloudflare Worker + **D1** (SQLite). D1 rather than KV
-because sync writes on every finished game, and KV's free tier allows 1,000
-writes/day while D1 allows 100,000.
+tests), `uqr` (QR codes generated on the phone). Backend: a Cloudflare Worker
+with **D1** (SQLite) for shared groups, and a **Durable Object per live game**
+for the WebSocket room. D1 rather than KV because sync writes on every
+finished game, and KV's free tier allows 1,000 writes/day while D1 allows
+100,000.
 
 ```
-           phone (localStorage, works offline)
-              │  POST /api/sync      (finished games, players, custom games)
-              │  POST/PUT /api/live  (running game, debounced)
-              ▼
-     Cloudflare Worker ──► D1: groups · docs · live
-              ▲
-              │  GET /api/live/:code every 4 s
-        friend's phone (read-only live view)
+   host phone (localStorage, works offline)          players' & viewers' phones
+        │  WebSocket: full session ▲ ops from players     │ WebSocket: ops ▲ session
+        ▼                          │                      ▼                │
+   ┌──────────── Room Durable Object (one per live game, code = name) ───────────┐
+   │  latest session · seat claims · queue of ops waiting for the host · 48 h TTL │
+   └──────────────────────────────────────────────────────────────────────────────┘
+        │  POST /api/sync (finished games, players, custom games)
+        ▼
+   Cloudflare Worker ──► D1: groups · docs
 ```
 
 Data is **local-first**: the app is fully usable without the worker. Sync is
@@ -114,19 +133,20 @@ value is public, which is why `.env` is committed.
 
 ## Free plan vs. the $5 Workers Paid plan
 
-The free plan is enough for a group of friends: 100k requests/day, and D1 at
-5M rows read and 100k rows written per day. A 90-minute live game with three
-viewers polling every 4 s costs about 4,000 requests. Upgrading to Paid would
-make sense for:
+The free plan is enough for a group of friends: 100k requests/day, D1 at 5M
+rows read and 100k rows written per day, and SQLite-backed Durable Objects are
+included. Live games use the WebSocket Hibernation API, so a quiet room costs
+nothing between messages, and incoming WebSocket messages are billed at
+1/20 of a request. A busy game night is a few thousand requests. Upgrading to
+Paid would make sense for:
 
-- **Real-time live scoreboards** over WebSockets with Durable Objects, instead
-  of 4 s polling.
-- **Rate limiting** on group creation and sync.
-- Much higher D1 and request limits if the app is shared publicly.
+- **Rate limiting** on group creation, sync and opening live games.
+- Much higher limits if the app is shared publicly.
 
 ## Persisted data
 
 All in `localStorage` under the `dice-digits:` prefix: `players`, `games`
 (custom only), `sessions`, `settings`, `dirty` (pending sync), `group` (shared
-group credentials), `live` (live scoreboard tokens). Export/import in *More →
+group credentials), `live` (host tokens of live games), `guest:<code>`
+(a joined phone's seat token and not-yet-applied entries). Export/import in *More →
 Backup* moves everything between devices without the cloud.

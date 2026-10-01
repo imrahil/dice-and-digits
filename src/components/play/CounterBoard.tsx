@@ -3,7 +3,7 @@ import { Crown, Minus, Plus } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { buzz } from '../../lib/haptics'
 import { standings } from '../../lib/scoring'
-import { updateSession } from '../../lib/store'
+import type { Scorer } from '../../lib/scorer'
 import type { Seat, Session } from '../../types'
 import { Keypad, KeypadDisplay, parseKeypad } from '../Keypad'
 import { Avatar, Button, Sheet, cx } from '../ui'
@@ -11,7 +11,7 @@ import { Avatar, Button, Sheet, cx } from '../ui'
 /** Quick taps within this window are shown as one running "+7" bubble. */
 const BURST_MS = 1600
 
-export function CounterBoard({ session }: { session: Session }) {
+export function CounterBoard({ session, scorer }: { session: Session; scorer: Scorer }) {
   const { t, num, time } = useI18n()
   const steps = session.rules.steps?.length ? session.rules.steps : [1, 5, 10]
   const table = standings(session)
@@ -28,14 +28,18 @@ export function CounterBoard({ session }: { session: Session }) {
   const add = (p: string, d: number) => {
     if (!d) return
     buzz(d > 0 ? 8 : [4, 30, 4])
-    updateSession(session.id, (s) => ({ ...s, log: [...s.log, { p, d, t: Date.now() }] }))
+    scorer.apply([{ kind: 'add', p, d }])
     setBurst((b) => ({ ...b, [p]: { sum: (b[p]?.sum ?? 0) + d, key: Date.now() } }))
     clearTimeout(timers.current[p])
-    timers.current[p] = setTimeout(() => setBurst((b) => {
-      const next = { ...b }
-      delete next[p]
-      return next
-    }), BURST_MS)
+    timers.current[p] = setTimeout(
+      () =>
+        setBurst((b) => {
+          const next = { ...b }
+          delete next[p]
+          return next
+        }),
+      BURST_MS,
+    )
   }
 
   const applyPad = (sign: 1 | -1) => {
@@ -51,6 +55,7 @@ export function CounterBoard({ session }: { session: Session }) {
           const row = byId[seat.id]
           const lead = anyScore && row.rank === 1 && session.seats.length > 1
           const b = burst[seat.id]
+          const editable = scorer.canEdit(seat.id)
           return (
             <div
               key={seat.id}
@@ -82,6 +87,7 @@ export function CounterBoard({ session }: { session: Session }) {
                     </span>
                   )}
                   <button
+                    disabled={!editable}
                     onClick={() => {
                       setValue('')
                       setPad(seat)
@@ -93,29 +99,31 @@ export function CounterBoard({ session }: { session: Session }) {
                   </button>
                 </span>
               </div>
-              <div className="mt-3 flex gap-2 pl-1.5">
-                <button
-                  onClick={() => add(seat.id, -steps[0])}
-                  aria-label={`−${steps[0]}`}
-                  className="flex h-12 w-14 shrink-0 items-center justify-center rounded-2xl bg-ink/6 text-ink/70 transition active:scale-90 dark:bg-white/8 dark:text-white/70"
-                >
-                  <Minus className="size-6" strokeWidth={3} />
-                </button>
-                {steps.slice(0, 4).map((st, i) => (
+              {editable && (
+                <div className="mt-3 flex gap-2 pl-1.5">
                   <button
-                    key={st}
-                    onClick={() => add(seat.id, st)}
-                    className={cx(
-                      'flex h-12 flex-1 items-center justify-center gap-0.5 rounded-2xl text-lg font-black tabular-nums transition active:scale-90',
-                      i === 0 ? 'text-white' : 'bg-ink/6 dark:bg-white/8',
-                    )}
-                    style={i === 0 ? { backgroundColor: seat.color } : undefined}
+                    onClick={() => add(seat.id, -steps[0])}
+                    aria-label={`−${steps[0]}`}
+                    className="flex h-12 w-14 shrink-0 items-center justify-center rounded-2xl bg-ink/6 text-ink/70 transition active:scale-90 dark:bg-white/8 dark:text-white/70"
                   >
-                    {i === 0 ? <Plus className="size-6" strokeWidth={3} /> : `+${st}`}
-                    {i === 0 && st !== 1 && st}
+                    <Minus className="size-6" strokeWidth={3} />
                   </button>
-                ))}
-              </div>
+                  {steps.slice(0, 4).map((st, i) => (
+                    <button
+                      key={st}
+                      onClick={() => add(seat.id, st)}
+                      className={cx(
+                        'flex h-12 flex-1 items-center justify-center gap-0.5 rounded-2xl text-lg font-black tabular-nums transition active:scale-90',
+                        i === 0 ? 'text-white' : 'bg-ink/6 dark:bg-white/8',
+                      )}
+                      style={i === 0 ? { backgroundColor: seat.color } : undefined}
+                    >
+                      {i === 0 ? <Plus className="size-6" strokeWidth={3} /> : `+${st}`}
+                      {i === 0 && st !== 1 && st}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )
         })}
@@ -145,7 +153,18 @@ export function CounterBoard({ session }: { session: Session }) {
         </details>
       )}
 
-      <Sheet open={!!pad} onClose={() => setPad(null)} title={pad && <span className="flex items-center gap-2"><Avatar name={pad.name} color={pad.color} size="sm" />{pad.name}</span>}>
+      <Sheet
+        open={!!pad}
+        onClose={() => setPad(null)}
+        title={
+          pad && (
+            <span className="flex items-center gap-2">
+              <Avatar name={pad.name} color={pad.color} size="sm" />
+              {pad.name}
+            </span>
+          )
+        }
+      >
         <KeypadDisplay value={value} />
         <Keypad value={value} onChange={setValue} allowNegative={false} />
         <div className="mt-3 grid grid-cols-2 gap-3">
