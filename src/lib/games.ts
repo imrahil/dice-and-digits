@@ -77,6 +77,7 @@ export function startSession(game: GameDef, players: Player[], opts: { lowWins: 
       bonus: game.bonus,
       steps: game.steps,
       zeroSum: game.zeroSum,
+      timer: game.mode === 'winner' ? game.timer : undefined,
     },
     seats: players.map((p) => ({ id: p.id, name: p.name, color: p.color })),
     rounds: [],

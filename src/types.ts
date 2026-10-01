@@ -47,7 +47,12 @@ export type Rules = {
    * points (Rummikub). Adds a "winner takes the rest" button to round entry.
    */
   zeroSum?: boolean
+  /** Winner mode: a random countdown each round (Hot Potato). Seconds. */
+  timer?: RoundTimer
 }
+
+/** `hidden`: nobody sees when it will go off; the clock counts up instead. */
+export type RoundTimer = { hidden: boolean; min: number; max: number }
 
 /** Fields every synced document carries (last-write-wins on updatedAt). */
 export type Doc = {

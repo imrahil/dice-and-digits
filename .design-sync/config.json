@@ -82,6 +82,9 @@
       "cardMode": "single",
       "primaryStory": "FourSeats",
       "viewport": "480x900"
+    },
+    "PotatoTimer": {
+      "cardMode": "column"
     }
   },
   "componentSrcMap": {

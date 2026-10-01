@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ArrowDownUp, Flag, LayoutGrid, List, MoreVertical, Plus, QrCode, Radio, Smartphone, Trash2, Undo2 } from 'lucide-react'
+import { ArrowDownUp, Flag, LayoutGrid, List, MoreVertical, Pause, Play as PlayIcon, Plus, QrCode, Radio, Smartphone, Trash2, Undo2 } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { cloudEnabled, forgetLive, liveHandle, liveLink, pushLive, startLive, stopLive } from '../lib/cloud'
 import { nextRound } from '../lib/ops'
@@ -10,6 +10,7 @@ import { buzz } from '../lib/haptics'
 import { navigate } from '../hooks/useRoute'
 import { useNow } from '../hooks/useNow'
 import { useWakeLock } from '../hooks/useWakeLock'
+import { useHotPotatoRound } from '../hooks/useHotPotatoRound'
 import { useLiveHost, type HostRoom } from '../hooks/useLiveHost'
 import { confirm, toast } from '../components/dialogs'
 import { QrShareSheet } from '../components/QrShare'
@@ -65,6 +66,9 @@ function Board({ session }: { session: Session }) {
   })
 
   const mode = session.rules.mode
+  const timer = mode === 'winner' ? session.rules.timer : undefined
+  // Hot Potato: the round clock lives here so the bottom bar can drive it.
+  const round = useHotPotatoRound(timer)
   const view = mode === 'counter' ? counterViewOf(session) : undefined
   const reached = targetReached(session)
   const leader = standings(session)[0]
@@ -109,6 +113,7 @@ function Board({ session }: { session: Session }) {
 
   const undo = () => {
     buzz()
+    round.reset()
     updateSession(session.id, (s) => (mode === 'winner' ? { ...s, rounds: s.rounds.slice(0, -1) } : { ...s, log: s.log.slice(0, -1) }))
   }
 
@@ -229,7 +234,9 @@ function Board({ session }: { session: Session }) {
         </span>
       }
       subtitle={
-        mode === 'rounds' &&
+        timer
+          ? t('potatoSubtitle', { n: session.rounds.length + 1, min: timer.min, max: timer.max })
+          : mode === 'rounds' &&
         [
           tp('nRounds', session.rounds.length),
           duration(now - session.startedAt),
@@ -241,7 +248,7 @@ function Board({ session }: { session: Session }) {
       actions={
         <>
           {liveBadge}
-          {mode !== 'rounds' && (
+          {mode !== 'rounds' && !timer && (
             <span className="px-1 text-sm font-bold text-ink/50 tabular-nums dark:text-white/50">
               {duration(now - session.startedAt)}
             </span>
@@ -277,10 +284,31 @@ function Board({ session }: { session: Session }) {
       {mode === 'counter' && <CounterBoard session={session} scorer={scorer} />}
       {mode === 'rounds' && <RoundsBoard session={session} scorer={scorer} entry={entry} setEntry={setEntry} />}
       {mode === 'sheet' && <SheetBoard session={session} scorer={scorer} />}
-      {mode === 'winner' && <WinnerBoard session={session} scorer={scorer} />}
+      {mode === 'winner' && <WinnerBoard session={session} scorer={scorer} round={round} />}
 
       <BottomBar>
-        {mode === 'rounds' ? (
+        {timer ? (
+          <>
+            <Button size="lg" onClick={finish} aria-label={t('finishGame')} className="shrink-0 !px-4">
+              <Flag className="size-5" />
+            </Button>
+            {round.phase === 'idle' && (
+              <Button variant="primary" size="lg" className="flex-1" onClick={round.start}>
+                <PlayIcon className="size-5" strokeWidth={2.5} /> {t('potatoStart', { n: session.rounds.length + 1 })}
+              </Button>
+            )}
+            {round.phase === 'running' && (
+              <Button size="lg" className="flex-1" onClick={round.reset}>
+                <Pause className="size-5" strokeWidth={2.5} /> {t('potatoStop')}
+              </Button>
+            )}
+            {round.phase === 'boom' && (
+              <Button size="lg" className="flex-1" onClick={round.reset}>
+                {t('potatoSkip')}
+              </Button>
+            )}
+          </>
+        ) : mode === 'rounds' ? (
           <>
             <Button size="lg" onClick={finish} aria-label={t('finishGame')} className="shrink-0 !px-4">
               <Flag className="size-5" />

@@ -85,6 +85,12 @@ function BuiltinView({ game }: { game: GameDef }) {
         )}
         {game.zeroSum && <p className="mt-3 text-sm font-semibold text-ink/60 dark:text-white/60">🏆 {t('zeroSumHint')}</p>}
         {game.mode === 'winner' && <p className="mt-3 text-sm font-semibold text-ink/60 dark:text-white/60">{t('modeWinnerHint')}</p>}
+        {game.timer && (
+          <p className="mt-3 text-sm font-semibold text-ink/60 dark:text-white/60">
+            ⏱️ {t('timerSummary', { min: game.timer.min, max: game.timer.max })}
+            {game.timer.hidden && ` · ${t('timerHidden')}`}
+          </p>
+        )}
         {game.steps && (
           <p className="mt-3 text-sm font-semibold text-ink/60 dark:text-white/60">
             {t('quickButtons')}: {game.steps.map((s) => `+${s}`).join(' ')}
@@ -108,6 +114,8 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
   const [g, setG] = useState<GameDef>(initial)
   const [stepsText, setStepsText] = useState((initial.steps ?? [1, 5, 10]).join(', '))
   const [target, setTarget] = useState(initial.target ? String(initial.target) : '')
+  const [timerMin, setTimerMin] = useState(String(initial.timer?.min ?? 10))
+  const [timerMax, setTimerMax] = useState(String(initial.timer?.max ?? 30))
   const patch = (p: Partial<GameDef>) => setG((x) => ({ ...x, ...p }))
 
   const cats = g.categories ?? []
@@ -128,6 +136,9 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
       .filter((n) => Number.isFinite(n) && n > 0)
       .slice(0, 4)
     const tgt = parseInt(target, 10)
+    // At least 3 s, and max never below min.
+    const lo = Math.max(3, parseInt(timerMin, 10) || 3)
+    const hi = Math.max(lo, parseInt(timerMax, 10) || lo)
 
     saveGame({
       ...g,
@@ -137,6 +148,7 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
       categories: g.mode === 'sheet' ? validCats.map((c) => ({ ...c, name: text(c.name).trim() })) : undefined,
       bonus: g.mode === 'sheet' ? g.bonus : undefined,
       zeroSum: g.mode === 'rounds' ? g.zeroSum : undefined,
+      timer: g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined,
     })
     goBack('games')
   }
@@ -268,6 +280,50 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
             <span className="flex-1 font-semibold">{t('targetScore')}</span>
             <input type="number" inputMode="numeric" min={1} className={cx(inputClass, '!w-28 text-right')} value={target} onChange={(e) => setTarget(e.target.value)} placeholder="—" />
           </label>
+          {g.mode === 'winner' && (
+            <div className="border-t border-edge dark:border-white/8">
+              <Toggle
+                checked={!!g.timer}
+                onChange={(on) => patch({ timer: on ? { hidden: true, min: 10, max: 30 } : undefined })}
+                label={t('roundTimer')}
+                hint={t('roundTimerHint')}
+              />
+            </div>
+          )}
+          {g.mode === 'winner' && g.timer && (
+            <>
+              <div className="border-t border-edge dark:border-white/8">
+                <Toggle
+                  checked={g.timer.hidden}
+                  onChange={(hidden) => patch({ timer: { ...g.timer!, hidden } })}
+                  label={t('timerHidden')}
+                  hint={t('timerHiddenHint')}
+                />
+              </div>
+              <div className="flex items-center gap-2 border-t border-edge py-3 dark:border-white/8">
+                <span className="flex-1 font-semibold">{t('timerRange')}</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={3}
+                  aria-label="min"
+                  className={cx(inputClass, '!w-20 text-right')}
+                  value={timerMin}
+                  onChange={(e) => setTimerMin(e.target.value)}
+                />
+                <span className="font-bold text-ink/50 dark:text-white/50">–</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={3}
+                  aria-label="max"
+                  className={cx(inputClass, '!w-20 text-right')}
+                  value={timerMax}
+                  onChange={(e) => setTimerMax(e.target.value)}
+                />
+              </div>
+            </>
+          )}
           {g.mode === 'counter' && (
             <label className="block border-t border-edge py-3 dark:border-white/8">
               <span className="block font-semibold">{t('quickButtons')}</span>

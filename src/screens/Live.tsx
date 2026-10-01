@@ -216,7 +216,7 @@ function GuestBoard({
     case 'sheet':
       return <SheetBoard session={session} scorer={room.scorer} />
     case 'winner':
-      return <WinnerBoard session={session} scorer={room.scorer} />
+      return <WinnerBoard session={session} scorer={room.scorer} untimed />
   }
 }
 
