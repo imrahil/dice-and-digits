@@ -17,6 +17,7 @@ const emit = () => listeners.forEach((l) => l())
 
 export function confirm(message: string, opts: { confirmLabel?: string; danger?: boolean } = {}): Promise<boolean> {
   confirmState?.resolve(false)
+
   return new Promise((resolve) => {
     confirmState = { message, ...opts, resolve }
     emit()
@@ -24,6 +25,7 @@ export function confirm(message: string, opts: { confirmLabel?: string; danger?:
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined
+
 export function toast(message: string) {
   toastState = { id: Date.now(), message }
   emit()
@@ -36,6 +38,7 @@ export function toast(message: string) {
 
 const subscribe = (l: () => void) => {
   listeners.add(l)
+
   return () => listeners.delete(l)
 }
 

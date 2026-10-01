@@ -14,13 +14,18 @@ export function QrCode({ text, className }: { text: string; className?: string }
   const { path, size } = useMemo(() => {
     const qr = encode(text, { ecc: 'M', border: 2 })
     let d = ''
+
     qr.data.forEach((row, y) =>
       row.forEach((on, x) => {
-        if (on) d += `M${x} ${y}h1v1h-1z`
+        if (on) {
+          d += `M${x} ${y}h1v1h-1z`
+        }
       }),
     )
+
     return { path: d, size: qr.size }
   }, [text])
+
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className={className} shapeRendering="crispEdges" role="img" aria-label={text}>
       <rect width={size} height={size} fill="#fff" />
@@ -33,11 +38,15 @@ export async function shareUrl(url: string, title: string, copied: string) {
   if (navigator.share) {
     try {
       await navigator.share({ title, url })
+
       return
     } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        return
+      }
     }
   }
+
   await copyUrl(url, copied)
 }
 
@@ -71,6 +80,7 @@ export function QrShareSheet({
   children?: ReactNode
 }) {
   const { t } = useI18n()
+
   return (
     <Sheet open={open} onClose={onClose} title={title}>
       <div className="flex flex-col items-center">

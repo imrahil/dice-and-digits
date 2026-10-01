@@ -23,9 +23,13 @@ import type { Session } from '../types'
 export function Play({ id }: { id: string }) {
   const session = useStore((s) => s.sessions[id])
   const done = Boolean(session?.finishedAt)
+
   useEffect(() => {
-    if (done) navigate(`result/${id}`, { replace: true })
+    if (done) {
+      navigate(`result/${id}`, { replace: true })
+    }
   }, [done, id])
+
   if (!session || session.deleted) {
     return (
       <Page back="">
@@ -33,7 +37,11 @@ export function Play({ id }: { id: string }) {
       </Page>
     )
   }
-  if (done) return null
+
+  if (done) {
+    return null
+  }
+
   return <Board key={id} session={session} />
 }
 
@@ -46,6 +54,7 @@ function Board({ session }: { session: Session }) {
   const [live, setLive] = useState(() => liveHandle(session.id))
   const [qr, setQr] = useState(false)
   const scorer = useMemo(() => hostScorer(session.id), [session.id])
+
   useWakeLock(keepAwake)
 
   // While live, this phone is the room's host: it applies players' ops and mirrors every change.
@@ -61,18 +70,35 @@ function Board({ session }: { session: Session }) {
 
   const finish = async () => {
     const msg = isEmpty(session) ? t('finishEmpty') : t('finishConfirm')
-    if (!(await confirm(msg, { confirmLabel: t('finishGame') }))) return
+
+    if (!(await confirm(msg, { confirmLabel: t('finishGame') }))) {
+      return
+    }
+
     buzz([20, 60, 40])
     const done = { ...session, finishedAt: Date.now() }
+
     updateSession(session.id, () => done)
-    if (live) pushLive(done) // everyone following sees the final result; the room expires on its own
+
+    if (live) {
+      // everyone following sees the final result; the room expires on its own
+      pushLive(done)
+    }
+
     navigate(`result/${session.id}`, { replace: true })
   }
 
   const discard = async () => {
     setMenu(false)
-    if (!(await confirm(t('abandonConfirm'), { confirmLabel: t('abandonGame'), danger: true }))) return
-    if (live) stopLive(session.id)
+
+    if (!(await confirm(t('abandonConfirm'), { confirmLabel: t('abandonGame'), danger: true }))) {
+      return
+    }
+
+    if (live) {
+      stopLive(session.id)
+    }
+
     removeSession(session.id)
     navigate('', { replace: true })
   }
@@ -81,11 +107,16 @@ function Board({ session }: { session: Session }) {
     buzz()
     updateSession(session.id, (s) => (mode === 'winner' ? { ...s, rounds: s.rounds.slice(0, -1) } : { ...s, log: s.log.slice(0, -1) }))
   }
+
   const canUndo = mode === 'winner' ? session.rounds.length > 0 : session.log.length > 0
 
   const goLive = async () => {
     setMenu(false)
-    if (live) return setQr(true)
+
+    if (live) {
+      return setQr(true)
+    }
+
     try {
       setLive(await startLive(session))
       setQr(true)
@@ -227,6 +258,7 @@ function Board({ session }: { session: Session }) {
 /** Who scores from their own phone; the host can free a seat (e.g. a dead battery). */
 function JoinedSeats({ session, room, onStop }: { session: Session; room: HostRoom; onStop: () => void }) {
   const { t, tp } = useI18n()
+
   return (
     <div className="mt-4">
       <div className="mb-2 flex items-center justify-between gap-2 px-1">
@@ -236,6 +268,7 @@ function JoinedSeats({ session, room, onStop }: { session: Session; room: HostRo
       <div className="space-y-1.5">
         {session.seats.map((s) => {
           const joined = room.seats[s.id]
+
           return (
             <div key={s.id} className="flex items-center gap-3 rounded-2xl bg-card px-2 py-1.5 ring-1 ring-edge dark:bg-night dark:ring-white/8">
               <Avatar name={s.name} color={s.color} size="sm" />

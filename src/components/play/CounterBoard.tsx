@@ -20,13 +20,17 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
 
   const [burst, setBurst] = useState<Record<string, { sum: number; key: number }>>({})
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+
   useEffect(() => () => Object.values(timers.current).forEach(clearTimeout), [])
 
   const [pad, setPad] = useState<Seat | null>(null)
   const [value, setValue] = useState('')
 
   const add = (p: string, d: number) => {
-    if (!d) return
+    if (!d) {
+      return
+    }
+
     buzz(d > 0 ? 8 : [4, 30, 4])
     scorer.apply([{ kind: 'add', p, d }])
     setBurst((b) => ({ ...b, [p]: { sum: (b[p]?.sum ?? 0) + d, key: Date.now() } }))
@@ -35,7 +39,9 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
       () =>
         setBurst((b) => {
           const next = { ...b }
+
           delete next[p]
+
           return next
         }),
       BURST_MS,
@@ -44,7 +50,11 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
 
   const applyPad = (sign: 1 | -1) => {
     const n = parseKeypad(value)
-    if (pad && n !== null) add(pad.id, sign * n)
+
+    if (pad && n !== null) {
+      add(pad.id, sign * n)
+    }
+
     setPad(null)
   }
 
@@ -56,6 +66,7 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
           const lead = anyScore && row.rank === 1 && session.seats.length > 1
           const b = burst[seat.id]
           const editable = scorer.canEdit(seat.id)
+
           return (
             <div
               key={seat.id}
@@ -137,6 +148,7 @@ export function CounterBoard({ session, scorer }: { session: Session; scorer: Sc
           <ul className="mt-3 max-h-72 space-y-1.5 overflow-y-auto">
             {[...session.log].reverse().map((e, i) => {
               const seat = session.seats.find((s) => s.id === e.p)
+
               return (
                 <li key={session.log.length - i} className="flex items-center gap-2 text-sm">
                   <span className="w-12 text-ink/45 tabular-nums dark:text-white/45">{time(e.t)}</span>

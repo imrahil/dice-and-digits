@@ -26,6 +26,7 @@ type CloudState = {
 function readJson<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key)
+
     return raw ? (JSON.parse(raw) as T) : fallback
   } catch {
     return fallback
@@ -37,10 +38,15 @@ const listeners = new Set<() => void>()
 
 function setCloud(patch: Partial<CloudState>) {
   cloud = { ...cloud, ...patch }
+
   if ('group' in patch) {
-    if (cloud.group) localStorage.setItem(GROUP_KEY, JSON.stringify(cloud.group))
-    else localStorage.removeItem(GROUP_KEY)
+    if (cloud.group) {
+      localStorage.setItem(GROUP_KEY, JSON.stringify(cloud.group))
+    } else {
+      localStorage.removeItem(GROUP_KEY)
+    }
   }
+
   listeners.forEach((l) => l())
 }
 
@@ -48,6 +54,7 @@ export function useCloud(): CloudState {
   return useSyncExternalStore(
     (l) => {
       listeners.add(l)
+
       return () => listeners.delete(l)
     },
     () => cloud,
@@ -56,10 +63,18 @@ export function useCloud(): CloudState {
 
 async function api<T>(path: string, init: RequestInit & { token?: string } = {}): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (init.token) headers.Authorization = `Bearer ${init.token}`
+
+  if (init.token) {
+    headers.Authorization = `Bearer ${init.token}`
+  }
+
   const res = await fetch(API_URL + path, { ...init, headers })
   const body = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`)
+
+  if (!res.ok) {
+    throw new Error(body?.error ?? `HTTP ${res.status}`)
+  }
+
   return body as T
 }
 
@@ -72,6 +87,7 @@ export async function createGroup(name: string) {
     method: 'POST',
     body: JSON.stringify({ name }),
   })
+
   setCloud({ group: { ...g, cursor: 0 }, error: null })
   markAllDirty()
   await syncNow()
@@ -85,6 +101,7 @@ export async function lookupInvite(token: string): Promise<{ id: string; name: s
 export async function joinGroup(token: string) {
   const dot = token.indexOf('.')
   const info = await lookupInvite(token)
+
   setCloud({ group: { id: info.id, secret: token.slice(dot + 1), name: info.name, cursor: 0 }, error: null })
   markAllDirty()
   await syncNow()
@@ -96,6 +113,7 @@ export function leaveGroup() {
 
 export function inviteLink(g: Group) {
   const base = location.href.split('#')[0]
+
   return `${base}#/join/${groupToken(g)}`
 }
 
@@ -114,32 +132,44 @@ let inflight: Promise<void> | null = null
 
 /** Push dirty docs, pull everything new. Concurrent calls share one run. */
 export function syncNow(): Promise<void> {
-  if (!cloudEnabled || !cloud.group) return Promise.resolve()
+  if (!cloudEnabled || !cloud.group) {
+    return Promise.resolve()
+  }
+
   inflight ??= run().finally(() => {
     inflight = null
   })
+
   return inflight
 }
 
 async function run() {
   setCloud({ syncing: true })
+
   try {
     let more = true
     let rounds = 0
+
     while (more && rounds++ < 50) {
       const g = cloud.group
-      if (!g) return
+
+      if (!g) {
+        return
+      }
+
       const batch = dirtyDocs().slice(0, MAX_PUSH)
       const res = await api<SyncResponse>('/api/sync', {
         method: 'POST',
         token: groupToken(g),
         body: JSON.stringify({ cursor: g.cursor, docs: batch }),
       })
+
       clearDirty(batch)
       applyRemote(res.docs)
       setCloud({ group: { ...g, name: res.group.name, cursor: res.cursor, lastSync: Date.now() } })
       more = res.more || (batch.length === MAX_PUSH && dirtyDocs().length > 0)
     }
+
     setCloud({ error: null })
   } catch (e) {
     setCloud({ error: e instanceof Error ? e.message : String(e) })
@@ -162,6 +192,7 @@ export function liveHandle(sessionId: string): LiveHandle | undefined {
 
 export function forgetLive(sessionId: string) {
   const all = liveHandles()
+
   delete all[sessionId]
   localStorage.setItem(LIVE_KEY, JSON.stringify(all))
 }
@@ -172,26 +203,38 @@ export function liveLink(code: string) {
 
 export async function startLive(session: Session): Promise<LiveHandle> {
   const h = await api<LiveHandle>('/api/live', { method: 'POST', body: JSON.stringify({ data: { session } }) })
+
   localStorage.setItem(LIVE_KEY, JSON.stringify({ ...liveHandles(), [session.id]: h }))
+
   return h
 }
 
 /** HTTP push of the whole session — used for the final state as a game ends. */
 export async function pushLive(session: Session) {
   const h = liveHandle(session.id)
-  if (!h) return
+
+  if (!h) {
+    return
+  }
+
   try {
     await api(`/api/live/${h.code}`, { method: 'PUT', token: h.token, body: JSON.stringify({ data: { session } }) })
   } catch (e) {
     // The room expired or was ended elsewhere: stop trying.
-    if (e instanceof Error && /not found/i.test(e.message)) forgetLive(session.id)
+    if (e instanceof Error && /not found/i.test(e.message)) {
+      forgetLive(session.id)
+    }
   }
 }
 
 export async function stopLive(sessionId: string) {
   const h = liveHandle(sessionId)
+
   forgetLive(sessionId)
-  if (h) await api(`/api/live/${h.code}`, { method: 'DELETE', token: h.token }).catch(() => {})
+
+  if (h) {
+    await api(`/api/live/${h.code}`, { method: 'DELETE', token: h.token }).catch(() => {})
+  }
 }
 
 export async function fetchLive(code: string) {

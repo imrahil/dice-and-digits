@@ -35,6 +35,7 @@ const TAB_OF: Record<string, string> = { players: 'more', games: 'more', result:
 
 function Router({ route }: { route: string[] }) {
   const [head = '', a] = route
+
   switch (head) {
     case '':
       return <Home />
@@ -67,11 +68,13 @@ function Router({ route }: { route: string[] }) {
 
 function BottomNav({ active }: { active: string }) {
   const { t } = useI18n()
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-edge bg-paper/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md dark:border-white/8 dark:bg-night/90">
       <div className="mx-auto flex max-w-2xl">
         {TABS.map(({ path, icon: Icon, label }) => {
           const on = active === path
+
           return (
             <button
               key={path}
@@ -100,7 +103,11 @@ function UpdateBanner() {
     needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW()
-  if (!needRefresh) return null
+
+  if (!needRefresh) {
+    return null
+  }
+
   return (
     <div className="fixed inset-x-0 top-[calc(env(safe-area-inset-top)+0.5rem)] z-[70] flex justify-center px-4">
       <div className="flex items-center gap-3 rounded-2xl bg-ink py-2 pr-2 pl-4 text-sm font-bold text-white shadow-xl dark:bg-white dark:text-ink">
@@ -120,13 +127,18 @@ function useAutoSync() {
   const hasGroup = Boolean(group)
 
   useEffect(() => {
-    if (!cloudEnabled || !hasGroup) return
+    if (!cloudEnabled || !hasGroup) {
+      return
+    }
+
     syncNow()
     const onVisible = () => document.visibilityState === 'visible' && syncNow()
     const onOnline = () => syncNow()
+
     document.addEventListener('visibilitychange', onVisible)
     window.addEventListener('online', onOnline)
     const id = setInterval(() => document.visibilityState === 'visible' && syncNow(), 5 * 60_000)
+
     return () => {
       document.removeEventListener('visibilitychange', onVisible)
       window.removeEventListener('online', onOnline)
@@ -135,8 +147,12 @@ function useAutoSync() {
   }, [hasGroup])
 
   useEffect(() => {
-    if (!cloudEnabled || !hasGroup || dirty.length === 0) return
+    if (!cloudEnabled || !hasGroup || dirty.length === 0) {
+      return
+    }
+
     const id = setTimeout(() => syncNow(), 2500)
+
     return () => clearTimeout(id)
   }, [dirty, hasGroup])
 }
@@ -144,6 +160,7 @@ function useAutoSync() {
 export function App() {
   const settings = useStore((s) => s.settings)
   const route = useRoute()
+
   useTheme(settings.theme)
   useAutoSync()
 

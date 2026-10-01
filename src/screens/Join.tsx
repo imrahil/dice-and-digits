@@ -15,7 +15,10 @@ export function Join({ token }: { token: string }) {
   const already = group && token.startsWith(group.id + '.')
 
   useEffect(() => {
-    if (!cloudEnabled || already) return
+    if (!cloudEnabled || already) {
+      return
+    }
+
     lookupInvite(token)
       .then((g) => setName(g.name))
       .catch(() => setBad(true))
@@ -23,6 +26,7 @@ export function Join({ token }: { token: string }) {
 
   const join = async () => {
     setBusy(true)
+
     try {
       await joinGroup(token)
       toast(t('joinedGroup', { name: name ?? '' }))

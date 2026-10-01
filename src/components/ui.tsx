@@ -21,6 +21,7 @@ export function Page({
   bare?: boolean
 }) {
   const { t } = useI18n()
+
   return (
     <div className={cx('mx-auto w-full max-w-2xl', bare ? 'pb-[calc(env(safe-area-inset-bottom)+1rem)]' : 'pb-28')}>
       {(title || back !== undefined || actions) && (
@@ -85,6 +86,7 @@ export function IconButton({
 
 export function Card({ className, children, onClick }: { className?: string; children: ReactNode; onClick?: () => void }) {
   const Tag = onClick ? 'button' : 'div'
+
   return (
     <Tag
       onClick={onClick}
@@ -118,6 +120,7 @@ export function Avatar({ name, color, size = 'md' }: { name: string; color: stri
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? '')
     .join('')
+
   return (
     <span
       aria-hidden
@@ -146,19 +149,29 @@ export function Sheet({
   children: ReactNode
 }) {
   const { t } = useI18n()
+
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      return
+    }
+
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+
     document.addEventListener('keydown', onKey)
     const prev = document.body.style.overflow
+
     document.body.style.overflow = 'hidden'
+
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = prev
     }
   }, [open, onClose])
 
-  if (!open) return null
+  if (!open) {
+    return null
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-night/50 backdrop-blur-[2px] sm:items-center" onClick={onClose}>
       <div

@@ -34,6 +34,7 @@ export function More() {
   const doExport = () => {
     const blob = new Blob([exportBackup()], { type: 'application/json' })
     const a = document.createElement('a')
+
     a.href = URL.createObjectURL(blob)
     a.download = `dice-and-digits-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
@@ -42,6 +43,7 @@ export function More() {
 
   const doImport = async (file: File) => {
     const n = importBackup(await file.text())
+
     toast(n === null ? t('importFailed') : t('importDone', { n }))
   }
 
@@ -101,7 +103,11 @@ export function More() {
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0]
-              if (f) doImport(f)
+
+              if (f) {
+                doImport(f)
+              }
+
               e.target.value = ''
             }}
           />
@@ -132,8 +138,12 @@ function CloudSection() {
   const [qr, setQr] = useState(false)
 
   const create = async () => {
-    if (!name.trim()) return
+    if (!name.trim()) {
+      return
+    }
+
     setBusy(true)
+
     try {
       await createGroup(name.trim())
     } catch (e) {
@@ -144,7 +154,9 @@ function CloudSection() {
   }
 
   const leave = async () => {
-    if (await confirm(t('leaveConfirm'), { confirmLabel: t('leaveGroup'), danger: true })) leaveGroup()
+    if (await confirm(t('leaveConfirm'), { confirmLabel: t('leaveGroup'), danger: true })) {
+      leaveGroup()
+    }
   }
 
   return (

@@ -11,6 +11,7 @@ type Tab = 'dice' | 'picker' | 'timer'
 export function Tools({ tab }: { tab?: string }) {
   const { t } = useI18n()
   const active: Tab = tab === 'picker' || tab === 'timer' ? tab : 'dice'
+
   return (
     <Page title={t('navTools')}>
       <Segmented
@@ -46,6 +47,7 @@ const PIPS: Record<number, [number, number][]> = {
 function Die({ value, sides, rollKey, i }: { value: number; sides: number; rollKey: number; i: number }) {
   const { t } = useI18n()
   const coin = sides === 2
+
   return (
     <div
       key={rollKey}
@@ -81,6 +83,7 @@ function Dice() {
   const roll = (n = count, s = sides) => {
     buzz([10, 30, 10, 30, 20])
     const next = Array.from({ length: n }, () => 1 + Math.floor(Math.random() * s))
+
     setValues(next)
     setRollKey((k) => k + 1)
     setLog((l) => [next, ...l].slice(0, 6))
@@ -104,6 +107,7 @@ function Dice() {
           value={sides}
           onChange={(e) => {
             const s = Number(e.target.value)
+
             setSides(s)
             roll(count, s)
           }}
@@ -164,42 +168,63 @@ function FingerPicker() {
 
   // Every time the set of fingers changes, restart the countdown.
   const idKey = ids.join(',')
+
   useEffect(() => {
     clearTimeout(timer.current)
-    if (chosen !== null || ids.length < 2) return
+
+    if (chosen !== null || ids.length < 2) {
+      return
+    }
+
     timer.current = setTimeout(() => {
       const pick = ids[Math.floor(Math.random() * ids.length)]
+
       setChosen(pick)
       buzz([40, 60, 120])
     }, HOLD_MS)
+
     return () => clearTimeout(timer.current)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idKey, chosen])
 
   const pos = (e: RPointerEvent) => {
     const r = area.current!.getBoundingClientRect()
+
     return { x: e.clientX - r.left, y: e.clientY - r.top }
   }
 
   const down = (e: RPointerEvent) => {
     e.preventDefault()
-    if (chosen !== null) return
+
+    if (chosen !== null) {
+      return
+    }
+
     buzz(6)
     setTouches((tt) => {
       const used = new Set(Object.values(tt).map((x) => x.color))
       const color = PLAYER_COLORS.find((c) => !used.has(c)) ?? PLAYER_COLORS[0]
+
       return { ...tt, [e.pointerId]: { ...pos(e), color } }
     })
   }
+
   const move = (e: RPointerEvent) => {
     const p = pos(e)
+
     setTouches((tt) => (tt[e.pointerId] ? { ...tt, [e.pointerId]: { ...tt[e.pointerId], ...p } } : tt))
   }
+
   const up = (e: RPointerEvent) => {
     setTouches((tt) => {
       const next = { ...tt }
+
       delete next[e.pointerId]
-      if (Object.keys(next).length === 0) setChosen(null)
+
+      if (Object.keys(next).length === 0) {
+        setChosen(null)
+      }
+
       return next
     })
   }
@@ -223,6 +248,7 @@ function FingerPicker() {
         const p = touches[id]
         const win = chosen === id
         const lose = chosen !== null && !win
+
         return (
           <span
             key={id}
@@ -252,6 +278,7 @@ function beep() {
     const ctx = new AudioContext()
     const o = ctx.createOscillator()
     const g = ctx.createGain()
+
     o.connect(g)
     g.connect(ctx.destination)
     o.frequency.value = 880
@@ -276,11 +303,16 @@ function Timer() {
   const firedRef = useRef(false)
 
   useEffect(() => {
-    if (endsAt === null) return
+    if (endsAt === null) {
+      return
+    }
+
     const id = setInterval(() => {
       const remain = Math.ceil((endsAt - Date.now()) / 1000)
+
       setLeft(remain)
       tick((x) => x + 1)
+
       if (remain <= 0 && !firedRef.current) {
         firedRef.current = true
         buzz([200, 100, 200, 100, 400])
@@ -289,27 +321,38 @@ function Timer() {
         setLeft(0)
       }
     }, 200)
+
     return () => clearInterval(id)
   }, [endsAt])
 
   const running = endsAt !== null
+
   const start = () => {
     firedRef.current = false
     const from = left > 0 ? left : length
+
     setLeft(from)
     setEndsAt(Date.now() + from * 1000)
   }
+
   const pause = () => setEndsAt(null)
+
   const reset = (len = length) => {
     setEndsAt(null)
     setLength(len)
     setLeft(len)
   }
+
   const adjust = (d: number) => {
     const len = Math.max(10, length + d)
+
     setLength(len)
-    if (!running) setLeft(len)
+
+    if (!running) {
+      setLeft(len)
+    }
   }
+
   /** Tap the clock: next player's turn starts with a full timer. */
   const restart = () => {
     buzz(10)

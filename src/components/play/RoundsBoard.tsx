@@ -26,6 +26,7 @@ export function RoundsTable({ session, onRow }: { session: Session; onRow?: (i: 
           <span />
           {session.seats.map((s) => {
             const lead = scored && byId[s.id].rank === 1
+
             return (
               <div key={s.id} className={cx('flex flex-col items-center gap-1 px-1 pt-3 pb-2', lead && 'bg-gold/12')}>
                 <span className="relative">
@@ -50,6 +51,7 @@ export function RoundsTable({ session, onRow }: { session: Session; onRow?: (i: 
             <span className="text-center text-xs font-black text-ink/40 tabular-nums dark:text-white/40">{i + 1}</span>
             {session.seats.map((s) => {
               const v = r[s.id]
+
               return (
                 <span key={s.id} className={cx('text-center text-lg font-bold tabular-nums', v != null && v < 0 && 'text-danger')}>
                   {v == null ? '·' : winner ? (v ? (session.rules.lowWins ? '🔥' : '🏆') : '·') : num(v)}
@@ -75,6 +77,7 @@ export function RoundsBoard({
   setEntry: (i: number | null) => void
 }) {
   const { t } = useI18n()
+
   return (
     <>
       <RoundsTable session={session} onRow={setEntry} />
@@ -107,6 +110,7 @@ function RoundEntry({ session, scorer, index, onClose }: { session: Session; sco
     const ops = seats
       .filter((s) => s.id in typed || current[s.id] == null)
       .map((s) => ({ kind: 'round' as const, p: s.id, index, v: parseKeypad(typed[s.id] ?? '') ?? 0 }))
+
     buzz([8, 40, 8])
     scorer.apply(ops)
     onClose()
@@ -117,7 +121,10 @@ function RoundEntry({ session, scorer, index, onClose }: { session: Session; sco
     onClose()
   }
 
-  if (!seat) return null
+  if (!seat) {
+    return null
+  }
+
   const twoCol = seats.length > 4
 
   return (
@@ -138,6 +145,7 @@ function RoundEntry({ session, scorer, index, onClose }: { session: Session; sco
       <div className={cx('mb-3 grid gap-1.5', twoCol && 'grid-cols-2')}>
         {seats.map((s, i) => {
           const v = shown(s.id)
+
           return (
             <button
               key={s.id}
@@ -161,6 +169,7 @@ function RoundEntry({ session, scorer, index, onClose }: { session: Session; sco
           className="mb-2 flex w-full items-center gap-3 rounded-2xl bg-gold/12 px-3 py-2 text-left transition active:scale-[0.98]"
           onClick={() => {
             const others = seats.filter((s) => s.id !== seat.id).map((s) => parseKeypad(shown(s.id)) ?? 0)
+
             setTyped((x) => ({ ...x, [seat.id]: String(zeroSumWinner(others)) }))
           }}
         >

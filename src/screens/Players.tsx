@@ -63,13 +63,19 @@ function PlayerEditor({ player, isNew, onClose }: { player: Player; isNew: boole
   const [color, setColor] = useState(player.color)
 
   const save = () => {
-    if (!name.trim()) return
+    if (!name.trim()) {
+      return
+    }
+
     savePlayer({ ...player, name: name.trim(), color })
     onClose()
   }
 
   const del = async () => {
-    if (!(await confirm(t('deletePlayerConfirm', { name: player.name }), { confirmLabel: t('delete'), danger: true }))) return
+    if (!(await confirm(t('deletePlayerConfirm', { name: player.name }), { confirmLabel: t('delete'), danger: true }))) {
+      return
+    }
+
     removePlayer(player.id)
     onClose()
   }

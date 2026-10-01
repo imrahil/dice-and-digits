@@ -22,6 +22,7 @@ export function Podium({ table }: { table: Standing[] }) {
   const top = table.slice(0, 3)
   const order = top.length === 3 ? [top[1], top[0], top[2]] : top.length === 2 ? [top[1], top[0]] : top
   const height = (rank: number) => (rank === 1 ? 'h-28' : rank === 2 ? 'h-20' : 'h-14')
+
   return (
     <div className="flex items-end justify-center gap-2 pt-4">
       {order.map((r) => (
@@ -48,7 +49,11 @@ export function Podium({ table }: { table: Standing[] }) {
 function resultText(s: Session, i18n: ReturnType<typeof useI18n>) {
   const { t, text, date, num } = i18n
   const lines = [`${s.emoji} ${t('shareText', { game: text(s.rules.name), date: date(s.finishedAt ?? s.startedAt) })}`, '']
-  for (const r of standings(s)) lines.push(`${MEDAL[r.rank - 1] ?? `${r.rank}.`} ${r.seat.name} — ${num(r.total)}`)
+
+  for (const r of standings(s)) {
+    lines.push(`${MEDAL[r.rank - 1] ?? `${r.rank}.`} ${r.seat.name} — ${num(r.total)}`)
+  }
+
   return lines.join('\n')
 }
 
@@ -60,8 +65,12 @@ export function Result({ id }: { id: string }) {
 
   // Save notes shortly after typing stops.
   useEffect(() => {
-    if (!session || notes === (session.notes ?? '')) return
+    if (!session || notes === (session.notes ?? '')) {
+      return
+    }
+
     const h = setTimeout(() => updateSession(id, (s) => ({ ...s, notes })), 600)
+
     return () => clearTimeout(h)
   }, [notes, id, session])
 
@@ -89,25 +98,34 @@ export function Result({ id }: { id: string }) {
       players,
       { lowWins: session.rules.lowWins, target: session.rules.target },
     )
+
     navigate(`play/${s.id}`, { replace: true })
   }
 
   const share = async () => {
     const body = resultText(session, i18n)
+
     if (navigator.share) {
       try {
         await navigator.share({ text: body })
+
         return
       } catch (e) {
-        if (e instanceof DOMException && e.name === 'AbortError') return
+        if (e instanceof DOMException && e.name === 'AbortError') {
+          return
+        }
       }
     }
+
     await navigator.clipboard?.writeText(body)
     toast(t('linkCopied'))
   }
 
   const del = async () => {
-    if (!(await confirm(t('deleteGameConfirm'), { confirmLabel: t('delete'), danger: true }))) return
+    if (!(await confirm(t('deleteGameConfirm'), { confirmLabel: t('delete'), danger: true }))) {
+      return
+    }
+
     removeSession(id)
     navigate('history', { replace: true })
   }

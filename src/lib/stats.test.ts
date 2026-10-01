@@ -37,6 +37,7 @@ describe('stats', () => {
 
   it('player stats: shared wins count for everyone, solo games have no winner', () => {
     const rows = Object.fromEntries(playerStats(sessions, {}).map((r) => [r.id, r]))
+
     expect(rows.a).toMatchObject({ plays: 4, wins: 2 })
     expect(rows.a.winRate).toBeCloseTo(2 / 3)
     expect(rows.b).toMatchObject({ plays: 3, wins: 2, winRate: 2 / 3 })
@@ -45,11 +46,13 @@ describe('stats', () => {
 
   it('roster names win over the name stored in old games', () => {
     const rows = playerStats(sessions, { a: { id: 'a', name: 'Ania', color: '#f00', updatedAt: 1 } })
+
     expect(rows.find((r) => r.id === 'a')?.name).toBe('Ania')
   })
 
   it('game stats keep the record and the average winning score', () => {
     const [g] = gameStats(sessions)
+
     expect(g.plays).toBe(4)
     expect(g.record).toMatchObject({ total: 12, name: 'A' })
     expect(g.avgWinning).toBe(Math.round((10 + 9 + 8 + 12) / 4))

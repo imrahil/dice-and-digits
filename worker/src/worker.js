@@ -45,17 +45,23 @@ class HttpError extends Error {
 
 function randomCode() {
   const b = crypto.getRandomValues(new Uint8Array(6))
+
   return [...b].map((x) => CODE_ALPHABET[x % CODE_ALPHABET.length]).join('')
 }
 
 function bearer(request) {
   const h = request.headers.get('Authorization') ?? ''
+
   return h.startsWith('Bearer ') ? h.slice(7).trim() : ''
 }
 
 async function readJson(request) {
   const text = await request.text()
-  if (text.length > LIMITS.bodyBytes) throw new HttpError(413, 'Body too large')
+
+  if (text.length > LIMITS.bodyBytes) {
+    throw new HttpError(413, 'Body too large')
+  }
+
   try {
     return JSON.parse(text)
   } catch {
@@ -64,7 +70,10 @@ async function readJson(request) {
 }
 
 function cleanName(name) {
-  if (typeof name !== 'string') return ''
+  if (typeof name !== 'string') {
+    return ''
+  }
+
   return name.trim().slice(0, LIMITS.nameLength)
 }
 
@@ -84,9 +93,14 @@ function corsHeaders(request, env) {
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   }
+
   // Reads are public (a live link must open anywhere); writes are origin-gated below.
-  if (origin && (allowed.length === 0 || allowed.includes(origin))) h['Access-Control-Allow-Origin'] = origin
-  else h['Access-Control-Allow-Origin'] = '*'
+  if (origin && (allowed.length === 0 || allowed.includes(origin))) {
+    h['Access-Control-Allow-Origin'] = origin
+  } else {
+    h['Access-Control-Allow-Origin'] = '*'
+  }
+
   return h
 }
 
@@ -101,7 +115,10 @@ function json(body, status = 200, extra = {}) {
 function checkWriteOrigin(request, env) {
   const origin = request.headers.get('Origin')
   const allowed = allowedOrigins(env)
-  if (origin && allowed.length && !allowed.includes(origin)) throw new HttpError(403, 'Origin not allowed')
+
+  if (origin && allowed.length && !allowed.includes(origin)) {
+    throw new HttpError(403, 'Origin not allowed')
+  }
 }
 
 // ---- groups & sync ---------------------------------------------------------
@@ -109,24 +126,42 @@ function checkWriteOrigin(request, env) {
 async function authGroup(request, env) {
   const token = bearer(request)
   const dot = token.indexOf('.')
-  if (dot < 1) throw new HttpError(401, 'Missing group token')
+
+  if (dot < 1) {
+    throw new HttpError(401, 'Missing group token')
+  }
+
   const id = token.slice(0, dot)
   const secret = token.slice(dot + 1)
-  if (!ID_RE.test(id)) throw new HttpError(401, 'Bad group token')
+
+  if (!ID_RE.test(id)) {
+    throw new HttpError(401, 'Bad group token')
+  }
+
   const group = await env.DB.prepare('SELECT id, name, secret_hash FROM groups WHERE id = ?1').bind(id).first()
-  if (!group || !sameHash(group.secret_hash, await sha256(secret))) throw new HttpError(401, 'Unknown group')
+
+  if (!group || !sameHash(group.secret_hash, await sha256(secret))) {
+    throw new HttpError(401, 'Unknown group')
+  }
+
   return group
 }
 
 async function createGroup(request, env) {
   const body = await readJson(request)
   const name = cleanName(body?.name)
-  if (!name) throw new HttpError(400, 'Name required')
+
+  if (!name) {
+    throw new HttpError(400, 'Name required')
+  }
+
   const id = crypto.randomUUID()
   const secret = randomString(24)
+
   await env.DB.prepare('INSERT INTO groups (id, name, secret_hash, created_at, rev) VALUES (?1, ?2, ?3, ?4, 0)')
     .bind(id, name, await sha256(secret), Date.now())
     .run()
+
   return json({ id, secret, name }, 201)
 }
 
@@ -147,24 +182,39 @@ export async function sync(request, env) {
   const body = await readJson(request)
   const cursor = Number.isInteger(body?.cursor) && body.cursor > 0 ? body.cursor : 0
   const incoming = Array.isArray(body?.docs) ? body.docs : []
-  if (incoming.length > LIMITS.docsPerPush) throw new HttpError(413, `At most ${LIMITS.docsPerPush} docs per push`)
+
+  if (incoming.length > LIMITS.docsPerPush) {
+    throw new HttpError(413, `At most ${LIMITS.docsPerPush} docs per push`)
+  }
 
   const docs = []
+
   for (const d of incoming) {
-    if (!validDoc(d)) throw new HttpError(400, 'Invalid doc')
+    if (!validDoc(d)) {
+      throw new HttpError(400, 'Invalid doc')
+    }
+
     const data = JSON.stringify(d.data)
-    if (data.length > LIMITS.docBytes) throw new HttpError(413, `Doc ${d.id} too large`)
+
+    if (data.length > LIMITS.docBytes) {
+      throw new HttpError(413, `Doc ${d.id} too large`)
+    }
+
     docs.push({ kind: d.kind, id: d.id, updatedAt: Math.trunc(d.updatedAt), data })
   }
 
   if (docs.length) {
     const { n } = await env.DB.prepare('SELECT COUNT(*) AS n FROM docs WHERE group_id = ?1').bind(group.id).first()
-    if (n + docs.length > LIMITS.docsPerGroup) throw new HttpError(507, 'Group is full')
+
+    if (n + docs.length > LIMITS.docsPerGroup) {
+      throw new HttpError(507, 'Group is full')
+    }
 
     // One transaction: bump the group rev, then upsert every doc at that rev.
     // The WHERE on the upsert is last-write-wins: an older edit never
     // overwrites a newer one, whichever phone syncs first.
     const stmts = [env.DB.prepare('UPDATE groups SET rev = rev + 1 WHERE id = ?1').bind(group.id)]
+
     for (const d of docs) {
       stmts.push(
         env.DB.prepare(
@@ -176,6 +226,7 @@ export async function sync(request, env) {
         ).bind(group.id, d.kind, d.id, d.updatedAt, d.data),
       )
     }
+
     await env.DB.batch(stmts)
   }
 
@@ -190,11 +241,14 @@ export async function sync(request, env) {
 
   let rows = results
   let more = false
+
   if (rows.length > LIMITS.pageSize) {
     more = true
     const lastRev = rows[rows.length - 1].rev
+
     rows = rows.filter((r) => r.rev !== lastRev)
   }
+
   const nextCursor = rows.length ? rows[rows.length - 1].rev : cursor
 
   return json({
@@ -209,8 +263,15 @@ export async function sync(request, env) {
 
 function liveSession(body) {
   const session = body?.data?.session
-  if (!session || typeof session !== 'object' || !Array.isArray(session.seats)) throw new HttpError(400, 'data.session required')
-  if (JSON.stringify(session).length > LIMITS.liveBytes) throw new HttpError(413, 'Live data too large')
+
+  if (!session || typeof session !== 'object' || !Array.isArray(session.seats)) {
+    throw new HttpError(400, 'data.session required')
+  }
+
+  if (JSON.stringify(session).length > LIMITS.liveBytes) {
+    throw new HttpError(413, 'Live data too large')
+  }
+
   return session
 }
 
@@ -221,7 +282,11 @@ async function call(stub, name, args = {}) {
   const res = await stub.fetch(
     new Request(`https://room/rpc/${name}`, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } }),
   )
-  if (!res.ok) throw new Error(`room ${name}: HTTP ${res.status}`)
+
+  if (!res.ok) {
+    throw new Error(`room ${name}: HTTP ${res.status}`)
+  }
+
   return (await res.json()).result
 }
 
@@ -229,43 +294,72 @@ async function createLive(request, env) {
   const session = liveSession(await readJson(request))
   const token = randomString(24)
   const hash = await sha256(token)
+
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = randomCode()
-    if (await call(room(env, code), 'init', { hostHash: hash, session })) return json({ code, token }, 201)
+
+    if (await call(room(env, code), 'init', { hostHash: hash, session })) {
+      return json({ code, token }, 201)
+    }
   }
+
   throw new HttpError(503, 'Could not allocate a code')
 }
 
 function hostResult(result) {
-  if (result === 'missing') throw new HttpError(404, 'Not found')
-  if (result === 'unauthorized') throw new HttpError(401, 'Bad live token')
+  if (result === 'missing') {
+    throw new HttpError(404, 'Not found')
+  }
+
+  if (result === 'unauthorized') {
+    throw new HttpError(401, 'Bad live token')
+  }
+
   return json({ ok: true })
 }
 
 async function routeLive(request, env, code, ws) {
-  if (!CODE_RE.test(code)) throw new HttpError(404, 'Not found')
+  if (!CODE_RE.test(code)) {
+    throw new HttpError(404, 'Not found')
+  }
+
   const stub = room(env, code)
+
   if (ws) {
-    if (request.headers.get('Upgrade') !== 'websocket') throw new HttpError(426, 'Expected WebSocket')
+    if (request.headers.get('Upgrade') !== 'websocket') {
+      throw new HttpError(426, 'Expected WebSocket')
+    }
+
     checkWriteOrigin(request, env)
+
     return stub.fetch(request)
   }
+
   switch (request.method) {
     case 'GET': {
       const snap = await call(stub, 'snapshot')
-      if (!snap) throw new HttpError(404, 'Not found')
+
+      if (!snap) {
+        throw new HttpError(404, 'Not found')
+      }
+
       return json({ data: { session: snap.session }, updatedAt: snap.updatedAt, host: snap.host })
     }
+
     case 'PUT': {
       checkWriteOrigin(request, env)
       const session = liveSession(await readJson(request))
+
       return hostResult(await call(stub, 'putState', { hostHash: await sha256(bearer(request)), session }))
     }
+
     case 'DELETE': {
       checkWriteOrigin(request, env)
+
       return hostResult(await call(stub, 'end', { hostHash: await sha256(bearer(request)) }))
     }
   }
+
   throw new HttpError(405, 'Method not allowed')
 }
 
@@ -277,38 +371,69 @@ async function route(request, env) {
 
   if (pathname === '/api/groups' && m === 'POST') {
     checkWriteOrigin(request, env)
+
     return createGroup(request, env)
   }
+
   if (pathname === '/api/groups/me' && m === 'GET') {
     const g = await authGroup(request, env)
+
     return json({ id: g.id, name: g.name })
   }
+
   if (pathname === '/api/sync' && m === 'POST') {
     checkWriteOrigin(request, env)
+
     return sync(request, env)
   }
+
   if (pathname === '/api/live' && m === 'POST') {
     checkWriteOrigin(request, env)
+
     return createLive(request, env)
   }
+
   const live = pathname.match(/^\/api\/live\/([^/]+)(\/ws)?$/)
-  if (live) return routeLive(request, env, live[1].toUpperCase(), Boolean(live[2]))
-  if (pathname === '/api/health') return json({ ok: true })
+
+  if (live) {
+    return routeLive(request, env, live[1].toUpperCase(), Boolean(live[2]))
+  }
+
+  if (pathname === '/api/health') {
+    return json({ ok: true })
+  }
+
   throw new HttpError(404, 'Not found')
 }
 
 export default {
   async fetch(request, env) {
     const cors = corsHeaders(request, env)
-    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
+
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: cors })
+    }
+
     try {
       const res = await route(request, env)
-      if (res.status === 101) return res // WebSocket upgrade: headers are immutable and CORS doesn't apply
-      for (const [k, v] of Object.entries(cors)) res.headers.set(k, v)
+
+      if (res.status === 101) {
+        // WebSocket upgrade: headers are immutable and CORS doesn't apply
+        return res
+      }
+
+      for (const [k, v] of Object.entries(cors)) {
+        res.headers.set(k, v)
+      }
+
       return res
     } catch (e) {
       const status = e instanceof HttpError ? e.status : 500
-      if (status === 500) console.error(e)
+
+      if (status === 500) {
+        console.error(e)
+      }
+
       return json({ error: e instanceof HttpError ? e.message : 'Internal error' }, status, cors)
     }
   },

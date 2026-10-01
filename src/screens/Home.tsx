@@ -113,6 +113,7 @@ function JoinByCode({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useI18n()
   const [code, setCode] = useState('')
   const valid = /^[A-Z2-9]{6}$/.test(code)
+
   return (
     <Sheet open={open} onClose={onClose} title={t('joinGame')}>
       <p className="mb-3 text-sm text-ink/60 dark:text-white/60">{t('enterCode')}</p>
@@ -120,7 +121,11 @@ function JoinByCode({ open, onClose }: { open: boolean; onClose: () => void }) {
         className="flex gap-2"
         onSubmit={(e) => {
           e.preventDefault()
-          if (!valid) return
+
+          if (!valid) {
+            return
+          }
+
           onClose()
           navigate(`live/${code}`)
         }}

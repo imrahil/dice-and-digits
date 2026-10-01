@@ -16,14 +16,20 @@ const session = () => ({
 
 async function setup() {
   const room = new Room(new FakeCtx(), {})
+
   assert.equal(await room.init(await sha256(HOST), session()), true)
+
   const join = async (hello) => {
     const ws = new FakeWS()
+
     room.connect(ws)
     await room.webSocketMessage(ws, JSON.stringify({ t: 'hello', ...hello }))
+
     return ws
   }
+
   const say = (ws, msg) => room.webSocketMessage(ws, JSON.stringify(msg))
+
   return { room, join, say }
 }
 
@@ -31,19 +37,23 @@ const op = (id, p, extra = { kind: 'add', d: 3 }) => ({ id, p, ...extra })
 
 test('a code cannot be initialised twice', async () => {
   const { room } = await setup()
+
   assert.equal(await room.init('x', session()), false)
 })
 
 test('hello: host needs the right token, everyone gets the state', async () => {
   const { join } = await setup()
   const bad = await join({ host: 'nope' })
+
   assert.equal(bad.last('error').code, 'not-host')
 
   const host = await join({ host: HOST })
+
   assert.equal(host.last('welcome').role, 'host')
   assert.equal(host.last('state').session.id, 's1')
 
   const guest = await join({})
+
   assert.equal(guest.last('welcome').role, 'guest')
   assert.equal(guest.last('room').host, true)
   assert.equal(guest.last('room').guests, 1)
@@ -52,6 +62,7 @@ test('hello: host needs the right token, everyone gets the state', async () => {
 test('messages before hello are refused', async () => {
   const { room, say } = await setup()
   const ws = new FakeWS()
+
   room.connect(ws)
   await say(ws, { t: 'claim', seat: 'anna' })
   assert.equal(ws.last('error').code, 'hello-first')
@@ -60,11 +71,14 @@ test('messages before hello are refused', async () => {
 test('claiming seats: one guest per seat, one seat per guest, resumable by token', async () => {
   const { join, say } = await setup()
   const g1 = await join({})
+
   await say(g1, { t: 'claim', seat: 'anna' })
   const { guest: token } = g1.last('claimed')
+
   assert.ok(token)
 
   const g2 = await join({})
+
   await say(g2, { t: 'claim', seat: 'anna' })
   assert.equal(g2.last('error').code, 'taken')
   await say(g2, { t: 'claim', seat: 'ghost' })
@@ -76,12 +90,14 @@ test('claiming seats: one guest per seat, one seat per guest, resumable by token
 
   // A new socket with the same token gets the seat back.
   const again = await join({ guest: token })
+
   assert.equal(again.last('welcome').seat, 'bart')
 })
 
 test('guest ops are validated, queued and relayed to the host', async () => {
   const { join, say, room } = await setup()
   const guest = await join({})
+
   await say(guest, { t: 'op', op: op('o1', 'anna') })
   assert.equal(guest.last('error').code, 'no-seat')
 
@@ -96,6 +112,7 @@ test('guest ops are validated, queued and relayed to the host', async () => {
 
   // Host connects and receives the backlog.
   const host = await join({ host: HOST })
+
   assert.deepEqual(host.last('ops').ops.map((o) => o.id), ['o3'])
 
   // Live relay while the host is connected.
@@ -106,6 +123,7 @@ test('guest ops are validated, queued and relayed to the host', async () => {
 test('host ack clears the queue and rejections reach the guests', async () => {
   const { join, say, room } = await setup()
   const guest = await join({})
+
   await say(guest, { t: 'claim', seat: 'anna' })
   await say(guest, { t: 'op', op: op('a', 'anna') })
   await say(guest, { t: 'op', op: op('b', 'anna') })
@@ -120,6 +138,7 @@ test('host state is stored and broadcast; applied ops are not re-queued', async 
   const { join, say, room } = await setup()
   const host = await join({ host: HOST })
   const guest = await join({})
+
   await say(guest, { t: 'claim', seat: 'anna' })
   await say(host, { t: 'state', session: { ...session(), log: [{ p: 'anna', d: 3 }], ops: ['x1'] } })
   assert.deepEqual(guest.last('state').session.ops, ['x1'])
@@ -131,10 +150,12 @@ test('host state is stored and broadcast; applied ops are not re-queued', async 
 test('guests cannot push state, and nobody can score a finished game', async () => {
   const { join, say, room } = await setup()
   const guest = await join({})
+
   await say(guest, { t: 'state', session: { hacked: true } })
   assert.equal((await room.ctx.storage.get('session')).id, 's1')
 
   const host = await join({ host: HOST })
+
   await say(guest, { t: 'claim', seat: 'anna' })
   await say(host, { t: 'state', session: { ...session(), finishedAt: 1 } })
   await say(guest, { t: 'op', op: op('late', 'anna') })
@@ -144,8 +165,10 @@ test('guests cannot push state, and nobody can score a finished game', async () 
 test('host can release a seat', async () => {
   const { join, say } = await setup()
   const guest = await join({})
+
   await say(guest, { t: 'claim', seat: 'anna' })
   const host = await join({ host: HOST })
+
   await say(host, { t: 'release', seat: 'anna' })
   assert.equal(guest.last('welcome').seat, null)
   assert.deepEqual(host.last('room').seats, {})
@@ -154,6 +177,7 @@ test('host can release a seat', async () => {
 test('ending a room closes every socket and wipes storage', async () => {
   const { join, room } = await setup()
   const guest = await join({})
+
   assert.equal(await room.end('wrong'), 'unauthorized')
   assert.equal(await room.end(await sha256(HOST)), 'ok')
   assert.equal(guest.last('ended').t, 'ended')
@@ -163,6 +187,7 @@ test('ending a room closes every socket and wipes storage', async () => {
 
 test('idle rooms expire on their alarm, active ones re-arm', async () => {
   const { room } = await setup()
+
   await room.alarm()
   assert.ok(await room.snapshot(), 'fresh room survives')
   await room.ctx.storage.put('updatedAt', Date.now() - ROOM_LIMITS.ttlMs)
@@ -173,6 +198,7 @@ test('idle rooms expire on their alarm, active ones re-arm', async () => {
 test('oversized and malformed frames are refused', async () => {
   const { join, room } = await setup()
   const ws = await join({})
+
   await room.webSocketMessage(ws, 'x'.repeat(ROOM_LIMITS.messageBytes + 1))
   assert.equal(ws.last('error').code, 'too-large')
   await room.webSocketMessage(ws, '{nope')

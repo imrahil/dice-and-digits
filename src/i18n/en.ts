@@ -213,7 +213,6 @@ export const en = {
   joinedGroup: 'Joined {name}',
   invalidInvite: 'This invite link is not valid.',
 
-
   // share / QR
   scanToFollow: 'Scan to watch or join',
   scanToJoinGroup: 'Scan to join the group',

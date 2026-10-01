@@ -10,6 +10,7 @@ describe('i18n', () => {
 
   it('placeholders match between languages', () => {
     const vars = (s: unknown) => JSON.stringify(s).match(/\{\w+\}/g)?.sort() ?? []
+
     for (const k of Object.keys(en) as (keyof typeof en)[]) {
       expect([k, ...new Set(vars(pl[k]))]).toEqual([k, ...new Set(vars(en[k]))])
     }
@@ -17,6 +18,7 @@ describe('i18n', () => {
 
   it('uses Polish plural forms', () => {
     const { tp } = makeI18n('pl')
+
     expect(tp('nGames', 1)).toBe('1 gra')
     expect(tp('nGames', 3)).toBe('3 gry')
     expect(tp('nGames', 5)).toBe('5 gier')
@@ -28,6 +30,7 @@ describe('i18n', () => {
 
   it('uses English plural forms', () => {
     const { tp } = makeI18n('en')
+
     expect(tp('nGames', 1)).toBe('1 game')
     expect(tp('nGames', 2)).toBe('2 games')
   })

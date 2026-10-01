@@ -24,6 +24,7 @@ const blank = (): GameDef => ({
 export function GameEditor({ id }: { id: string }) {
   const { t } = useI18n()
   const existing = id === 'new' ? undefined : findGame(id)
+
   if (id !== 'new' && (!existing || existing.deleted)) {
     return (
       <Page back="games">
@@ -31,12 +32,17 @@ export function GameEditor({ id }: { id: string }) {
       </Page>
     )
   }
-  if (existing?.builtin) return <BuiltinView game={existing} />
+
+  if (existing?.builtin) {
+    return <BuiltinView game={existing} />
+  }
+
   return <Editor key={id} initial={existing ?? blank()} isNew={!existing} title={existing ? t('editGameDef') : t('newGameDef')} />
 }
 
 function BuiltinView({ game }: { game: GameDef }) {
   const { t, text } = useI18n()
+
   const duplicate = () => {
     const copy: GameDef = {
       ...game,
@@ -48,6 +54,7 @@ function BuiltinView({ game }: { game: GameDef }) {
       bonus: game.bonus && { ...game.bonus, name: text(game.bonus.name) },
       updatedAt: 0,
     }
+
     saveGame(copy)
     navigate(`games/${copy.id}`, { replace: true })
   }
@@ -111,13 +118,17 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
   const valid = name && (g.mode !== 'sheet' || validCats.length > 0)
 
   const save = () => {
-    if (!valid) return
+    if (!valid) {
+      return
+    }
+
     const steps = stepsText
       .split(/[,\s]+/)
       .map((s) => parseInt(s, 10))
       .filter((n) => Number.isFinite(n) && n > 0)
       .slice(0, 4)
     const tgt = parseInt(target, 10)
+
     saveGame({
       ...g,
       name,
@@ -131,7 +142,10 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
   }
 
   const del = async () => {
-    if (!(await confirm(t('deleteGameDefConfirm', { name }), { confirmLabel: t('delete'), danger: true }))) return
+    if (!(await confirm(t('deleteGameDefConfirm', { name }), { confirmLabel: t('delete'), danger: true }))) {
+      return
+    }
+
     removeGame(g.id)
     navigate('games', { replace: true })
   }
@@ -207,6 +221,7 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
                       placeholder="1"
                       onChange={(e) => {
                         const n = parseInt(e.target.value, 10)
+
                         setCat(i, { per: Number.isFinite(n) && n > 1 ? n : undefined })
                       }}
                     />

@@ -10,15 +10,28 @@ import { cx } from './ui'
 export function Keypad({ value, onChange, allowNegative = true }: { value: string; onChange: (v: string) => void; allowNegative?: boolean }) {
   const press = (k: string) => {
     buzz(6)
-    if (k === 'back') return onChange(value.slice(0, -1))
-    if (k === 'sign') return onChange(value.startsWith('-') ? value.slice(1) : '-' + value)
+
+    if (k === 'back') {
+      return onChange(value.slice(0, -1))
+    }
+
+    if (k === 'sign') {
+      return onChange(value.startsWith('-') ? value.slice(1) : '-' + value)
+    }
+
     const digits = value.replace('-', '')
-    if (digits.length >= 6) return
+
+    if (digits.length >= 6) {
+      return
+    }
+
     const next = (value.startsWith('-') ? '-' : '') + (digits === '0' ? k : digits + k)
+
     onChange(next)
   }
 
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', allowNegative ? 'sign' : '', '0', 'back']
+
   return (
     <div className="grid grid-cols-3 gap-2">
       {keys.map((k, i) =>
@@ -43,8 +56,12 @@ export function Keypad({ value, onChange, allowNegative = true }: { value: strin
 }
 
 export const parseKeypad = (v: string): number | null => {
-  if (v === '' || v === '-') return null
+  if (v === '' || v === '-') {
+    return null
+  }
+
   const n = parseInt(v, 10)
+
   return Number.isFinite(n) ? n : null
 }
 

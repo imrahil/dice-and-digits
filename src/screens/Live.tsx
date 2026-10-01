@@ -28,6 +28,7 @@ const NOTICE = {
  */
 export function Live({ code }: { code: string }) {
   const { t } = useI18n()
+
   if (!cloudEnabled) {
     return (
       <Page title={t('liveTitle')} back="">
@@ -35,6 +36,7 @@ export function Live({ code }: { code: string }) {
       </Page>
     )
   }
+
   return <LiveRoom key={code} code={code.toUpperCase()} />
 }
 
@@ -42,10 +44,13 @@ function LiveRoom({ code }: { code: string }) {
   const { t, text } = useI18n()
   const room = useRoom(code)
   const [entry, setEntry] = useState<number | null>(null)
+
   useNow(10000)
 
   useEffect(() => {
-    if (room.notice) toast(t(NOTICE[room.notice.code as keyof typeof NOTICE] ?? 'noticeRejected'))
+    if (room.notice) {
+      toast(t(NOTICE[room.notice.code as keyof typeof NOTICE] ?? 'noticeRejected'))
+    }
   }, [room.notice, t])
 
   if (room.status === 'notfound' || (room.status === 'ended' && !room.session)) {
@@ -55,7 +60,9 @@ function LiveRoom({ code }: { code: string }) {
       </Page>
     )
   }
+
   const s = room.session
+
   if (!s) {
     return (
       <Page title={t('liveTitle')} back="">
@@ -130,6 +137,7 @@ function LiveRoom({ code }: { code: string }) {
 
 function StatusPill({ room }: { room: RoomView }) {
   const { t } = useI18n()
+
   if (room.status === 'open') {
     return (
       <span className="flex items-center gap-1 rounded-full bg-danger px-2.5 py-1 text-xs font-black text-white">
@@ -137,6 +145,7 @@ function StatusPill({ room }: { room: RoomView }) {
       </span>
     )
   }
+
   return (
     <span className="flex items-center gap-1.5 rounded-full bg-ink/10 px-2.5 py-1 text-xs font-bold dark:bg-white/10">
       <Loader2 className="size-3 animate-spin" />
@@ -148,6 +157,7 @@ function StatusPill({ room }: { room: RoomView }) {
 function SeatPicker({ session, room }: { session: Session; room: RoomView }) {
   const { t } = useI18n()
   const ready = room.status === 'open'
+
   return (
     <Card className="mb-2">
       <p className="flex items-center gap-2 text-lg font-extrabold">
@@ -157,6 +167,7 @@ function SeatPicker({ session, room }: { session: Session; room: RoomView }) {
       <div className="mt-3 grid grid-cols-2 gap-2">
         {session.seats.map((seat) => {
           const taken = room.seats[seat.id]
+
           return (
             <button
               key={seat.id}
@@ -196,8 +207,10 @@ function GuestBoard({
     case 'counter': {
       // Own card first: it's the only one with buttons.
       const seats = [...session.seats].sort((a, b) => Number(b.id === room.mySeat) - Number(a.id === room.mySeat))
+
       return <CounterBoard session={{ ...session, seats }} scorer={room.scorer} />
     }
+
     case 'rounds':
       return <RoundsBoard session={session} scorer={room.scorer} entry={entry} setEntry={setEntry} />
     case 'sheet':
@@ -211,6 +224,7 @@ function Leaderboard({ session }: { session: Session }) {
   const { t, num } = useI18n()
   const table = standings(session)
   const anyScore = table.some((r) => r.total !== 0)
+
   return (
     <Section title={t('leaderboard')}>
       <Card className="!p-2">
@@ -232,6 +246,7 @@ function Leaderboard({ session }: { session: Session }) {
 
 function Tables({ session }: { session: Session }) {
   const { t } = useI18n()
+
   if ((session.rules.mode === 'rounds' || session.rules.mode === 'winner') && session.rounds.length > 0) {
     return (
       <Section title={t('modeRounds')}>
@@ -239,6 +254,7 @@ function Tables({ session }: { session: Session }) {
       </Section>
     )
   }
+
   if (session.rules.mode === 'sheet') {
     return (
       <Section title={t('modeSheet')}>
@@ -246,6 +262,7 @@ function Tables({ session }: { session: Session }) {
       </Section>
     )
   }
+
   return null
 }
 
@@ -260,6 +277,7 @@ function Watch({ session }: { session: Session }) {
 
 function Final({ session }: { session: Session }) {
   const { t } = useI18n()
+
   return (
     <>
       <p className="px-1 text-sm font-semibold text-ink/55 dark:text-white/55">{t('liveFinished')}</p>

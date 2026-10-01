@@ -237,7 +237,6 @@ export const pl: Dict = {
   updateReady: 'Nowa wersja jest gotowa.',
   reload: 'Odśwież',
 
-
   justNow: 'przed chwilą',
   minutesShort: '{n} min',
   hoursShort: '{h} godz. {m} min',

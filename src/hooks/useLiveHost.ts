@@ -25,8 +25,10 @@ export function useLiveHost(session: Session, live: { code: string; token: strin
   const [room, setRoom] = useState<{ seats: Record<string, true>; guests: number }>({ seats: {}, guests: 0 })
   const socket = useRef<RoomSocket | null>(null)
   const latest = useRef(session)
+
   latest.current = session
   const ended = useRef(onEnded)
+
   ended.current = onEnded
 
   const sessionId = session.id
@@ -34,38 +36,58 @@ export function useLiveHost(session: Session, live: { code: string; token: strin
   const token = live?.token
 
   useEffect(() => {
-    if (!code || !token) return
+    if (!code || !token) {
+      return
+    }
+
     const onMessage = (m: ServerMsg) => {
       switch (m.t) {
         case 'welcome':
           // (Re)connected: the room may hold an older snapshot than ours.
           socket.current?.send({ t: 'state', session: latest.current })
           break
+
         case 'ops': {
           const out: { r?: ReturnType<typeof applyRemote> } = {}
+
           updateSession(sessionId, (s) => {
             out.r = applyRemote(s, m.ops)
+
             return out.r.session
           })
-          if (out.r) socket.current?.send({ t: 'ack', applied: out.r.applied, rejected: out.r.rejected })
+
+          if (out.r) {
+            socket.current?.send({ t: 'ack', applied: out.r.applied, rejected: out.r.rejected })
+          }
+
           break
         }
+
         case 'room':
           setRoom({ seats: m.seats, guests: m.guests })
           break
         case 'error':
-          if (m.code === 'not-host') ended.current()
+          if (m.code === 'not-host') {
+            ended.current()
+          }
+
           break
         case 'ended':
           ended.current()
           break
       }
     }
+
     const s = new RoomSocket(code, () => ({ host: token }), onMessage, (st) => {
       setStatus(st)
-      if (st === 'ended') ended.current()
+
+      if (st === 'ended') {
+        ended.current()
+      }
     }).start()
+
     socket.current = s
+
     return () => {
       s.stop()
       socket.current = null
@@ -74,8 +96,12 @@ export function useLiveHost(session: Session, live: { code: string; token: strin
 
   // Mirror the session to the room, lightly debounced so a burst of taps is one frame.
   useEffect(() => {
-    if (!code) return
+    if (!code) {
+      return
+    }
+
     const id = setTimeout(() => socket.current?.send({ t: 'state', session }), 150)
+
     return () => clearTimeout(id)
   }, [session, code])
 

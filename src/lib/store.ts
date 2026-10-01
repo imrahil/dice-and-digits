@@ -30,6 +30,7 @@ const COLLECTION: Record<Kind, 'players' | 'games' | 'sessions'> = {
 function read<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(PREFIX + key)
+
     return raw ? (JSON.parse(raw) as T) : fallback
   } catch {
     return fallback
@@ -66,19 +67,27 @@ const listeners = new Set<() => void>()
 
 function set(next: Partial<State>) {
   state = { ...state, ...next }
-  for (const k of Object.keys(next) as (keyof State)[]) write(k, state[k])
+
+  for (const k of Object.keys(next) as (keyof State)[]) {
+    write(k, state[k])
+  }
+
   listeners.forEach((l) => l())
 }
 
 // Another tab wrote: reload so both stay consistent.
 window.addEventListener('storage', (e) => {
-  if (!e.key?.startsWith(PREFIX)) return
+  if (!e.key?.startsWith(PREFIX)) {
+    return
+  }
+
   state = load()
   listeners.forEach((l) => l())
 })
 
 function subscribe(l: () => void) {
   listeners.add(l)
+
   return () => listeners.delete(l)
 }
 
@@ -90,17 +99,23 @@ export function useStore<T>(selector: (s: State) => T): T {
 }
 
 export function uid(): string {
-  if (crypto.randomUUID) return crypto.randomUUID()
+  if (crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+
   // Plain-http LAN dev server: randomUUID needs a secure context.
   const b = crypto.getRandomValues(new Uint8Array(16))
+
   b[6] = (b[6] & 0x0f) | 0x40
   b[8] = (b[8] & 0x3f) | 0x80
   const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('')
+
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`
 }
 
 function markDirty(kind: Kind, id: string): string[] {
   const tag = `${kind}:${id}`
+
   return state.dirty.includes(tag) ? state.dirty : [...state.dirty, tag]
 }
 
@@ -111,6 +126,7 @@ const shareable = (kind: Kind, doc: Doc) =>
 function put<K extends Kind>(kind: K, doc: Doc) {
   const col = COLLECTION[kind]
   const stamped = { ...doc, updatedAt: Date.now() }
+
   set({
     [col]: { ...state[col], [doc.id]: stamped },
     ...(shareable(kind, stamped) ? { dirty: markDirty(kind, doc.id) } : {}),
@@ -120,14 +136,21 @@ function put<K extends Kind>(kind: K, doc: Doc) {
 function remove(kind: Kind, id: string) {
   const col = COLLECTION[kind]
   const cur = state[col][id]
-  if (!cur) return
+
+  if (!cur) {
+    return
+  }
+
   // Unshared drafts vanish outright; anything that may have synced leaves a tombstone.
   if (!shareable(kind, cur)) {
     const rest = { ...state[col] }
+
     delete rest[id]
     set({ [col]: rest })
+
     return
   }
+
   put(kind, { ...cur, deleted: true })
 }
 
@@ -140,7 +163,10 @@ export const removeSession = (id: string) => remove('session', id)
 
 export function updateSession(id: string, fn: (s: Session) => Session) {
   const cur = state.sessions[id]
-  if (cur) saveSession(fn(cur))
+
+  if (cur) {
+    saveSession(fn(cur))
+  }
 }
 
 export function setSettings(patch: Partial<Settings>) {
@@ -151,29 +177,51 @@ export type RemoteDoc = { kind: Kind; id: string; updatedAt: number; data: Doc }
 
 /** Merge docs from the server: newer updatedAt wins, nothing is marked dirty. */
 export function applyRemote(docs: RemoteDoc[]) {
-  if (!docs.length) return 0
+  if (!docs.length) {
+    return 0
+  }
+
   const next = { players: { ...state.players }, games: { ...state.games }, sessions: { ...state.sessions } }
   let changed = 0
+
   for (const d of docs) {
     const col = COLLECTION[d.kind]
-    if (!col) continue
+
+    if (!col) {
+      continue
+    }
+
     const cur = next[col][d.id]
-    if (cur && cur.updatedAt >= d.updatedAt) continue
-    ;(next[col] as Record<string, Doc>)[d.id] = { ...d.data, id: d.id, updatedAt: d.updatedAt }
+
+    if (cur && cur.updatedAt >= d.updatedAt) {
+      continue
+
+    }
+
+    (next[col] as Record<string, Doc>)[d.id] = { ...d.data, id: d.id, updatedAt: d.updatedAt }
     changed++
   }
-  if (changed) set(next)
+
+  if (changed) {
+    set(next)
+  }
+
   return changed
 }
 
 /** Snapshot the dirty docs for a push; `clearDirty` drops exactly those once acknowledged. */
 export function dirtyDocs(): RemoteDoc[] {
   const out: RemoteDoc[] = []
+
   for (const tag of state.dirty) {
     const [kind, id] = tag.split(/:(.*)/s) as [Kind, string]
     const doc = state[COLLECTION[kind]]?.[id]
-    if (doc) out.push({ kind, id, updatedAt: doc.updatedAt, data: doc })
+
+    if (doc) {
+      out.push({ kind, id, updatedAt: doc.updatedAt, data: doc })
+    }
   }
+
   return out
 }
 
@@ -184,17 +232,22 @@ export function clearDirty(sent: RemoteDoc[]) {
       .filter((d) => state[COLLECTION[d.kind]][d.id]?.updatedAt === d.updatedAt)
       .map((d) => `${d.kind}:${d.id}`),
   )
+
   set({ dirty: state.dirty.filter((t) => !done.has(t)) })
 }
 
 /** Mark every shareable local doc dirty — used right after joining a group. */
 export function markAllDirty() {
   const tags: string[] = []
+
   for (const kind of Object.keys(COLLECTION) as Kind[]) {
     for (const doc of Object.values(state[COLLECTION[kind]])) {
-      if (shareable(kind, doc)) tags.push(`${kind}:${doc.id}`)
+      if (shareable(kind, doc)) {
+        tags.push(`${kind}:${doc.id}`)
+      }
     }
   }
+
   set({ dirty: tags })
 }
 
@@ -204,31 +257,43 @@ const BACKUP_FORMAT = 'dice-and-digits/1'
 
 export function exportBackup(): string {
   const { players, games, sessions } = state
+
   return JSON.stringify({ format: BACKUP_FORMAT, exportedAt: Date.now(), players, games, sessions })
 }
 
 /** Returns the number of docs merged, or null when the file isn't a backup. */
 export function importBackup(json: string): number | null {
   let data: Record<string, unknown>
+
   try {
     data = JSON.parse(json)
   } catch {
     return null
   }
-  if (data?.format !== BACKUP_FORMAT) return null
+
+  if (data?.format !== BACKUP_FORMAT) {
+    return null
+  }
+
   const docs: RemoteDoc[] = []
+
   const take = (kind: Kind, col: unknown) => {
-    if (!col || typeof col !== 'object') return
+    if (!col || typeof col !== 'object') {
+      return
+    }
+
     for (const d of Object.values(col as Record<string, Doc>)) {
       if (d && typeof d.id === 'string' && typeof d.updatedAt === 'number') {
         docs.push({ kind, id: d.id, updatedAt: d.updatedAt, data: d })
       }
     }
   }
+
   take('player', data.players)
   take('game', data.games)
   take('session', data.sessions)
   const n = applyRemote(docs)
+
   // Imported docs should reach the shared group too.
   set({
     dirty: [
@@ -238,5 +303,6 @@ export function importBackup(json: string): number | null {
       ]),
     ],
   })
+
   return n
 }

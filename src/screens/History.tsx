@@ -9,6 +9,7 @@ import type { Session } from '../types'
 
 function dayKey(ts: number) {
   const d = new Date(ts)
+
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
 }
 
@@ -22,11 +23,16 @@ export function History() {
   const list = filter ? all.filter((s) => s.gameId === filter) : all
 
   const groups: { key: string; ts: number; items: Session[] }[] = []
+
   for (const s of list) {
     const key = dayKey(s.finishedAt!)
     const g = groups[groups.length - 1]
-    if (g?.key === key) g.items.push(s)
-    else groups.push({ key, ts: s.finishedAt!, items: [s] })
+
+    if (g?.key === key) {
+      g.items.push(s)
+    } else {
+      groups.push({ key, ts: s.finishedAt!, items: [s] })
+    }
   }
 
   const today = dayKey(Date.now())

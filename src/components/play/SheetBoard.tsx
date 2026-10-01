@@ -39,6 +39,7 @@ export function SheetTable({
           <span />
           {session.seats.map((s) => {
             const lead = scored && byId[s.id].rank === 1
+
             return (
               <div key={s.id} className={cx('flex flex-col items-center gap-1 px-1 pt-3 pb-2', lead && 'bg-gold/12')}>
                 <span className="relative">
@@ -63,6 +64,7 @@ export function SheetTable({
                 const v = session.sheet[c.id]?.[s.id]
                 const on = active?.cat === ci && active?.seat === si
                 const tap = onCell && canEdit(s.id)
+
                 return (
                   <button
                     key={s.id}
@@ -103,6 +105,7 @@ export function SheetTable({
                 {session.seats.map((s) => {
                   const got = sheetBonus(session.rules, session.sheet, s.id)
                   const missing = bonusMissing(session.rules, session.sheet, s.id)
+
                   return (
                     <span
                       key={s.id}
@@ -149,30 +152,47 @@ export function SheetBoard({ session, scorer }: { session: Session; scorer: Scor
 
   const open = (c: Cell) => {
     const v = session.sheet[cats[c.cat].id]?.[session.seats[c.seat].id]
+
     setValue(v == null ? '' : String(v))
     setCell(c)
   }
 
   /** The next cell this scorer may fill: down the column, then the next editable player's column. */
   const after = (c: Cell): Cell | null => {
-    if (c.cat < cats.length - 1) return { cat: c.cat + 1, seat: c.seat }
-    for (let si = c.seat + 1; si < session.seats.length; si++) if (scorer.canEdit(session.seats[si].id)) return { cat: 0, seat: si }
+    if (c.cat < cats.length - 1) {
+      return { cat: c.cat + 1, seat: c.seat }
+    }
+
+    for (let si = c.seat + 1; si < session.seats.length; si++) {
+      if (scorer.canEdit(session.seats[si].id)) {
+        return { cat: 0, seat: si }
+      }
+    }
+
     return null
   }
 
   /** Store the value, then walk down the player's column (the way people fill a score pad). */
   const commit = (advance: boolean) => {
-    if (!cell) return
+    if (!cell) {
+      return
+    }
+
     const cat = cats[cell.cat]
     const seat = session.seats[cell.seat]
+
     buzz(8)
     scorer.apply([{ kind: 'cell', p: seat.id, cat: cat.id, v: parseKeypad(value) }])
     const next = advance ? after(cell) : null
+
     if (next) {
       const v = session.sheet[cats[next.cat].id]?.[session.seats[next.seat].id]
+
       setValue(v == null ? '' : String(v))
       setCell(next)
-    } else setCell(null)
+    } else {
+      setCell(null)
+    }
   }
 
   const cat = cell ? cats[cell.cat] : null

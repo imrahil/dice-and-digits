@@ -32,6 +32,7 @@ export function WinnerBoard({ session, scorer }: { session: Session; scorer: Sco
           const row = byId[seat.id]
           const lead = played && row.rank === 1 && session.seats.length > 1
           const editable = scorer.canEdit(seat.id)
+
           return (
             <button
               key={seat.id}
