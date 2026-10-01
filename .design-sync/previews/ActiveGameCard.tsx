@@ -1,5 +1,5 @@
 import { ActiveGameCard } from 'dice-and-digits-ui'
-import { catanGrid, sevenWonders, thousandLive } from './fixtures'
+import { catanGrid, seats, sevenWonders, thousandLive } from './fixtures'
 
 /** The home screen's game in progress: everyone's score, the leader in gold, and the way back in. */
 export function Counter() {
@@ -23,7 +23,7 @@ export function Live() {
 export function ScoreSheet() {
   return (
     <div className="w-[420px]">
-      <ActiveGameCard session={sevenWonders} live={false} />
+      <ActiveGameCard session={{ ...sevenWonders, seats }} live={false} />
     </div>
   )
 }

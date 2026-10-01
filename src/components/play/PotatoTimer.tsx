@@ -52,7 +52,7 @@ export function PotatoTimer({ phase, elapsedMs, durationMs, hidden, maxMs, lastB
           <span className="display text-[64px] leading-[0.9] font-black">{t('potatoBoom')}</span>
           <span className="flex flex-col gap-1">
             <span className="text-lg font-extrabold">{t('potatoWho')}</span>
-            <span className="text-sm font-bold opacity-85">{t('potatoAfter', { time: mmss(Math.round(durationMs / 1000)) })}</span>
+            {durationMs > 0 && <span className="text-sm font-bold opacity-85">{t('potatoAfter', { time: mmss(Math.round(durationMs / 1000)) })}</span>}
           </span>
         </>
       ) : (
