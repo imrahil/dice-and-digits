@@ -202,7 +202,7 @@ anything, or free a seat, for example when someone's battery dies.
 without a flash, JSON backup export/import, offline after first load, and an
 "update ready" prompt so a new deploy never reloads mid-game.
 
-## Stack
+## Stack (for developers only)
 
 React 19 + Vite + TypeScript + Tailwind v4, the same as
 [ev_parking_app](https://github.com/imrahil/ev_parking_app). Additions:
