@@ -236,7 +236,6 @@ function CloudSection() {
               </Button>
             </div>
             <p className="mt-3 text-sm text-ink/65 dark:text-white/65">{t('cloudInGroupHint')}</p>
-            <p className="mt-2 text-sm text-ink/65 dark:text-white/65">{t('cloudShared')}</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <Button onClick={() => setQr(true)}>
                 <QrCode className="size-5" /> {t('invite')}
@@ -250,9 +249,15 @@ function CloudSection() {
           <>
             <div className="space-y-2 text-sm text-ink/65 dark:text-white/65">
               <p>{t('cloudIntro')}</p>
-              <p>{t('cloudShared')}</p>
-              <p>{t('cloudHowJoin')}</p>
               <p>{t('cloudOptional')}</p>
+              <details>
+                <summary className="cursor-pointer py-2 font-bold text-accent">{t('cloudHowItWorks')}</summary>
+                <div className="space-y-2">
+                  <p>{t('cloudShared')}</p>
+                  <p>{t('cloudHowJoin')}</p>
+                  <p>{t('cloudSamePlayers')}</p>
+                </div>
+              </details>
             </div>
             <form
               className="mt-3 flex gap-2"
