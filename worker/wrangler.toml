@@ -25,4 +25,4 @@ new_sqlite_classes = ["Room"]
 [vars]
 # Origins allowed to write (create groups, sync, host or join a live game).
 # Plain reads (GET /api/live/:code) stay open to everyone.
-ALLOWED_ORIGINS = "https://imrahil.github.io,http://localhost:5173,http://localhost:4173"
+ALLOWED_ORIGINS = "https://dicedigits.fun,https://www.dicedigits.fun,https://imrahil.github.io,http://localhost:5173,http://localhost:4173"
