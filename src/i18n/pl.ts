@@ -288,6 +288,9 @@ export const pl: Dict = {
   about: 'O aplikacji',
   aboutBody: 'Działa offline. Dane zostają na tym urządzeniu, chyba że dołączysz do wspólnej grupy.',
   installHint: 'Wskazówka: dodaj aplikację do ekranu głównego, by działała na pełnym ekranie.',
+  aboutVersion: 'Wersja {version}',
+  aboutBuilt: 'Zbudowano {date}',
+  aboutContact: 'Kontakt',
   updateReady: 'Nowa wersja jest gotowa.',
   reload: 'Odśwież',
 

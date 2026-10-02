@@ -306,6 +306,9 @@ export const en = {
   about: 'About',
   aboutBody: 'Works offline. Your data stays on this device unless you join a shared group.',
   installHint: 'Tip: add the app to your home screen for a full-screen experience.',
+  aboutVersion: 'Version {version}',
+  aboutBuilt: 'Built {date}',
+  aboutContact: 'Contact',
   updateReady: 'A new version is ready.',
   reload: 'Reload',
 

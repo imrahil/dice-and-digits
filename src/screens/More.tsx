@@ -10,6 +10,8 @@ import { Button, Card, Page, Section, Segmented, Toggle, cx, inputClass } from '
 import { QrShareSheet } from '../components/QrShare'
 import type { Lang, Skin, Theme } from '../types'
 
+const CONTACT_EMAIL = 'dice-and-digits@imrahil.com'
+
 const SKINS = [
   { id: 'arcade', label: 'skinArcade', hint: 'skinArcadeHint' },
   { id: 'bubble', label: 'skinBubble', hint: 'skinBubbleHint' },
@@ -69,7 +71,7 @@ function LinkRow({ icon, label, detail, onClick }: { icon: ReactNode; label: str
 }
 
 export function More() {
-  const { t, num } = useI18n()
+  const { t, num, date } = useI18n()
   const settings = useStore((s) => s.settings)
   const players = useStore((s) => s.players)
   const games = useStore((s) => s.games)
@@ -171,6 +173,12 @@ export function More() {
           <div className="text-sm">
             <p className="text-base font-extrabold">{t('appName')}</p>
             <p className="mt-0.5 text-ink/65 dark:text-white/65">{t('aboutBody')}</p>
+            <p className="mt-2 text-ink/65 dark:text-white/65">
+              {t('aboutVersion', { version: __APP_VERSION__ })} · {t('aboutBuilt', { date: date(new Date(__BUILD_DATE__).getTime()) })}
+            </p>
+            <p className="mt-0.5 text-ink/65 dark:text-white/65">
+              {t('aboutContact')}: <a href={`mailto:${CONTACT_EMAIL}`} className="font-bold text-accent underline">{CONTACT_EMAIL}</a>
+            </p>
             {!matchMedia('(display-mode: standalone)').matches && (
               <p className="mt-2 text-ink/65 dark:text-white/65">📲 {t('installHint')}</p>
             )}
