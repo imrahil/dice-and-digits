@@ -21,6 +21,7 @@ import { Games } from './screens/Games'
 import { GameEditor } from './screens/GameEditor'
 import { Live } from './screens/Live'
 import { Join } from './screens/Join'
+import { Restore } from './screens/Restore'
 
 const TABS = [
   { path: '', icon: PlayIcon, label: 'navPlay' },
@@ -31,7 +32,7 @@ const TABS = [
 ] as const satisfies readonly { path: string; icon: unknown; label: Parameters<I18n['t']>[0] }[]
 
 /** Screens reached from "More" keep its tab highlighted. */
-const TAB_OF: Record<string, string> = { players: 'more', games: 'more', result: 'history' }
+const TAB_OF: Record<string, string> = { players: 'more', games: 'more', restore: 'more', result: 'history' }
 
 function Router({ route }: { route: string[] }) {
   const [head = '', a] = route
@@ -60,7 +61,9 @@ function Router({ route }: { route: string[] }) {
     case 'live':
       return <Live code={a} />
     case 'join':
-      return <Join token={route.slice(1).join('/')} />
+      return <Join link={route.slice(1).join('/')} />
+    case 'restore':
+      return <Restore />
     default:
       return <Home />
   }

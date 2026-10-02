@@ -67,3 +67,46 @@ test('joining another group warns that this phone leaves its current one', async
   await b.goto('#/more')
   await expect(b.locator('main')).toContainText('Praca')
 })
+
+test('personal backup: six words on one phone restore everything on another', async ({ browser }) => {
+  const a = await newPhone(browser)
+  const b = await newPhone(browser)
+
+  await startGame(a, 'builtin:splendor', ['Ola', 'Piotr'])
+  await button(a, '+3').first().click()
+  await finishGame(a)
+
+  await a.goto('#/more')
+  await button(a, 'Utwórz kopię').click()
+
+  // The recovery words open straight away; until they're confirmed, More nags.
+  const words = (await a.getByTestId('recovery-words').getAttribute('data-words'))!
+
+  expect(words.split(' ')).toHaveLength(6)
+  await button(a, 'Kod zapisany').click()
+  const section = (title: string) => a.locator('section', { has: a.getByRole('heading', { name: title }) })
+
+  await expect(section('Kopia w chmurze')).toContainText('Moja kopia')
+  await expect(section('Kopia w chmurze').getByText(/Ostatnia synchronizacja/)).toBeVisible()
+  await expect(section('Wspólna grupa')).toContainText('najpierw wyłącz kopię')
+  await expect(a.getByText(/Zapisz kod odzyskiwania/)).toHaveCount(0)
+
+  // A fresh phone: the link on the empty home screen leads to the restore form.
+  await b.goto('#/')
+  await button(b, /Przywróć kopię/).click()
+  const field = b.getByLabel('Słowa lub link odzyskiwania')
+
+  // A typo names the word; then typed as a child might, in capitals and without Polish letters.
+  await field.fill(`${words.split(' ').slice(0, 5).join(' ')} xyzzy`)
+  await button(b, 'Przywróć').click()
+  await expect(b.getByRole('alert')).toContainText('„xyzzy” to nie jest słowo z kodu')
+  await field.fill(words.normalize('NFD').replace(/\p{M}/gu, '').replace(/ł/g, 'l').toUpperCase())
+  await button(b, 'Przywróć').click()
+  await expect(b.getByText(/Przywrócić „Moja kopia”/)).toBeVisible()
+  await button(b, 'Przywróć').click()
+  await b.waitForURL(/#\/more/)
+
+  await b.goto('#/history')
+  await expect(b.locator('main')).toContainText('Splendor')
+  await expect(b.locator('main')).toContainText('Wygrywa Ola')
+})

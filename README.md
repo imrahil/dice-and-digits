@@ -54,6 +54,10 @@ player (everyone touches the screen, one is chosen), and a tap-to-restart
     7 Wonders column at the end, their +/− in Catan, or their score for each
     round of Tysiąc. They can only edit their own seat.
 - The group invite is a QR code too (*More → Shared group → Invite*).
+- **Cloud backup**: one tap backs up your players, custom games and finished
+  games, with no account. You get six easy words to remember (and a QR),
+  in English or Polish; typing them on a new phone, or after the browser is
+  cleared, restores everything and merges it with what's already there.
 
 ### How a live game works
 

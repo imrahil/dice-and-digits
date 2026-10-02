@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { ChevronRight, Plus, ScanLine } from 'lucide-react'
+import { ChevronRight, KeyRound, Plus, ScanLine } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { allGames, recentGameIds, useActiveSessions } from '../lib/games'
 import { finished } from '../lib/stats'
 import { useStore } from '../lib/store'
-import { cloudEnabled } from '../lib/cloud'
+import { cloudEnabled, useCloud } from '../lib/cloud'
 import { navigate } from '../hooks/useRoute'
 import { ActiveGameCard } from '../components/ActiveGameCard'
 import { SessionRow } from '../components/SessionRow'
@@ -34,6 +34,7 @@ export function Home() {
   const sessions = useStore((s) => s.sessions)
   const custom = useStore((s) => s.games)
   const active = useActiveSessions()
+  const { group } = useCloud()
   const recent = finished(Object.values(sessions)).slice(0, 3)
 
   const [joining, setJoining] = useState(false)
@@ -122,9 +123,16 @@ export function Home() {
         </Section>
       ) : (
         !current && (
-          <Empty icon="🎲" title={t('emptyHomeTitle')}>
-            {t('emptyHomeBody')}
-          </Empty>
+          <>
+            <Empty icon="🎲" title={t('emptyHomeTitle')}>
+              {t('emptyHomeBody')}
+            </Empty>
+            {cloudEnabled && !group && (
+              <Button variant="ghost" size="sm" className="mx-auto flex" onClick={() => navigate('restore')}>
+                <KeyRound className="size-4" /> {t('restoreFromPhone')}
+              </Button>
+            )}
+          </>
         )
       )}
     </Page>

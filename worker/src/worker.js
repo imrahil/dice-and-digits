@@ -1,8 +1,10 @@
 /**
  * Dice & Digits API — Cloudflare Worker + D1 + a Durable Object per live game.
  *
- *   POST   /api/groups          { name }            → { id, secret, name }
- *   GET    /api/groups/me       (auth)              → { id, name }
+ *   POST   /api/groups          { name }            → { id, secret, name, kind }
+ *   POST   /api/groups          { name, kind: 'vault', id, secret } → { id, name, kind }
+ *   GET    /api/groups/me       (auth)              → { id, name, kind }
+ *   DELETE /api/groups/me       (auth, vaults only) → { ok }
  *   POST   /api/sync            (auth) { cursor, docs } → { cursor, docs, more }
  *   POST   /api/live            { data: { session } } → { code, token }
  *   GET    /api/live/:code                          → { data: { session }, updatedAt, host }
@@ -12,9 +14,13 @@
  *
  * Group auth is `Authorization: Bearer <groupId>.<secret>`; the secret travels
  * in the invite link and only its SHA-256 is stored.
+ *
+ * A personal backup is a group with kind 'vault'. The phone picks its id and
+ * secret, both stretched from a six-word recovery code (src/lib/recovery.ts),
+ * so the words alone open it on a new phone. The worker never sees the words.
  */
 
-import { randomString, sameHash, sha256 } from './crypto.js'
+import { randomCode, randomString, sameHash, sha256 } from './crypto.js'
 import { Room } from './room.js'
 
 export { Room }
@@ -33,6 +39,8 @@ const KINDS = new Set(['player', 'game', 'session'])
 const ID_RE = /^[\w:.-]{1,80}$/
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789' // no 0/O, 1/I/L
 const CODE_RE = /^[A-Z2-9]{6}$/
+const VAULT_ID_RE = /^[0-9a-f]{32}$/
+const VAULT_SECRET_RE = /^[0-9a-f]{64}$/
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -42,12 +50,6 @@ class HttpError extends Error {
 }
 
 // ---- helpers ---------------------------------------------------------------
-
-function randomCode() {
-  const b = crypto.getRandomValues(new Uint8Array(6))
-
-  return [...b].map((x) => CODE_ALPHABET[x % CODE_ALPHABET.length]).join('')
-}
 
 function bearer(request) {
   const h = request.headers.get('Authorization') ?? ''
@@ -138,7 +140,7 @@ async function authGroup(request, env) {
     throw new HttpError(401, 'Bad group token')
   }
 
-  const group = await env.DB.prepare('SELECT id, name, secret_hash FROM groups WHERE id = ?1').bind(id).first()
+  const group = await env.DB.prepare('SELECT id, name, kind, secret_hash FROM groups WHERE id = ?1').bind(id).first()
 
   if (!group || !sameHash(group.secret_hash, await sha256(secret))) {
     throw new HttpError(401, 'Unknown group')
@@ -155,14 +157,53 @@ async function createGroup(request, env) {
     throw new HttpError(400, 'Name required')
   }
 
+  if (body?.kind === 'vault') {
+    return createVault(env, name, body)
+  }
+
   const id = crypto.randomUUID()
   const secret = randomString(24)
 
-  await env.DB.prepare('INSERT INTO groups (id, name, secret_hash, created_at, rev) VALUES (?1, ?2, ?3, ?4, 0)')
+  await env.DB.prepare("INSERT INTO groups (id, name, kind, secret_hash, created_at, rev) VALUES (?1, ?2, 'group', ?3, ?4, 0)")
     .bind(id, name, await sha256(secret), Date.now())
     .run()
 
-  return json({ id, secret, name }, 201)
+  return json({ id, secret, name, kind: 'group' }, 201)
+}
+
+/** A personal backup: id and secret come from the phone, derived from its recovery words. */
+async function createVault(env, name, { id, secret }) {
+  if (typeof id !== 'string' || !VAULT_ID_RE.test(id) || typeof secret !== 'string' || !VAULT_SECRET_RE.test(secret)) {
+    throw new HttpError(400, 'Backup id and secret required')
+  }
+
+  const { meta } = await env.DB.prepare(
+    "INSERT INTO groups (id, name, kind, secret_hash, created_at, rev) VALUES (?1, ?2, 'vault', ?3, ?4, 0) ON CONFLICT (id) DO NOTHING",
+  )
+    .bind(id, name, await sha256(secret), Date.now())
+    .run()
+
+  if (!meta.changes) {
+    throw new HttpError(409, 'Backup already exists')
+  }
+
+  return json({ id, name, kind: 'vault' }, 201)
+}
+
+/** Deletes a personal backup and all its docs. Shared groups can't be deleted: others rely on them. */
+async function deleteGroup(request, env) {
+  const group = await authGroup(request, env)
+
+  if (group.kind !== 'vault') {
+    throw new HttpError(403, 'Only a personal backup can be deleted')
+  }
+
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM docs WHERE group_id = ?1').bind(group.id),
+    env.DB.prepare('DELETE FROM groups WHERE id = ?1').bind(group.id),
+  ])
+
+  return json({ ok: true })
 }
 
 function validDoc(d) {
@@ -274,7 +315,7 @@ export async function sync(request, env) {
   }
 
   return json({
-    group: { id: group.id, name: group.name },
+    group: { id: group.id, name: group.name, kind: group.kind },
     cursor: nextCursor,
     more,
     docs: rows.map((r) => ({ kind: r.kind, id: r.id, updatedAt: r.updated_at, data: JSON.parse(r.data) })),
@@ -318,7 +359,7 @@ async function createLive(request, env) {
   const hash = await sha256(token)
 
   for (let attempt = 0; attempt < 5; attempt++) {
-    const code = randomCode()
+    const code = randomCode(6, CODE_ALPHABET)
 
     if (await call(room(env, code), 'init', { hostHash: hash, session })) {
       return json({ code, token }, 201)
@@ -400,7 +441,13 @@ async function route(request, env) {
   if (pathname === '/api/groups/me' && m === 'GET') {
     const g = await authGroup(request, env)
 
-    return json({ id: g.id, name: g.name })
+    return json({ id: g.id, name: g.name, kind: g.kind })
+  }
+
+  if (pathname === '/api/groups/me' && m === 'DELETE') {
+    checkWriteOrigin(request, env)
+
+    return deleteGroup(request, env)
   }
 
   if (pathname === '/api/sync' && m === 'POST') {

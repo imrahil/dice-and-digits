@@ -24,8 +24,9 @@ If the app is served from another origin, add it to `ALLOWED_ORIGINS` in
 
 | Method   | Path               | Auth            | Purpose                                     |
 | -------- | ------------------ | --------------- | ------------------------------------------- |
-| `POST`   | `/api/groups`      | origin          | `{ name }` → `{ id, secret, name }`          |
-| `GET`    | `/api/groups/me`   | group token     | `{ id, name }`, used to preview an invite   |
+| `POST`   | `/api/groups`      | origin          | `{ name }` → `{ id, secret, name, kind }`; a backup sends `{ name, kind: 'vault', id, secret }` → `{ id, name, kind }` (409 if the id exists) |
+| `GET`    | `/api/groups/me`   | group token     | `{ id, name, kind }`, used to preview an invite |
+| `DELETE` | `/api/groups/me`   | group token, origin | delete a personal backup and its docs (403 for a shared group) |
 | `POST`   | `/api/sync`        | group token     | `{ cursor, docs[] }` → `{ cursor, docs[], more }` |
 | `POST`   | `/api/live`        | origin          | `{ data: { session } }` → `{ code, token }` |
 | `GET`    | `/api/live/:code`  | none            | `{ data: { session }, updatedAt, host }`     |
@@ -36,6 +37,11 @@ If the app is served from another origin, add it to `ALLOWED_ORIGINS` in
 - **Group token** = `Authorization: Bearer <groupId>.<secret>`. The secret
   travels only in the invite link (`#/join/<groupId>.<secret>`); D1 stores its
   SHA-256.
+- **Personal backup** = a group with `kind: 'vault'`, for one person's phones.
+  Its recovery code is six words (48 bits). The phone stretches a 32-hex id
+  and a 64-hex secret from it with PBKDF2-SHA256 (200,000 rounds) and sends
+  only those, so the worker never sees the words and a leaked D1 can't be
+  searched for codes cheaply. Migration `0003` adds the `kind` column.
 - **Sync** is a push and a pull in one call. Each push bumps the group's `rev`,
   and every doc written in it carries that rev. A pull returns `rev > cursor`
   and never ends a page in the middle of a rev. The upsert's `WHERE
