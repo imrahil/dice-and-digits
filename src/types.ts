@@ -70,12 +70,15 @@ export type GameDef = Doc &
   Rules & {
     emoji: string
     builtin?: boolean
+    /** Pawn colours the physical game comes in (hexes from PAWN_COLORS). Not part of Rules: the seat snapshots the hex. */
+    pawns?: string[]
   }
 
 export type Seat = {
   id: string // player id
   name: string
-  color: string
+  color: string // roster colour at start: identity and stats
+  pawn?: string // pawn colour chosen for this session: shown on the board
 }
 
 export type LogEntry = {

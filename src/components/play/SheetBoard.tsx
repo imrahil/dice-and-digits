@@ -7,6 +7,7 @@ import type { Scorer } from '../../lib/scorer'
 import type { Category, Session } from '../../types'
 import { Keypad, KeypadDisplay, parseKeypad } from '../Keypad'
 import { Avatar, Button, Sheet, cx } from '../ui'
+import { seatColor } from '../../lib/pawns'
 
 type Cell = { cat: number; seat: number }
 
@@ -43,7 +44,7 @@ export function SheetTable({
             return (
               <div key={s.id} className={cx('flex flex-col items-center gap-1 px-1 pt-3 pb-2', lead && 'bg-gold/12')}>
                 <span className="relative">
-                  <Avatar name={s.name} color={s.color} size="sm" />
+                  <Avatar name={s.name} color={seatColor(s)} size="sm" />
                   {lead && <Crown className="absolute -top-2.5 -right-2 size-4 rotate-12 text-gold" fill="currentColor" />}
                 </span>
                 <span className="w-full truncate text-center text-xs font-bold">{s.name}</span>
@@ -208,7 +209,7 @@ export function SheetBoard({ session, scorer }: { session: Session; scorer: Scor
         title={
           seat && (
             <span className="flex items-center gap-2">
-              <Avatar name={seat.name} color={seat.color} size="sm" />
+              <Avatar name={seat.name} color={seatColor(seat)} size="sm" />
               <span className="truncate">{seat.name}</span>
             </span>
           )

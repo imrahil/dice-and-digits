@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BUILTIN_GAMES } from './presets'
+import { BUILTIN_GAMES, PAWN_COLORS } from './presets'
 
 describe('built-in games', () => {
   it('have unique, permanent-looking ids', () => {
@@ -40,6 +40,17 @@ describe('built-in games', () => {
       if (g.mode === 'counter') {
         expect(g.steps?.length, g.id).toBeGreaterThan(0)
       }
+    }
+  })
+
+  it('pawn palettes use known colours, without repeats', () => {
+    const known = new Set(PAWN_COLORS.map((c) => c.hex))
+
+    expect(known.size).toBe(PAWN_COLORS.length)
+
+    for (const g of BUILTIN_GAMES.filter((g) => g.pawns)) {
+      expect(new Set(g.pawns).size, g.id).toBe(g.pawns!.length)
+      expect(g.pawns!.every((p) => known.has(p)), g.id).toBe(true)
     }
   })
 })

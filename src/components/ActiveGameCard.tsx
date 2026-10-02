@@ -6,6 +6,7 @@ import { navigate } from '../hooks/useRoute'
 import { useNow } from '../hooks/useNow'
 import type { Seat, Session } from '../types'
 import { Button, cx } from './ui'
+import { seatColor } from '../lib/pawns'
 
 /** At most this many score cells; a bigger table shows the top three and "+n". */
 const MAX_CELLS = 4
@@ -64,7 +65,7 @@ export function ActiveGameCard({
               )}
             >
               <span className="flex max-w-full items-center gap-1 text-[13px] font-bold">
-                <span className="size-2 shrink-0 rounded-full" style={{ background: seat.color }} />
+                <span className="size-2 shrink-0 rounded-full" style={{ background: seatColor(seat) }} />
                 <span className="truncate">{seat.name}</span>
               </span>
               <span className="display text-[40px] leading-none font-black tabular-nums">{blank ? '—' : num(row.total)}</span>

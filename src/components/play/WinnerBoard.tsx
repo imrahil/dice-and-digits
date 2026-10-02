@@ -7,6 +7,7 @@ import { useHotPotatoRound, type HotPotatoRound, type PotatoPhase } from '../../
 import type { RoundTimer, Session } from '../../types'
 import { Avatar, cx } from '../ui'
 import { PotatoTimer } from './PotatoTimer'
+import { seatColor } from '../../lib/pawns'
 
 /**
  * For games with no points (Exploding Kittens, Hot Potato): one tap records
@@ -76,7 +77,7 @@ function TapBoard({ session, scorer }: { session: Session; scorer: Scorer }) {
               )}
             >
               {lead && <Crown className="absolute -top-3 right-2 size-7 rotate-12 text-gold drop-shadow-[1px_1px_0_var(--line)]" fill="currentColor" />}
-              <Avatar name={seat.name} color={seat.color} size="lg" />
+              <Avatar name={seat.name} color={seatColor(seat)} size="lg" />
               <span className="display w-full truncate text-center text-lg font-extrabold">{seat.name}</span>
               <span className="flex items-center gap-1 text-sm font-bold text-ink/60 dark:text-white/60">
                 <Icon className={cx('size-4', losing ? 'text-danger' : 'text-gold')} />
@@ -162,7 +163,7 @@ function TimedBoard({ session, scorer, timer, round }: { session: Session; score
             ? 'color-mix(in oklab, var(--color-danger) 12%, var(--color-card))'
             : lead
               ? 'color-mix(in oklab, var(--color-gold) 30%, var(--color-card))'
-              : `color-mix(in oklab, ${seat.color} 16%, var(--color-card))`
+              : `color-mix(in oklab, ${seatColor(seat)} 16%, var(--color-card))`
 
           return (
             <button
@@ -173,7 +174,7 @@ function TimedBoard({ session, scorer, timer, round }: { session: Session; score
               style={{ background }}
             >
               <span className="flex w-full items-center gap-1.5">
-                <Avatar name={seat.name} color={seat.color} size="sm" />
+                <Avatar name={seat.name} color={seatColor(seat)} size="sm" />
                 <span className="display min-w-0 flex-1 truncate text-lg font-extrabold">{seat.name}</span>
                 {lead && !boom && <Crown className="size-5 shrink-0 rotate-12 text-gold drop-shadow-[1px_1px_0_var(--line)]" fill="currentColor" aria-label={t('leader')} />}
                 {boom && <span className="shrink-0 rounded-full bg-danger px-2 py-0.5 text-[13px] font-black text-white">+1</span>}

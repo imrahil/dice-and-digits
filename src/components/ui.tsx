@@ -2,6 +2,7 @@ import { useEffect, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { ChevronLeft, X } from 'lucide-react'
 import { goBack } from '../hooks/useRoute'
 import { useI18n } from '../i18n'
+import { isLight, needsOutline } from '../lib/pawns'
 
 export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(' ')
 
@@ -136,7 +137,9 @@ export function Avatar({ name, color, size = 'md' }: { name: string; color: stri
       aria-hidden
       style={{ backgroundColor: color }}
       className={cx(
-        'avatar-ring inline-flex shrink-0 items-center justify-center rounded-full font-extrabold text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.18)] [text-shadow:0_1px_0_rgb(0_0_0/0.2)]',
+        'avatar-ring inline-flex shrink-0 items-center justify-center rounded-full font-extrabold shadow-[inset_0_-2px_0_rgba(0,0,0,0.18)]',
+        isLight(color) ? 'text-ink' : 'text-white [text-shadow:0_1px_0_rgb(0_0_0/0.2)]',
+        needsOutline(color) && 'ring-1 ring-ink/25 dark:ring-white/35',
         size === 'sm' && 'size-7 text-[11px]',
         size === 'md' && 'size-10 text-sm',
         size === 'lg' && 'size-14 text-lg',

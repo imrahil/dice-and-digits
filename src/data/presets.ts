@@ -11,6 +11,36 @@ type Preset = Omit<GameDef, 'updatedAt' | 'builtin'>
 const name = (en: string, pl: string): Text => (en === pl ? en : { en, pl })
 
 /**
+ * Pawn colours of physical games. `family` is the roster colour a pawn
+ * resembles, so a player can get "their" colour when it's on offer.
+ */
+export const PAWN_COLORS: { hex: string; name: Text; family?: string }[] = [
+  { hex: '#d7263d', name: name('Red', 'Czerwony'), family: '#e4572e' },
+  { hex: '#1f6fd1', name: name('Blue', 'Niebieski'), family: '#2e86de' },
+  { hex: '#2a9d5c', name: name('Green', 'Zielony'), family: '#2a9d5c' },
+  { hex: '#f5c518', name: name('Yellow', 'Żółty'), family: '#f2b134' },
+  { hex: '#2a2a2e', name: name('Black', 'Czarny') },
+  { hex: '#f3efe6', name: name('White', 'Biały') },
+  { hex: '#f07f22', name: name('Orange', 'Pomarańczowy'), family: '#f07f22' },
+  { hex: '#8a5a3c', name: name('Brown', 'Brązowy'), family: '#8a5a3c' },
+  { hex: '#8e5bd6', name: name('Purple', 'Fioletowy'), family: '#8e5bd6' },
+  { hex: '#e05a9c', name: name('Pink', 'Różowy'), family: '#e05a9c' },
+  { hex: '#9aa0a6', name: name('Grey', 'Szary'), family: '#5c6370' },
+  { hex: '#1fa5a5', name: name('Teal', 'Morski'), family: '#1fa5a5' },
+]
+
+const pawn = (...names: string[]) =>
+  names.map((n) => {
+    const c = PAWN_COLORS.find((p) => (typeof p.name === 'string' ? p.name : p.name.en) === n)
+
+    if (!c) {
+      throw new Error(`Unknown pawn colour ${n}`)
+    }
+
+    return c.hex
+  })
+
+/**
  * Built-in games. Ids are stable ('builtin:…') because finished sessions and
  * stats refer to them — never rename an id, only its labels.
  */
@@ -95,6 +125,7 @@ const PRESETS: Preset[] = [
     emoji: '🪐',
     name: name('Terraforming Mars', 'Terraformacja Marsa'),
     mode: 'sheet',
+    pawns: pawn('Red', 'Green', 'Blue', 'Yellow', 'Black'),
     lowWins: false,
     categories: [
       cat('tr', 'Terraform rating', 'Współczynnik terraformacji'),
@@ -110,6 +141,7 @@ const PRESETS: Preset[] = [
     emoji: '🚂',
     name: name('Ticket to Ride', 'Wsiąść do pociągu'),
     mode: 'sheet',
+    pawns: pawn('Red', 'Blue', 'Green', 'Yellow', 'Black'),
     lowWins: false,
     categories: [
       cat('routes', 'Routes', 'Trasy'),
@@ -144,6 +176,7 @@ const PRESETS: Preset[] = [
     emoji: '🏝️',
     name: name('Catan', 'Catan'),
     mode: 'counter',
+    pawns: pawn('Red', 'Blue', 'White', 'Orange', 'Green', 'Brown'),
     lowWins: false,
     target: 10,
     steps: [1, 2],
@@ -153,6 +186,7 @@ const PRESETS: Preset[] = [
     emoji: '🏰',
     name: name('Carcassonne', 'Carcassonne'),
     mode: 'counter',
+    pawns: pawn('Red', 'Blue', 'Green', 'Yellow', 'Black', 'Grey'),
     lowWins: false,
     steps: [1, 2, 3, 4, 5, 10],
   },
@@ -210,6 +244,7 @@ const PRESETS: Preset[] = [
     emoji: '🚄',
     name: name('Ticket to Ride: Europe', 'Wsiąść do pociągu: Europa'),
     mode: 'sheet',
+    pawns: pawn('Red', 'Blue', 'Green', 'Yellow', 'Black'),
     lowWins: false,
     categories: [
       cat('routes', 'Routes', 'Trasy'),

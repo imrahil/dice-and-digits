@@ -10,6 +10,7 @@ import { RoundsTable } from '../components/play/RoundsBoard'
 import { SheetTable } from '../components/play/SheetBoard'
 import { Avatar, BottomBar, Button, Card, Empty, Page, Section, cx } from '../components/ui'
 import type { Session, Standing } from '../types'
+import { seatColor } from '../lib/pawns'
 
 const MEDAL = ['🥇', '🥈', '🥉']
 
@@ -28,7 +29,7 @@ export function Podium({ table }: { table: Standing[] }) {
       {order.map((r) => (
         <div key={r.seat.id} className="flex w-28 animate-rise flex-col items-center">
           {r.rank === 1 && <Crown className="mb-1 size-9 -rotate-6 text-gold drop-shadow-[2px_2px_0_var(--line)]" fill="currentColor" />}
-          <Avatar name={r.seat.name} color={r.seat.color} size={r.rank === 1 ? 'lg' : 'md'} />
+          <Avatar name={r.seat.name} color={seatColor(r.seat)} size={r.rank === 1 ? 'lg' : 'md'} />
           <span className="display mt-1 w-full truncate text-center font-extrabold">{r.seat.name}</span>
           <span className="display text-2xl font-black tabular-nums">{num(r.total)}</span>
           <div
@@ -167,7 +168,7 @@ export function Result({ id }: { id: string }) {
           </span>
           <span className="mt-3 flex -space-x-2">
             {winners.map((r) => (
-              <Avatar key={r.seat.id} name={r.seat.name} color={r.seat.color} size="lg" />
+              <Avatar key={r.seat.id} name={r.seat.name} color={seatColor(r.seat)} size="lg" />
             ))}
           </span>
           <span className="display mt-1.5 max-w-full truncate text-[30px] font-extrabold">{winners.map((r) => r.seat.name).join(', ')}</span>
@@ -176,7 +177,7 @@ export function Result({ id }: { id: string }) {
         </div>
       ) : (
         <div className="py-6 text-center">
-          <Avatar name={table[0].seat.name} color={table[0].seat.color} size="lg" />
+          <Avatar name={table[0].seat.name} color={seatColor(table[0].seat)} size="lg" />
           <p className="mt-2 display text-5xl font-black tabular-nums">{num(table[0].total)}</p>
         </div>
       )}
@@ -194,7 +195,7 @@ export function Result({ id }: { id: string }) {
                   onClick={() => updateSession(id, (s) => ({ ...s, tieBreak: r.seat.id }))}
                   className="surface press flex items-center gap-2 rounded-full py-1 pr-3.5 pl-1 font-bold"
                 >
-                  <Avatar name={r.seat.name} color={r.seat.color} size="sm" /> {r.seat.name}
+                  <Avatar name={r.seat.name} color={seatColor(r.seat)} size="sm" /> {r.seat.name}
                 </button>
               ))}
           </div>
@@ -214,7 +215,7 @@ export function Result({ id }: { id: string }) {
           {others.map((r) => (
             <div key={r.seat.id} className="flex items-center gap-3 border-b border-edge px-3.5 py-2.5 last:border-0 dark:border-white/8">
               <span className="display w-5 text-xl font-black text-ink/40 dark:text-white/40">{r.rank}</span>
-              <Avatar name={r.seat.name} color={r.seat.color} size="sm" />
+              <Avatar name={r.seat.name} color={seatColor(r.seat)} size="sm" />
               <span className="min-w-0 flex-1 leading-tight">
                 <span className="block truncate text-[17px] font-extrabold">{r.seat.name}</span>
                 <span className="block text-[13px] font-semibold text-ink/55 dark:text-white/55">{t('behindWinner', { n: num(r.gap) })}</span>

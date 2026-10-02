@@ -54,10 +54,15 @@ export function Join({ token }: { token: string }) {
         <Card className="mt-6 text-center">
           <div className="text-5xl">🎲</div>
           <p className="mt-3 text-lg font-extrabold">{t('joinPrompt', { name })}</p>
+          {group && (
+            <p role="alert" className="mt-3 surface-flat rounded-2xl p-3 text-sm font-semibold text-danger">
+              {t('switchGroupWarning', { from: group.name, name })}
+            </p>
+          )}
           <div className="mt-5 grid grid-cols-2 gap-3">
             <Button onClick={() => navigate('', { replace: true })}>{t('cancel')}</Button>
-            <Button variant="primary" onClick={join} disabled={busy}>
-              {t('joinGroup')}
+            <Button variant={group ? 'danger' : 'primary'} onClick={join} disabled={busy}>
+              {group ? t('switchGroup') : t('joinGroup')}
             </Button>
           </div>
         </Card>

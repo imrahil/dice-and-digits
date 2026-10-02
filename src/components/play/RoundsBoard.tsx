@@ -9,6 +9,7 @@ import type { Scorer } from '../../lib/scorer'
 import type { Session } from '../../types'
 import { Keypad, parseKeypad } from '../Keypad'
 import { Avatar, Button, IconButton, Sheet, cx } from '../ui'
+import { needsOutline, seatColor } from '../../lib/pawns'
 
 /**
  * Score grid shared by the rounds board and the result screen. `compact`
@@ -58,7 +59,7 @@ export function RoundsTable({
               return (
                 <div key={s.id} className={cx('flex flex-col items-center gap-1 px-1 pt-3 pb-2', lead && 'bg-gold/12')}>
                   <span className="relative">
-                    <Avatar name={s.name} color={s.color} size="sm" />
+                    <Avatar name={s.name} color={seatColor(s)} size="sm" />
                     {lead && <Crown className="absolute -top-2.5 -right-2 size-4 rotate-12 text-gold" fill="currentColor" />}
                   </span>
                   <span className="w-full truncate text-center text-xs font-bold">{s.name}</span>
@@ -132,7 +133,7 @@ function StandingCards({ session }: { session: Session }) {
           >
             <div className="flex items-center gap-2.5">
               <span className="display w-5 text-xl font-black text-ink/40 dark:text-white/40">{r.rank}</span>
-              <Avatar name={r.seat.name} color={r.seat.color} size="sm" />
+              <Avatar name={r.seat.name} color={seatColor(r.seat)} size="sm" />
               <span className="min-w-0 flex-1 leading-tight">
                 <span className="display block truncate text-[19px] font-extrabold">{r.seat.name}</span>
                 {scored && r.rank === 1 && (margin > 0 || left !== null) && (
@@ -149,8 +150,12 @@ function StandingCards({ session }: { session: Session }) {
             {progress !== null && (
               <div className="h-2 overflow-hidden rounded-full bg-ink/10 dark:bg-white/10" aria-hidden>
                 <div
-                  className={cx('h-full rounded-full', session.rules.lowWins && 'opacity-60')}
-                  style={{ width: `${progress * 100}%`, background: r.seat.color }}
+                  className={cx(
+                    'h-full rounded-full',
+                    session.rules.lowWins && 'opacity-60',
+                    needsOutline(seatColor(r.seat)) && 'ring-1 ring-ink/25 ring-inset dark:ring-white/35',
+                  )}
+                  style={{ width: `${progress * 100}%`, background: seatColor(r.seat) }}
                 />
               </div>
             )}
@@ -257,7 +262,7 @@ function RoundEntry({ session, scorer, index, onClose }: { session: Session; sco
                 i === focus ? 'bg-card ring-2 ring-accent dark:bg-night' : 'bg-ink/4 dark:bg-white/5',
               )}
             >
-              <Avatar name={s.name} color={s.color} size="sm" />
+              <Avatar name={s.name} color={seatColor(s)} size="sm" />
               <span className="min-w-0 flex-1 truncate text-sm font-bold">{s.name}</span>
               <span className={cx('display text-xl font-black tabular-nums', v === '' && 'text-ink/25 dark:text-white/25', v.startsWith('-') && 'text-danger')}>
                 {v || '0'}

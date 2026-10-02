@@ -43,6 +43,35 @@ test('remembers the last lineup for the next game', async ({ page }) => {
   await expect(page.locator('ol')).toContainText('Piotr')
 })
 
+test('pawn colours: auto-assigned, swapped in the picker, remembered next time', async ({ page }) => {
+  const RED = '#d7263d'
+  const BLUE = '#1f6fd1'
+
+  await setUpGame(page, 'builtin:ttr', ['Anna', 'Bartek'])
+
+  // Anna's roster red and Bartek's roster blue pick the matching pawns.
+  const swatch = (name: string) => button(page, `Kolor pionka: ${name}`)
+
+  await swatch('Anna').click()
+  await dialog(page).getByRole('button', { name: 'Niebieski' }).click() // Bartek's: the two swap
+  await button(page, 'Zacznij grę').click()
+  await page.waitForURL(/#\/play\//)
+
+  const s = await session(page, 'builtin:ttr')
+
+  expect(s.seats.map((x) => [x.name, x.pawn])).toEqual([
+    ['Anna', BLUE],
+    ['Bartek', RED],
+  ])
+
+  // The board shows pawns, not roster colours.
+  await expect(page.locator('main span[aria-hidden]', { hasText: /^A$/ }).first()).toHaveCSS('background-color', 'rgb(31, 111, 209)')
+
+  await setUpGame(page, 'builtin:ttr')
+  await swatch('Anna').click()
+  await expect(dialog(page).getByRole('button', { name: 'Niebieski' })).toHaveAttribute('aria-pressed', 'true')
+})
+
 test('rounds: negative scores on the keypad, edit a past round', async ({ page }) => {
   await startGame(page, 'builtin:1000', ['Anna', 'Bartek'])
 

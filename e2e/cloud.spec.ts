@@ -41,3 +41,29 @@ test('a finished game reaches the other phone through a shared group', async ({ 
     await expect(a.locator('main')).toContainText('Catan', { timeout: 2_000 })
   }).toPass({ timeout: 20_000 })
 })
+
+test('joining another group warns that this phone leaves its current one', async ({ browser }) => {
+  const a = await newPhone(browser)
+  const b = await newPhone(browser)
+
+  for (const [phone, name] of [
+    [a, 'Rodzina'],
+    [b, 'Praca'],
+  ] as const) {
+    await phone.goto('#/more')
+    await phone.getByPlaceholder('np. Piątkowa ekipa').fill(name)
+    await button(phone, 'Utwórz grupę').click()
+    await expect(phone.getByText(/Ostatnia synchronizacja|Jeszcze nie/)).toBeVisible()
+  }
+
+  await button(a, 'Zaproś').click()
+
+  const invite = await a.getByRole('dialog').locator('p.select-all').innerText()
+
+  await b.goto(invite.slice(invite.indexOf('#')))
+  await expect(b.getByRole('alert')).toContainText('Ten telefon należy do „Praca”')
+  await expect(button(b, 'Zmień grupę')).toBeVisible()
+  await button(b, 'Anuluj').click()
+  await b.goto('#/more')
+  await expect(b.locator('main')).toContainText('Praca')
+})

@@ -72,6 +72,15 @@ describe('starting a game', () => {
     expect(store.getState().sessions[s.id]).toBeDefined()
   })
 
+  it('snapshots chosen pawn colours, leaving seats without one untouched', () => {
+    const s = games.startSession(games.findGame('builtin:ttr')!, players, { lowWins: false, pawns: { a: '#2a2a2e' } })
+
+    expect(s.seats).toEqual([
+      { id: 'a', name: 'Anna', color: '#e4572e', pawn: '#2a2a2e' },
+      { id: 'b', name: 'Bart', color: '#2e86de' },
+    ])
+  })
+
   it('later edits to the game definition do not change a started session', () => {
     store.saveGame(custom('mine', 1, { mode: 'sheet', categories: [{ id: 'x', name: 'X', per: 2 }] }))
 
