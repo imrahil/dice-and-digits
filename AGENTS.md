@@ -13,6 +13,7 @@ npm run build    # tsc -b (type-check) + production build to dist/
 npm run lint     # ESLint for src/ and worker/ (lint:fix auto-fixes almost everything)
 npm run e2e      # Playwright: real app + `wrangler dev`, several phones (~1 min)
 npm run coverage # unit-test coverage report (text + coverage/index.html)
+npm run screenshots # README screenshots -> docs/screenshots/{en,pl}/ (~1 min)
 ```
 
 `npm run lint`, `npm test` and `npm run build` are the checks; run all three
@@ -36,6 +37,10 @@ every deploy.
   (`newPhone()` in `e2e/helpers.ts`). The UI is Polish by default there.
   Locally, Playwright's browsers live in `/opt/pw-browsers` in the Claude
   cloud environment (`PLAYWRIGHT_BROWSERS_PATH`).
+
+`npm run screenshots` (`screenshots/screenshots.spec.ts`, own config) seeds demo
+data and drives the real app and worker like the e2e run. Re-run it and commit
+the PNGs when the UI changes visibly; it is not part of CI.
 
 Worker commands run from `worker/`:
 
