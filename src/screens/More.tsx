@@ -1,13 +1,25 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { Check, ChevronRight, Cloud, Download, Gamepad2, LogOut, QrCode, RefreshCw, Upload, Users } from 'lucide-react'
+import { Check, ChevronRight, Cloud, Copy, Download, Gamepad2, KeyRound, LogOut, QrCode, RefreshCw, Share2, Trash2, TriangleAlert, Upload, Users } from 'lucide-react'
 import { useI18n } from '../i18n'
-import { cloudEnabled, createGroup, inviteLink, leaveGroup, syncNow, useCloud } from '../lib/cloud'
+import {
+  cloudEnabled,
+  createBackup,
+  createGroup,
+  deleteBackup,
+  inviteLink,
+  leaveGroup,
+  markCodeSaved,
+  syncNow,
+  useCloud,
+  type Group,
+} from '../lib/cloud'
+import { codeWords } from '../lib/recovery'
 import { exportBackup, importBackup, setSettings, useStore } from '../lib/store'
 import { navigate } from '../hooks/useRoute'
 import { confirm, toast } from '../components/dialogs'
 import { Logo } from '../components/Logo'
-import { Button, Card, Page, Section, Segmented, Toggle, cx, inputClass } from '../components/ui'
-import { QrShareSheet } from '../components/QrShare'
+import { Button, Card, Page, Section, Segmented, Sheet, Toggle, cx, inputClass } from '../components/ui'
+import { QrCode as QrImage, QrShareSheet, shareUrl } from '../components/QrShare'
 import type { Lang, Skin, Theme } from '../types'
 
 const CONTACT_EMAIL = 'dice-and-digits@imrahil.com'
@@ -103,6 +115,7 @@ export function More() {
         <LinkRow icon={<Gamepad2 className="size-5" />} label={t('games')} detail={gameCount ? num(gameCount) : undefined} onClick={() => navigate('games')} />
       </Card>
 
+      {cloudEnabled && <BackupSection />}
       {cloudEnabled && <CloudSection />}
 
       <Section title={t('settings')}>
@@ -189,9 +202,192 @@ export function More() {
   )
 }
 
-function CloudSection() {
+/** Group name, last sync or error, and a sync button. */
+function SyncStatus({ group }: { group: Group }) {
   const { t, ago } = useI18n()
-  const { group, syncing, error } = useCloud()
+  const { syncing, error } = useCloud()
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className="flex size-10 items-center justify-center rounded-xl bg-mint/15 text-mint">
+        <Cloud className="size-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-extrabold">{group.name}</span>
+        <span className={cx('block text-sm', error ? 'text-danger' : 'text-ink/55 dark:text-white/55')}>
+          {syncing
+            ? t('syncing')
+            : error
+              ? t('syncError', { error })
+              : group.lastSync
+                ? t('lastSync', { time: ago(group.lastSync) })
+                : t('neverSynced')}
+        </span>
+      </span>
+      <Button size="sm" variant="ghost" onClick={() => syncNow()} disabled={syncing} aria-label={t('syncNow')}>
+        <RefreshCw className={cx('size-5', syncing && 'animate-spin')} />
+      </Button>
+    </div>
+  )
+}
+
+/**
+ * Personal backup: a group of one opened by a recovery code. With a shared
+ * group the group already holds a copy, so this only points at its link.
+ */
+function BackupSection() {
+  const { t } = useI18n()
+  const { group } = useCloud()
+  const [busy, setBusy] = useState(false)
+  const [kit, setKit] = useState(false)
+  const [invite, setInvite] = useState(false)
+
+  const create = async () => {
+    setBusy(true)
+
+    try {
+      await createBackup(t('myBackup'))
+      setKit(true)
+    } catch (e) {
+      toast(t('syncError', { error: e instanceof Error ? e.message : String(e) }))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const turnOff = async () => {
+    if (await confirm(t('turnOffConfirm'), { confirmLabel: t('turnOffBackup'), danger: true })) {
+      leaveGroup()
+    }
+  }
+
+  const remove = async () => {
+    if (!(await confirm(t('deleteBackupConfirm'), { confirmLabel: t('deleteBackup'), danger: true }))) {
+      return
+    }
+
+    try {
+      await deleteBackup()
+      toast(t('backupDeleted'))
+    } catch (e) {
+      toast(t('syncError', { error: e instanceof Error ? e.message : String(e) }))
+    }
+  }
+
+  if (group && group.kind !== 'vault') {
+    return (
+      <Section title={t('backupCloud')}>
+        <Card>
+          <p className="text-sm text-ink/65 dark:text-white/65">{t('groupKeepsCopy')}</p>
+          <Button className="mt-3 w-full" onClick={() => setInvite(true)}>
+            <QrCode className="size-5" /> {t('saveInviteLink')}
+          </Button>
+        </Card>
+        <QrShareSheet open={invite} onClose={() => setInvite(false)} title={group.name} caption={t('scanToJoinGroup')} url={inviteLink(group)} />
+      </Section>
+    )
+  }
+
+  return (
+    <Section title={t('backupCloud')}>
+      <Card>
+        {group ? (
+          <>
+            <SyncStatus group={group} />
+            {!group.savedAt && (
+              <p role="alert" className="mt-3 flex items-start gap-2 surface-flat rounded-2xl p-3 text-sm font-semibold">
+                <TriangleAlert className="size-5 shrink-0 text-gold" /> {t('saveCodeWarning')}
+              </p>
+            )}
+            <Button variant={group.savedAt ? 'secondary' : 'primary'} className="mt-4 w-full" onClick={() => setKit(true)}>
+              <KeyRound className="size-5" /> {t('recoveryCode')}
+            </Button>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <Button onClick={turnOff}>
+                <LogOut className="size-5" /> {t('turnOffBackup')}
+              </Button>
+              <Button variant="danger" onClick={remove}>
+                <Trash2 className="size-5" /> {t('deleteBackup')}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-ink/65 dark:text-white/65">{t('backupIntro')}</p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <Button variant="primary" onClick={create} disabled={busy}>
+                <Cloud className="size-5" /> {t('createBackup')}
+              </Button>
+              <Button onClick={() => navigate('restore')}>
+                <KeyRound className="size-5" /> {t('restoreFromCode')}
+              </Button>
+            </div>
+          </>
+        )}
+      </Card>
+      {group && <RecoveryKit group={group} open={kit} onClose={() => setKit(false)} />}
+    </Section>
+  )
+}
+
+/** The recovery code and link as QR, to save somewhere safe. Generated on the phone, like every QR here. */
+function RecoveryKit({ group, open, onClose }: { group: Group; open: boolean; onClose: () => void }) {
+  const { t, lang } = useI18n()
+  const url = inviteLink(group)
+  const words = group.code ? codeWords(group.code, lang) : []
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(words.join(' '))
+      toast(t('codeCopied'))
+    } catch {
+      // No clipboard: the words are on screen and selectable.
+    }
+  }
+
+  return (
+    <Sheet open={open} onClose={onClose} title={t('recoveryCode')}>
+      <p className="text-sm text-ink/65 dark:text-white/65">{t('recoveryHint')}</p>
+      {words.length > 0 && (
+        <ol data-testid="recovery-words" data-words={words.join(' ')} className="mt-3 grid grid-cols-2 gap-2">
+          {words.map((w, i) => (
+            <li key={i} className="flex items-baseline gap-2 surface-flat rounded-2xl px-3 py-2.5">
+              <span className="display w-4 text-sm font-black text-ink/40 tabular-nums dark:text-white/40">{i + 1}</span>
+              <span className="display text-xl font-black select-all">{w}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+      <div className="mt-3 flex justify-center">
+        <div className="rounded-3xl bg-white p-2 shadow-sm ring-1 ring-edge dark:ring-0">
+          <QrImage text={url} className="size-44 max-h-[50vw] max-w-[50vw]" />
+        </div>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <Button onClick={copy} disabled={!words.length}>
+          <Copy className="size-5" /> {t('copyCode')}
+        </Button>
+        <Button onClick={() => shareUrl(url, group.name, t('linkCopied'))}>
+          <Share2 className="size-5" /> {t('shareLink')}
+        </Button>
+      </div>
+      <Button
+        variant="primary"
+        className="mt-3 w-full"
+        onClick={() => {
+          markCodeSaved()
+          onClose()
+        }}
+      >
+        <Check className="size-5" strokeWidth={3} /> {t('codeSaved')}
+      </Button>
+    </Sheet>
+  )
+}
+
+function CloudSection() {
+  const { t } = useI18n()
+  const { group } = useCloud()
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const [qr, setQr] = useState(false)
@@ -221,28 +417,11 @@ function CloudSection() {
   return (
     <Section title={t('cloud')}>
       <Card>
-        {group ? (
+        {group?.kind === 'vault' ? (
+          <p className="text-sm text-ink/65 dark:text-white/65">{t('groupWhileBackup')}</p>
+        ) : group ? (
           <>
-            <div className="flex items-center gap-3">
-              <span className="flex size-10 items-center justify-center rounded-xl bg-mint/15 text-mint">
-                <Cloud className="size-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-extrabold">{group.name}</span>
-                <span className={cx('block text-sm', error ? 'text-danger' : 'text-ink/55 dark:text-white/55')}>
-                  {syncing
-                    ? t('syncing')
-                    : error
-                      ? t('syncError', { error })
-                      : group.lastSync
-                        ? t('lastSync', { time: ago(group.lastSync) })
-                        : t('neverSynced')}
-                </span>
-              </span>
-              <Button size="sm" variant="ghost" onClick={() => syncNow()} disabled={syncing} aria-label={t('syncNow')}>
-                <RefreshCw className={cx('size-5', syncing && 'animate-spin')} />
-              </Button>
-            </div>
+            <SyncStatus group={group} />
             <p className="mt-3 text-sm text-ink/65 dark:text-white/65">{t('cloudInGroupHint')}</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <Button onClick={() => setQr(true)}>
@@ -289,7 +468,7 @@ function CloudSection() {
           </>
         )}
       </Card>
-      {group && (
+      {group && group.kind !== 'vault' && (
         <QrShareSheet open={qr} onClose={() => setQr(false)} title={group.name} caption={t('scanToJoinGroup')} url={inviteLink(group)} />
       )}
     </Section>

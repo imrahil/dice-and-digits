@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { Session } from '../types'
 import { applyRemote, clearDirty, dirtyDocs, markAllDirty, type RemoteDoc } from './store'
+import { deriveKey, newCode, type Code } from './recovery'
 
 /** Worker base URL, baked in at build time. Empty = local-only build, cloud UI hidden. */
 export const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')
@@ -9,12 +10,20 @@ export const cloudEnabled = API_URL !== ''
 const GROUP_KEY = 'dice-digits:group'
 const LIVE_KEY = 'dice-digits:live'
 
+export type GroupKind = 'group' | 'vault'
+
 export type Group = {
   id: string
   secret: string
   name: string
   cursor: number
   lastSync?: number
+  /** 'vault' = a personal backup, opened by its recovery words. Missing = a shared group. */
+  kind?: GroupKind
+  /** A backup's recovery code (recovery.ts), kept to show its words again. */
+  code?: Code
+  /** When the user confirmed they saved the recovery words. */
+  savedAt?: number
 }
 
 type CloudState = {
@@ -86,7 +95,7 @@ const groupToken = (g: Pick<Group, 'id' | 'secret'>) => `${g.id}.${g.secret}`
 // ---- groups ----------------------------------------------------------------
 
 export async function createGroup(name: string) {
-  const g = await api<{ id: string; secret: string; name: string }>('/api/groups', {
+  const g = await api<{ id: string; secret: string; name: string; kind: GroupKind }>('/api/groups', {
     method: 'POST',
     body: JSON.stringify({ name }),
   })
@@ -97,15 +106,21 @@ export async function createGroup(name: string) {
 }
 
 /** Invite tokens are `<groupId>.<secret>`, carried in the #/join/… link. */
-export async function lookupInvite(token: string): Promise<{ id: string; name: string }> {
+export async function lookupInvite(token: string): Promise<{ id: string; name: string; kind: GroupKind }> {
   return api('/api/groups/me', { token })
 }
 
-export async function joinGroup(token: string) {
+/** Joins a group by its token, or restores a backup from its recovery code. */
+export async function joinGroup(token: string, code?: Code) {
   const dot = token.indexOf('.')
   const info = await lookupInvite(token)
+  // Restoring a backup proves the words were kept somewhere.
+  const savedAt = info.kind === 'vault' ? Date.now() : undefined
 
-  setCloud({ group: { id: info.id, secret: token.slice(dot + 1), name: info.name, cursor: 0 }, error: null })
+  setCloud({
+    group: { id: info.id, secret: token.slice(dot + 1), name: info.name, kind: info.kind, code, savedAt, cursor: 0 },
+    error: null,
+  })
   markAllDirty()
   await syncNow()
 }
@@ -114,10 +129,50 @@ export function leaveGroup() {
   setCloud({ group: null, error: null })
 }
 
+// ---- personal backup ---------------------------------------------------------
+// A vault is a group of one. Its id and secret are stretched from six recovery
+// words on the phone (recovery.ts), so the words alone restore it.
+
+/** The group token a recovery code opens. Slow on purpose (PBKDF2). */
+export async function backupToken(code: Code): Promise<string> {
+  const { id, secret } = await deriveKey(code)
+
+  return `${id}.${secret}`
+}
+
+export async function createBackup(name: string) {
+  const code = newCode()
+  const { id, secret } = await deriveKey(code)
+
+  await api('/api/groups', { method: 'POST', body: JSON.stringify({ name, kind: 'vault', id, secret }) })
+  setCloud({ group: { id, secret, name, kind: 'vault', code, cursor: 0 }, error: null })
+  markAllDirty()
+  await syncNow()
+}
+
+export function markCodeSaved() {
+  if (cloud.group) {
+    setCloud({ group: { ...cloud.group, savedAt: Date.now() } })
+  }
+}
+
+/** Deletes the backup on the server for every phone. This phone keeps its data. */
+export async function deleteBackup() {
+  const g = cloud.group
+
+  if (!g || g.kind !== 'vault') {
+    return
+  }
+
+  await api('/api/groups/me', { method: 'DELETE', token: groupToken(g) })
+  setCloud({ group: null, error: null })
+}
+
+/** A group's invite link; for a backup, its recovery link (the code, not the key). */
 export function inviteLink(g: Group) {
   const base = location.href.split('#')[0]
 
-  return `${base}#/join/${groupToken(g)}`
+  return `${base}#/join/${g.kind === 'vault' && g.code ? g.code : groupToken(g)}`
 }
 
 // ---- sync ------------------------------------------------------------------
@@ -125,7 +180,7 @@ export function inviteLink(g: Group) {
 const MAX_PUSH = 200 // matches LIMITS.docsPerPush in the worker
 
 type SyncResponse = {
-  group: { id: string; name: string }
+  group: { id: string; name: string; kind: GroupKind }
   cursor: number
   more: boolean
   docs: RemoteDoc[]
@@ -167,9 +222,14 @@ async function run() {
         body: JSON.stringify({ cursor: g.cursor, docs: batch }),
       })
 
+      // Left, deleted or switched group while the request was out: drop the answer.
+      if (cloud.group?.id !== g.id) {
+        return
+      }
+
       clearDirty(batch)
       applyRemote(res.docs)
-      setCloud({ group: { ...g, name: res.group.name, cursor: res.cursor, lastSync: Date.now() } })
+      setCloud({ group: { ...cloud.group, name: res.group.name, kind: res.group.kind, cursor: res.cursor, lastSync: Date.now() } })
       more = res.more || (batch.length === MAX_PUSH && dirtyDocs().length > 0)
     }
 

@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import worker, { LIMITS, Room } from '../src/worker.js'
+import { sha256 } from '../src/crypto.js'
 import { createD1 } from './d1.mjs'
 import { fakeNamespace } from './do.mjs'
 
@@ -85,6 +86,72 @@ test('writes from a foreign origin are refused', async () => {
   const res = await call('POST', '/api/groups', { body: { name: 'x' }, origin: 'https://evil.example' })
 
   assert.equal(res.status, 403)
+})
+
+const hex = (bytes) => [...crypto.getRandomValues(new Uint8Array(bytes))].map((b) => b.toString(16).padStart(2, '0')).join('')
+
+/** A backup as the phone creates it: id and secret derived from its words, here just random. */
+async function newVault(call) {
+  const id = hex(16)
+  const secret = hex(32)
+  const res = await call('POST', '/api/groups', { body: { name: 'Me', kind: 'vault', id, secret } })
+
+  return { res, id, secret, token: `${id}.${secret}` }
+}
+
+test('a personal backup takes its id and secret from the phone; only the hash is stored', async () => {
+  const { env, call } = setup()
+  const { res, id, secret, token } = await newVault(call)
+
+  assert.equal(res.status, 201)
+  assert.deepEqual(res.body, { id, name: 'Me', kind: 'vault' }) // the secret is never echoed
+
+  const row = env.DB.raw.prepare('SELECT * FROM groups WHERE id = ?').get(id)
+
+  assert.equal(row.kind, 'vault')
+  assert.equal(row.secret_hash, await sha256(secret))
+  assert.deepEqual((await call('GET', '/api/groups/me', { token })).body, { id, name: 'Me', kind: 'vault' })
+
+  const synced = await call('POST', '/api/sync', { token, body: { cursor: 0, docs: [doc('anna', 1)] } })
+
+  assert.equal(synced.body.group.kind, 'vault')
+  assert.equal(synced.body.docs.length, 1)
+})
+
+test('a backup id is never taken over, and must look derived', async () => {
+  const { call } = setup()
+  const { id } = await newVault(call)
+  const again = await call('POST', '/api/groups', { body: { name: 'Thief', kind: 'vault', id, secret: hex(32) } })
+
+  assert.equal(again.status, 409)
+
+  for (const body of [{}, { id: 'short', secret: hex(32) }, { id: hex(16), secret: 'weak' }]) {
+    assert.equal((await call('POST', '/api/groups', { body: { name: 'Me', kind: 'vault', ...body } })).status, 400)
+  }
+})
+
+test('a plain group is still a group, whatever kind is asked for', async () => {
+  const { call } = setup()
+  const { body } = await call('POST', '/api/groups', { body: { name: 'Crew', kind: 'admin' } })
+
+  assert.equal(body.kind, 'group')
+})
+
+test('deleting a personal backup removes its docs; shared groups cannot be deleted', async () => {
+  const { env, call } = setup()
+  const { id, token } = await newVault(call)
+
+  await call('POST', '/api/sync', { token, body: { cursor: 0, docs: [doc('anna', 1)] } })
+
+  assert.equal((await call('DELETE', '/api/groups/me', { token: `${id}.${hex(32)}` })).status, 401)
+  assert.equal((await call('DELETE', '/api/groups/me', { token, origin: 'https://evil.example' })).status, 403)
+  assert.equal((await call('DELETE', '/api/groups/me', { token })).status, 200)
+  assert.equal(env.DB.raw.prepare('SELECT COUNT(*) AS n FROM docs WHERE group_id = ?').get(id).n, 0)
+  assert.equal((await call('GET', '/api/groups/me', { token })).status, 401)
+
+  const shared = await newGroup(call)
+
+  assert.equal((await call('DELETE', '/api/groups/me', { token: shared })).status, 403)
 })
 
 test('two phones converge through sync', async () => {

@@ -11,6 +11,22 @@ export function randomString(bytes) {
   return btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
+/** Random code from `alphabet`, without the modulo bias of `byte % length`. */
+export function randomCode(length, alphabet) {
+  const limit = 256 - (256 % alphabet.length)
+  let out = ''
+
+  while (out.length < length) {
+    for (const b of crypto.getRandomValues(new Uint8Array(length * 2))) {
+      if (b < limit && out.length < length) {
+        out += alphabet[b % alphabet.length]
+      }
+    }
+  }
+
+  return out
+}
+
 /** Constant-time comparison of two hex digests. */
 export function sameHash(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) {

@@ -97,6 +97,13 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
   Never send a link to a QR web service: a group invite link *is* the key.
 - **No passwords or accounts.** A group is a capability: whoever has the invite
   link is in. Only secret hashes are stored server-side.
+- **A personal backup is a group too** (`kind: 'vault'`), so it uses the same
+  sync. Its recovery code is six words (`src/lib/recovery.ts`,
+  `src/data/words.ts`). The phone stretches the group id and secret from it
+  with PBKDF2 and sends only those; the server never sees the words. **Never
+  reorder or edit the word list or change the derivation** (salt, iterations):
+  saved codes would stop opening their backups. A phone is in one group or one
+  backup, never both. Only a vault can be deleted server-side.
 
 ## Live games (join to score)
 

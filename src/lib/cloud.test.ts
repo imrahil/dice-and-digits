@@ -10,6 +10,7 @@ import worker, { LIMITS, Room } from '../../worker/src/worker.js'
 import { createD1 } from '../../worker/test/d1.mjs'
 import { fakeNamespace } from '../../worker/test/do.mjs'
 import type { Player, Session } from '../types'
+import { codeWords, parseWords } from './recovery'
 
 const API = 'http://api.test'
 
@@ -157,6 +158,143 @@ describe('groups', () => {
 
     await onPhone('A', ({ cloud }) => {
       expect(cloud.inviteLink(cloud.getCloud().group!)).toMatch(new RegExp(`#/join/${token.replace('.', '\\.')}$`))
+    })
+  })
+})
+
+describe('personal backup', () => {
+  /** Back up phone A; returns its recovery words in English, as shown to the user. */
+  const backUp = () =>
+    onPhone('A', async ({ cloud }) => {
+      await cloud.createBackup('My backup')
+
+      return codeWords(cloud.getCloud().group!.code!, 'en')
+    })
+
+  /** What the restore screen does with typed words. */
+  const restore = async (cloud: Phone['cloud'], typed: string) => {
+    const parsed = parseWords(typed)
+
+    if (!('code' in parsed)) {
+      throw new Error(JSON.stringify(parsed))
+    }
+
+    await cloud.joinGroup(await cloud.backupToken(parsed.code), parsed.code)
+  }
+
+  it('a phone restores everything from the six words alone, typed in Polish', async () => {
+    await onPhone('A', ({ store }) => {
+      store.savePlayer(player('anna', 'Anna'))
+      store.saveGame({ id: 'mine', name: 'Mine', emoji: '🎲', mode: 'counter', lowWins: false, updatedAt: 1 })
+      store.saveSession(finished('g1'))
+      store.saveSession({ ...finished('live'), finishedAt: undefined })
+    })
+
+    const words = await backUp()
+    const code = await onPhone('A', ({ cloud }) => cloud.getCloud().group!.code!)
+
+    await onPhone('B', async ({ store, cloud }) => {
+      await restore(cloud, codeWords(code, 'pl').join(' ').toUpperCase())
+      expect(store.getState().players.anna.name).toBe('Anna')
+      expect(store.getState().games.mine.name).toBe('Mine')
+      expect(store.getState().sessions.g1.finishedAt).toBe(2)
+      expect(store.getState().sessions.live).toBeUndefined()
+      expect(cloud.getCloud().group).toMatchObject({ kind: 'vault', name: 'My backup', code })
+      expect(cloud.getCloud().group!.savedAt).toBeTypeOf('number')
+    })
+    expect(words).toHaveLength(6)
+  })
+
+  it('the server never sees the words or the code', async () => {
+    const bodies: string[] = []
+
+    beforeServer = null
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit = {}) => {
+      bodies.push(String(init.body ?? '') + JSON.stringify(init.headers ?? {}) + url)
+
+      return worker.fetch(new Request(url, init), env)
+    })
+
+    const words = await backUp()
+    const code = await onPhone('A', ({ cloud }) => cloud.getCloud().group!.code!)
+    const sent = bodies.join('\n')
+
+    expect(sent).not.toContain(code)
+
+    for (const w of [...words, ...codeWords(code, 'pl')]) {
+      expect(sent).not.toMatch(new RegExp(`\\b${w}\\b`))
+    }
+  })
+
+  it('a wiped phone comes back, and data on the new phone joins the backup', async () => {
+    const words = (await backUp()).join(' ')
+
+    await onPhone('A', ({ store }) => store.savePlayer(player('anna', 'Anna')))
+    await onPhone('A', ({ cloud }) => cloud.syncNow())
+    delete disks.A // browser data cleared
+
+    await onPhone('A', async ({ store, cloud }) => {
+      store.savePlayer(player('bart', 'Bart')) // added before restoring
+      await restore(cloud, words)
+      expect(Object.keys(store.getState().players).sort()).toEqual(['anna', 'bart'])
+    })
+    await onPhone('C', async ({ store, cloud }) => {
+      await restore(cloud, words)
+      expect(Object.keys(store.getState().players).sort()).toEqual(['anna', 'bart'])
+    })
+  })
+
+  it('the recovery link carries the code, never the key; unknown words open nothing', async () => {
+    await backUp()
+
+    const [link, group] = await onPhone('A', ({ cloud }) => [cloud.inviteLink(cloud.getCloud().group!), cloud.getCloud().group!] as const)
+
+    expect(link).toMatch(new RegExp(`#/join/${group.code}$`))
+    expect(link).not.toContain(group.secret)
+
+    await onPhone('B', async ({ cloud }) => {
+      await expect(restore(cloud, 'cat cat cat cat cat cat')).rejects.toThrow()
+      expect(cloud.getCloud().group).toBeNull()
+    })
+  })
+
+  it('a new backup asks for its words to be saved, until confirmed', async () => {
+    await backUp()
+    await onPhone('A', ({ cloud }) => {
+      expect(cloud.getCloud().group!.savedAt).toBeUndefined()
+      cloud.markCodeSaved()
+      expect(cloud.getCloud().group!.savedAt).toBeTypeOf('number')
+    })
+    await onPhone('A', ({ cloud }) => expect(cloud.getCloud().group!.savedAt).toBeTypeOf('number'))
+  })
+
+  it('deleting the backup removes it for every phone; this phone keeps its data', async () => {
+    const words = (await backUp()).join(' ')
+
+    await onPhone('A', async ({ store, cloud }) => {
+      store.savePlayer(player('anna'))
+      await cloud.syncNow()
+      await cloud.deleteBackup()
+      expect(cloud.getCloud().group).toBeNull()
+      expect(store.getState().players.anna).toBeDefined()
+    })
+    await onPhone('B', async ({ cloud }) => {
+      await expect(restore(cloud, words)).rejects.toThrow()
+    })
+  })
+
+  it('leaving while a sync is in flight is not undone by its answer', async () => {
+    await backUp()
+    await onPhone('A', async ({ store, cloud }) => {
+      store.savePlayer(player('anna'))
+
+      beforeServer = () => {
+        beforeServer = null
+        cloud.leaveGroup()
+      }
+
+      await cloud.syncNow()
+      expect(cloud.getCloud().group).toBeNull()
     })
   })
 })
