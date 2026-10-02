@@ -189,6 +189,13 @@ Not linted but expected: named exports only, hooks in `src/hooks/`, shared
 types in `src/types.ts`, screens in `src/screens/`. No Prettier: ESLint's
 stylistic rules are the formatter.
 
+## Versioning
+
+- **Bump `version` in `package.json` before every PR merge.** It is shown in
+  More → About (injected by `vite.config.ts` as `__APP_VERSION__`). Use semver:
+  patch for fixes, minor for features. Also update `package-lock.json`
+  (`npm version <x.y.z> --no-git-tag-version`).
+
 ## Deployment
 
 Push to `main` → tests + build → GitHub Pages. Run the worker deploy
