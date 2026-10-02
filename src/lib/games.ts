@@ -62,7 +62,11 @@ export function recentGameIds(sessions: State['sessions'], limit = 6): string[] 
   return out
 }
 
-export function startSession(game: GameDef, players: Player[], opts: { lowWins: boolean; target?: number }): Session {
+export function startSession(
+  game: GameDef,
+  players: Player[],
+  opts: { lowWins: boolean; target?: number; pawns?: Record<string, string> },
+): Session {
   const now = Date.now()
   const session: Session = {
     id: uid(),
@@ -79,7 +83,11 @@ export function startSession(game: GameDef, players: Player[], opts: { lowWins: 
       zeroSum: game.zeroSum,
       timer: game.mode === 'winner' ? game.timer : undefined,
     },
-    seats: players.map((p) => ({ id: p.id, name: p.name, color: p.color })),
+    seats: players.map((p) => {
+      const pawn = opts.pawns?.[p.id]
+
+      return pawn ? { id: p.id, name: p.name, color: p.color, pawn } : { id: p.id, name: p.name, color: p.color }
+    }),
     rounds: [],
     log: [],
     sheet: {},

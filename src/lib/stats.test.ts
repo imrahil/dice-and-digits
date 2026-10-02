@@ -50,6 +50,14 @@ describe('stats', () => {
     expect(rows.find((r) => r.id === 'a')?.name).toBe('Ania')
   })
 
+  it('players keep their roster colour, never a pawn colour', () => {
+    const pawned = sessions.map((s) => ({ ...s, seats: s.seats.map((x) => ({ ...x, pawn: '#f3efe6' })) }))
+    const rows = playerStats(pawned, { a: { id: 'a', name: 'Ania', color: '#f00', updatedAt: 1 } })
+
+    expect(rows.find((r) => r.id === 'a')?.color).toBe('#f00')
+    expect(rows.find((r) => r.id === 'b')?.color).toBe('#000') // deleted from roster: the seat snapshot
+  })
+
   it('game stats keep the record and the average winning score', () => {
     const [g] = gameStats(sessions)
 

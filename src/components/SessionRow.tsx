@@ -3,6 +3,7 @@ import { useI18n } from '../i18n'
 import { standings } from '../lib/scoring'
 import type { Session } from '../types'
 import { Avatar, Card } from './ui'
+import { seatColor } from '../lib/pawns'
 
 /** One game in a list: emoji, name, players, and either the winner or the leader. */
 export function SessionRow({ session, onClick }: { session: Session; onClick: () => void }) {
@@ -29,7 +30,7 @@ export function SessionRow({ session, onClick }: { session: Session; onClick: ()
         <span className="mt-1.5 flex -space-x-1.5">
           {session.seats.slice(0, 7).map((s) => (
             <span key={s.id} className="rounded-full ring-2 ring-card dark:ring-slate">
-              <Avatar name={s.name} color={s.color} size="sm" />
+              <Avatar name={s.name} color={seatColor(s)} size="sm" />
             </span>
           ))}
         </span>

@@ -14,6 +14,7 @@ import { WinnerBoard } from '../components/play/WinnerBoard'
 import { Avatar, BottomBar, Button, Card, Empty, Page, Section, cx } from '../components/ui'
 import type { Session } from '../types'
 import { Podium } from './Result'
+import { seatColor } from '../lib/pawns'
 
 const NOTICE = {
   taken: 'noticeTaken',
@@ -100,7 +101,7 @@ function LiveRoom({ code }: { code: string }) {
       ) : me ? (
         <>
           <Card className="mb-3 flex items-center gap-3 !p-3">
-            <Avatar name={me.name} color={me.color} />
+            <Avatar name={me.name} color={seatColor(me)} />
             <span className="min-w-0 flex-1 truncate font-extrabold">{t('youScoreAs', { name: me.name })}</span>
             <Button size="sm" variant="ghost" onClick={room.leave}>
               {t('changeSeat')}
@@ -178,7 +179,7 @@ function SeatPicker({ session, room }: { session: Session; room: RoomView }) {
                 taken ? 'surface-flat opacity-45' : 'surface press',
               )}
             >
-              <Avatar name={seat.name} color={seat.color} size="sm" />
+              <Avatar name={seat.name} color={seatColor(seat)} size="sm" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-bold">{seat.name}</span>
                 {taken && <span className="block text-xs font-semibold">{t('seatTaken')}</span>}
@@ -231,7 +232,7 @@ function Leaderboard({ session }: { session: Session }) {
         {table.map((r) => (
           <div key={r.seat.id} className={cx('flex items-center gap-3 rounded-2xl px-2 py-2.5', r.rank === 1 && anyScore && 'bg-gold/12')}>
             <span className="w-6 text-center font-black text-ink/50 tabular-nums dark:text-white/50">{r.rank}</span>
-            <Avatar name={r.seat.name} color={r.seat.color} />
+            <Avatar name={r.seat.name} color={seatColor(r.seat)} />
             <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-lg font-extrabold">
               {r.seat.name}
               {r.rank === 1 && anyScore && <Crown className="size-4 shrink-0 text-gold" fill="currentColor" />}

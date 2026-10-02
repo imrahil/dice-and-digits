@@ -8,6 +8,7 @@ import type { Scorer } from '../../lib/scorer'
 import type { Seat, Session, Standing } from '../../types'
 import { Keypad, KeypadDisplay, parseKeypad } from '../Keypad'
 import { Avatar, Button, Sheet, cx } from '../ui'
+import { needsOutline, seatColor } from '../../lib/pawns'
 
 /** Quick taps within this window are shown as one running "+7" bubble. */
 const BURST_MS = 1600
@@ -107,7 +108,7 @@ export function CounterBoard({ session, scorer, toolbar }: { session: Session; s
               return (
                 <li key={session.log.length - i} className="flex items-center gap-2 text-sm">
                   <span className="w-12 text-ink/45 tabular-nums dark:text-white/45">{time(e.t)}</span>
-                  <span className="size-2.5 rounded-full" style={{ backgroundColor: seat?.color }} />
+                  <span className="size-2.5 rounded-full" style={{ backgroundColor: seat && seatColor(seat) }} />
                   <span className="flex-1 truncate font-semibold">{seat?.name}</span>
                   <span className={cx('font-black tabular-nums', e.d >= 0 ? 'text-mint' : 'text-danger')}>
                     {e.d > 0 ? '+' : ''}
@@ -126,7 +127,7 @@ export function CounterBoard({ session, scorer, toolbar }: { session: Session; s
         title={
           pad && (
             <span className="flex items-center gap-2">
-              <Avatar name={pad.name} color={pad.color} size="sm" />
+              <Avatar name={pad.name} color={seatColor(pad)} size="sm" />
               {pad.name}
             </span>
           )
@@ -215,7 +216,7 @@ export function SeatControls({
             !list && (i === 0 ? 'min-w-0 flex-1 text-lg' : 'w-11 shrink-0 text-[17px]'),
             i === 0 && 'text-white [text-shadow:0_1px_0_rgb(0_0_0/0.25)]',
           )}
-          style={i === 0 ? { background: seat.color } : undefined}
+          style={i === 0 ? { background: seatColor(seat) } : undefined}
         >
           {i === 0 ? <Plus className={list ? 'size-6' : 'size-7'} strokeWidth={3} /> : `+${st}`}
           {i === 0 && st !== 1 && st}
@@ -240,10 +241,10 @@ function CounterList({ kit }: { kit: Kit }) {
           <div
             key={seat.id}
             className={cx('surface relative rounded-3xl p-3 transition', lead && '!bg-gold/20 dark:!bg-gold/12')}
-            style={{ backgroundImage: `linear-gradient(105deg, color-mix(in oklab, ${seat.color} 24%, transparent), transparent 60%)` }}
+            style={{ backgroundImage: `linear-gradient(105deg, color-mix(in oklab, ${seatColor(seat)} 24%, transparent), transparent 60%)` }}
           >
             <div className="flex items-center gap-3">
-              <Avatar name={seat.name} color={seat.color} />
+              <Avatar name={seat.name} color={seatColor(seat)} />
               <span className="min-w-0 flex-1">
                 <span className="display flex items-center gap-1.5 truncate text-lg font-extrabold">
                   {seat.name}
@@ -308,10 +309,10 @@ function SeatTile({
         'surface flex min-h-0 flex-col overflow-hidden rounded-3xl p-3 pb-2.5',
         lead && '!bg-[color-mix(in_oklab,var(--color-gold)_30%,var(--color-card))]',
       )}
-      style={lead ? undefined : { background: `color-mix(in oklab, ${seat.color} 16%, var(--color-card))` }}
+      style={lead ? undefined : { background: `color-mix(in oklab, ${seatColor(seat)} 16%, var(--color-card))` }}
     >
       <div className="flex items-center gap-1.5">
-        <Avatar name={seat.name} color={seat.color} size="sm" />
+        <Avatar name={seat.name} color={seatColor(seat)} size="sm" />
         <span className="display min-w-0 flex-1 truncate text-lg font-extrabold">{seat.name}</span>
         {lead && <LeaderCrown />}
       </div>
@@ -334,7 +335,7 @@ function SeatTile({
         )}
       </div>
 
-      {target != null && <TargetProgress total={row.total} target={target} color={seat.color} />}
+      {target != null && <TargetProgress total={row.total} target={target} color={seatColor(seat)} />}
 
       {editable && (
         <SeatControls seat={seat} steps={narrow ? kit.steps.slice(0, 1) : kit.steps} onAdd={(d) => kit.add(seat.id, d)} size="tile" />
@@ -359,7 +360,10 @@ function TargetProgress({ total, target, color }: { total: number; target: numbe
 
   return (
     <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink/10 dark:bg-white/10" aria-hidden>
-      <div className="h-full rounded-full" style={{ width: `${(targetProgress(total, target) ?? 0) * 100}%`, background: color }} />
+      <div
+        className={cx('h-full rounded-full', needsOutline(color) && 'ring-1 ring-ink/25 ring-inset dark:ring-white/35')}
+        style={{ width: `${(targetProgress(total, target) ?? 0) * 100}%`, background: color }}
+      />
     </div>
   )
 }

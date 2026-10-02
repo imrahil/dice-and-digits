@@ -3,12 +3,13 @@ import { Check, Plus, Search, Shuffle, Sparkles, X } from 'lucide-react'
 import { PLAYER_COLORS } from '../data/presets'
 import { useI18n } from '../i18n'
 import { allGames, recentGameIds, sortBuiltins, startSession } from '../lib/games'
+import { autoAssign, choosePawn, isLight, lastPawns, needsOutline, paletteFor, pawnName } from '../lib/pawns'
 import { getState, savePlayer, uid, useStore } from '../lib/store'
 import { buzz } from '../lib/haptics'
 import { navigate } from '../hooks/useRoute'
 import { toast } from '../components/dialogs'
 import { ModeBadge } from '../components/ModeBadge'
-import { Avatar, BottomBar, Button, Card, Page, Section, Toggle, cx, inputClass } from '../components/ui'
+import { Avatar, BottomBar, Button, Card, Page, Section, Sheet, Toggle, cx, inputClass } from '../components/ui'
 import type { GameDef, Player } from '../types'
 
 export function NewGame({ gameId }: { gameId?: string }) {
@@ -108,10 +109,35 @@ function Setup({ game }: { game: GameDef }) {
     () => Object.values(roster).filter((p) => !p.deleted).sort((a, b) => a.name.localeCompare(b.name)),
     [roster],
   )
-  const [seats, setSeats] = useState<string[]>(() => lastLineup(game.id, getState().players))
+  const [seats, setSeatIds] = useState<string[]>(() => lastLineup(game.id, getState().players))
   const [name, setName] = useState('')
   const [lowWins, setLowWins] = useState(game.lowWins)
   const [target, setTarget] = useState(game.target ? String(game.target) : '')
+  const [last] = useState(() => lastPawns(getState().sessions, game.id))
+  const [usePawns, setUsePawns] = useState(() => !!game.pawns?.length || !!last)
+  const [picked, setPicked] = useState<Record<string, string>>(() => last ?? {})
+  const [pickFor, setPickFor] = useState<string | null>(null)
+  const palette = paletteFor(game)
+  const pawns = usePawns ? autoAssign(seats, palette, picked, last, roster) : {}
+
+  // Freeze the pawns shown before seats change, so shuffling or removing a
+  // player never recolours the others.
+  const setSeats = (next: (s: string[]) => string[]) => {
+    if (usePawns) {
+      setPicked(pawns)
+    }
+
+    setSeatIds(next)
+  }
+
+  const pick = (hex: string) => {
+    if (pickFor) {
+      buzz()
+      setPicked(choosePawn(pawns, pickFor, hex))
+    }
+
+    setPickFor(null)
+  }
 
   const toggle = (id: string) => {
     buzz()
@@ -176,7 +202,11 @@ function Setup({ game }: { game: GameDef }) {
     }
 
     const tgt = parseInt(target, 10)
-    const s = startSession(game, chosen, { lowWins, target: Number.isFinite(tgt) && tgt > 0 ? tgt : undefined })
+    const s = startSession(game, chosen, {
+      lowWins,
+      target: Number.isFinite(tgt) && tgt > 0 ? tgt : undefined,
+      pawns: usePawns ? pawns : undefined,
+    })
 
     navigate(`play/${s.id}`, { replace: true })
   }
@@ -242,6 +272,19 @@ function Setup({ game }: { game: GameDef }) {
                   <span className="display w-5 text-center text-base font-black text-ink/40 tabular-nums dark:text-white/40">{i + 1}</span>
                   <Avatar name={p.name} color={p.color} />
                   <span className="min-w-0 flex-1 truncate font-bold">{p.name}</span>
+                  {pawns[id] && (
+                    <button
+                      onClick={() => setPickFor(id)}
+                      aria-label={t('pawnFor', { name: p.name })}
+                      title={text(pawnName(pawns[id]) ?? '')}
+                      className="press flex size-11 shrink-0 items-center justify-center rounded-full"
+                    >
+                      <span
+                        className={cx('size-8 rounded-full avatar-ring', needsOutline(pawns[id]) && 'ring-1 ring-ink/25 dark:ring-white/35')}
+                        style={{ backgroundColor: pawns[id] }}
+                      />
+                    </button>
+                  )}
                   <button
                     onClick={() => toggle(id)}
                     aria-label={`${t('delete')} ${p.name}`}
@@ -298,8 +341,41 @@ function Setup({ game }: { game: GameDef }) {
               placeholder="—"
             />
           </label>
+          <div className="border-t border-edge dark:border-white/8">
+            <Toggle checked={usePawns} onChange={setUsePawns} label={t('pawnColours')} hint={t('pawnColoursHint')} />
+          </div>
         </Card>
       </Section>
+
+      <Sheet open={!!pickFor} onClose={() => setPickFor(null)} title={pickFor && t('pawnFor', { name: roster[pickFor]?.name ?? '' })}>
+        <div className="grid grid-cols-5 gap-3">
+          {palette.map((hex) => {
+            const holder = Object.keys(pawns).find((id) => pawns[id] === hex)
+            const mine = holder === pickFor
+            const other = holder && !mine ? roster[holder] : undefined
+
+            return (
+              <button
+                key={hex}
+                onClick={() => pick(hex)}
+                aria-label={text(pawnName(hex) ?? hex)}
+                aria-pressed={mine}
+                className={cx(
+                  'flex aspect-square items-center justify-center rounded-full transition active:scale-90',
+                  mine ? 'ring-4 ring-ink/25 dark:ring-white/40' : needsOutline(hex) && 'ring-1 ring-ink/25 dark:ring-white/35',
+                )}
+                style={{ backgroundColor: hex }}
+              >
+                {mine ? (
+                  <Check className={cx('size-6', isLight(hex) ? 'text-ink' : 'text-white')} strokeWidth={3} />
+                ) : (
+                  other && <Avatar name={other.name} color={other.color} size="sm" />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </Sheet>
 
       <BottomBar>
         <Button variant="primary" size="lg" className="flex-1" disabled={!seats.length} onClick={start}>

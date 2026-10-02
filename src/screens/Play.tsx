@@ -20,6 +20,7 @@ import { SheetBoard } from '../components/play/SheetBoard'
 import { WinnerBoard } from '../components/play/WinnerBoard'
 import { Avatar, BottomBar, Button, Empty, IconButton, Page, Segmented, Sheet, cx } from '../components/ui'
 import type { CounterView, Session } from '../types'
+import { seatColor } from '../lib/pawns'
 
 export function Play({ id }: { id: string }) {
   const session = useStore((s) => s.sessions[id])
@@ -397,7 +398,7 @@ function JoinedSeats({ session, room, onStop }: { session: Session; room: HostRo
 
           return (
             <div key={s.id} className="surface-flat flex items-center gap-3 rounded-2xl px-2 py-1.5">
-              <Avatar name={s.name} color={s.color} size="sm" />
+              <Avatar name={s.name} color={seatColor(s)} size="sm" />
               <span className="min-w-0 flex-1 truncate font-bold">{s.name}</span>
               {joined ? (
                 <>
