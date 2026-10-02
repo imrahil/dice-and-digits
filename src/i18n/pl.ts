@@ -227,7 +227,11 @@ export const pl: Dict = {
   importFailed: 'To nie jest kopia zapasowa Dice & Digits.',
 
   cloud: 'Wspólna grupa',
-  cloudIntro: 'Dziel historię i statystyki ze swoją ekipą na wielu telefonach. Każdy z linkiem zaproszenia może dołączyć.',
+  cloudIntro: 'Grupa daje wszystkim wspólną historię i statystyki, nawet gdy każdy zapisuje wyniki na własnym telefonie.',
+  cloudShared: 'Z grupą współdzielisz: zakończone gry, graczy i własne gry. Gry w toku zostają prywatne na Twoim telefonie.',
+  cloudHowJoin: 'Utwórz grupę, a potem pokaż kod QR zaproszenia lub wyślij link. Każdy, kto go otworzy, dołącza. Nie ma kont ani haseł, więc udostępniaj go tylko zaufanym osobom.',
+  cloudOptional: 'Grasz sam? Grupa nie jest potrzebna. Wszystko działa bez niej.',
+  cloudInGroupHint: 'Zakończone gry synchronizują się automatycznie ze wszystkimi w tej grupie. Przycisk Zaproś pozwala dodać kolejne osoby.',
   createGroup: 'Utwórz grupę',
   groupName: 'Nazwa grupy',
   groupNamePlaceholder: 'np. Piątkowa ekipa',

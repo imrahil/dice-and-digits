@@ -241,7 +241,11 @@ export const en = {
 
   // cloud
   cloud: 'Shared group',
-  cloudIntro: 'Share history and stats with your gaming group across phones. Anyone with the invite link can join.',
+  cloudIntro: 'A group gives everyone one shared history and set of stats, even when each of you scores on your own phone.',
+  cloudShared: 'Shared with the group: finished games, players and custom games. Games in progress stay private on your phone.',
+  cloudHowJoin: 'Create a group, then show the invite QR code or send the link. Anyone who opens it joins. There are no accounts or passwords, so only share it with people you trust.',
+  cloudOptional: 'Playing alone? You don’t need a group. Everything works without one.',
+  cloudInGroupHint: 'Finished games sync automatically with everyone in this group. Use Invite to add more people.',
   createGroup: 'Create group',
   groupName: 'Group name',
   groupNamePlaceholder: 'e.g. Friday Night Crew',
