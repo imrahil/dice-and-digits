@@ -40,7 +40,10 @@ const rulesOf = (id: string): Rules => {
 const seats = (n: number, pawns?: string[]): Seat[] =>
   NAMES.slice(0, n).map(([name, color], i) => ({ id: `p${i}`, name, color, pawn: pawns?.[i] }))
 
-const now = Date.now()
+// A fixed "today" (and time zone), so the header date and every relative date
+// are the same on every run and the PNGs only change when the UI does.
+const now = Date.parse('2026-03-14T18:30:00+01:00')
+const TIME_ZONE = 'Europe/Warsaw'
 
 function session(id: string, gameId: string, n: number, extra: Partial<Session> = {}): Session {
   const g = BUILTIN_GAMES.find((x) => x.id === gameId)!
@@ -164,7 +167,11 @@ async function phone(browser: Parameters<Parameters<typeof test>[2]>[0]['browser
     baseURL: HOME,
     serviceWorkers: 'block',
     locale: lang === 'pl' ? 'pl-PL' : 'en-GB',
+    timezoneId: TIME_ZONE,
   })
+
+  // Dates read this; timers keep running, so animations still play.
+  await context.clock.setFixedTime(now)
 
   // Serve the local build under the public domain, so the live-game link and
   // QR code in the screenshots read dicedigits.fun, not localhost. The worker
