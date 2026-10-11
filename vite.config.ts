@@ -24,8 +24,9 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,woff2,json}'],
         // Polish needs latin-ext; the other font subsets load on demand via
-        // unicode-range and aren't worth precaching.
-        globIgnores: ['**/*cyrillic*', '**/*vietnamese*'],
+        // unicode-range and aren't worth precaching. 404.html is GitHub Pages'
+        // deep-link redirect; offline, navigateFallback covers that job.
+        globIgnores: ['**/*cyrillic*', '**/*vietnamese*', '404.html'],
         navigateFallback: 'index.html',
         // The API is live data: never let the SW answer for it.
         navigateFallbackDenylist: [/^\/api\//],

@@ -4,11 +4,11 @@ import { QrCode } from 'dice-and-digits-ui'
 export function GameLink() {
   return (
     <div className="w-fit rounded-3xl bg-white p-2 ring-1 ring-edge">
-      <QrCode text="https://imrahil.github.io/dice-and-digits/#/live/V4J97K" className="size-52" />
+      <QrCode text="https://dicedigits.fun/#/live/V4J97K" className="size-52" />
     </div>
   )
 }
 
 export function Small() {
-  return <QrCode text="https://imrahil.github.io/dice-and-digits/#/live/V4J97K" className="size-24" />
+  return <QrCode text="https://dicedigits.fun/#/live/V4J97K" className="size-24" />
 }
