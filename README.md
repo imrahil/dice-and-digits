@@ -260,7 +260,10 @@ whole CI workflow (lint, unit and worker tests, build, Playwright end-to-end;
 the same workflow also checks every pull request), then builds and publishes
 `dist/` to GitHub Pages. Enable Pages once under
 *Settings → Pages → Source: GitHub Actions*. The app lands at
-`https://imrahil.github.io/dice-and-digits/`.
+`https://dicedigits.fun/`, the custom domain set under *Settings → Pages →
+Custom domain* (no `CNAME` file needed with an Actions deploy). The old
+`https://imrahil.github.io/dice-and-digits/` redirects there. The worker's
+`ALLOWED_ORIGINS` must list the domain.
 
 **Backend** (one-time; also after any change under `worker/`):
 

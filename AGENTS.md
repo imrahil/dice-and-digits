@@ -158,12 +158,13 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
 table. It uses `registerType: 'prompt'`: `App.tsx` shows an "update ready"
 banner instead of reloading mid-game. Don't switch it to `autoUpdate`.
 
-`public/manifest.json` is the manifest (the plugin's `manifest: false`). Its
-`start_url`/`scope` are relative (`./`) so they follow the Pages base path;
-`id` is pinned to `/dice-and-digits/` (an `id` resolves against the origin,
-and changing it would make installed copies a different app).
+`public/manifest.json` is the manifest (the plugin's `manifest: false`). The
+app is served from the root of `https://dicedigits.fun` (custom domain on
+GitHub Pages). `id` is `/` (an `id` resolves against the origin; changing it
+makes installed copies a different app). `start_url`/`scope` are `./`, which
+is `/` there and still follows the base path on a fork's github.io subpath.
 `launch_handler`/`handle_links` let the installed app open links to it.
-Path deep links (`/dice-and-digits/live/ABC`) are rewritten to the hash form
+Path deep links (`/live/ABC`) are rewritten to the hash form
 by `public/404.html` (online, no service worker) and by the first inline
 script in `index.html` (service worker answering). Keep the two in sync.
 

@@ -9,7 +9,7 @@ export function LiveGame() {
         onClose={() => {}}
         title="🏝️ Catan"
         caption="Scan to follow the scores"
-        url="https://imrahil.github.io/dice-and-digits/#/live/V4J97K"
+        url="https://dicedigits.fun/#/live/V4J97K"
         code="V4J97K"
       />
     </div>
@@ -25,7 +25,7 @@ export function GroupInvite() {
         onClose={() => {}}
         title="Friday Night Crew"
         caption="Scan to join the group"
-        url="https://imrahil.github.io/dice-and-digits/#/join/g7Kq2vX9pLm4"
+        url="https://dicedigits.fun/#/join/g7Kq2vX9pLm4"
       />
     </div>
   )

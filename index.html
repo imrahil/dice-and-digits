@@ -16,11 +16,11 @@
     <title>Dice &amp; Digits</title>
     <script>
       // Routes live in the hash. Offline, the service worker answers any
-      // navigation in its scope with this page, so a path deep link
-      // (/dice-and-digits/live/ABC) lands here with relative asset URLs that
-      // would point one folder too deep. Move it to the hash form under the
-      // app root (where sw.js lives). Online without a service worker,
-      // public/404.html does the same. Keep the two in sync.
+      // navigation in its scope with this page, so a path deep link (/live/ABC)
+      // lands here with relative asset URLs that would point one folder too
+      // deep. Move it to the hash form under the app root (where sw.js
+      // lives). Online without a service worker, public/404.html does the
+      // same. Keep the two in sync.
       ;(function () {
         var sw = navigator.serviceWorker && navigator.serviceWorker.controller
         if (!sw) return
