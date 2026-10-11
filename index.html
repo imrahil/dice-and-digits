@@ -15,6 +15,23 @@
     <link rel="manifest" href="./manifest.json" />
     <title>Dice &amp; Digits</title>
     <script>
+      // Routes live in the hash. Offline, the service worker answers any
+      // navigation in its scope with this page, so a path deep link
+      // (/dice-and-digits/live/ABC) lands here with relative asset URLs that
+      // would point one folder too deep. Move it to the hash form under the
+      // app root (where sw.js lives). Online without a service worker,
+      // public/404.html does the same. Keep the two in sync.
+      ;(function () {
+        var sw = navigator.serviceWorker && navigator.serviceWorker.controller
+        if (!sw) return
+        var l = window.location
+        var root = new URL('./', sw.scriptURL).pathname
+        if (l.pathname === root || l.pathname === root + 'index.html' || l.pathname.indexOf(root) !== 0) return
+        var rest = l.pathname.slice(root.length).replace(/\/+$/, '')
+        l.replace(root + l.search + (l.hash || '#/' + rest))
+      })()
+    </script>
+    <script>
       // Apply the saved (or system) theme, skin and language before first paint.
       // Keep in sync with src/hooks/useTheme.ts and the settings key in src/lib/store.ts.
       ;(function () {

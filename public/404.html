@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dice &amp; Digits</title>
+    <script>
+      // GitHub Pages serves this for any path it has no file for. The app routes
+      // on the hash, so turn a path deep link (/dice-and-digits/live/ABC) into
+      // its hash form (/dice-and-digits/#/live/ABC) and load the app there.
+      // A project site lives under /<repo>/ on *.github.io; a custom domain
+      // serves it from /. Keep in sync with the redirect in index.html.
+      ;(function () {
+        var l = window.location
+        var parts = l.pathname.split('/').filter(Boolean)
+        var keep = /\.github\.io$/.test(l.hostname) ? 1 : 0
+        var root = '/' + parts.slice(0, keep).map(function (p) { return p + '/' }).join('')
+        var rest = parts.slice(keep).join('/')
+        l.replace(root + l.search + (l.hash || (rest ? '#/' + rest : '')))
+      })()
+    </script>
+  </head>
+  <body></body>
+</html>
