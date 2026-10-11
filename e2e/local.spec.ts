@@ -207,3 +207,31 @@ test('switching to English translates the app', async ({ page }) => {
   await page.goto('#/')
   await expect(button(page, 'New game')).toBeVisible()
 })
+
+test('players list still scrolls after deleting a player', async ({ page }) => {
+  await page.goto('./')
+  await page.evaluate(() => {
+    const players = Object.fromEntries(
+      Array.from({ length: 13 }, (_, i) => {
+        const id = `p${i}`
+
+        return [id, { id, name: `Gracz ${String(i + 1).padStart(2, '0')}`, color: '#ef4444', updatedAt: 1 }]
+      }),
+    )
+
+    localStorage.setItem('dice-digits:players', JSON.stringify(players))
+  })
+  await page.goto('#/players')
+  await page.reload()
+
+  // Deleting confirms in a second sheet over the editor; both close together.
+  await page.getByText('Gracz 01').click()
+  await dialog(page).getByRole('button', { name: 'Usuń' }).click()
+  await dialog(page).last().getByRole('button', { name: 'Usuń' }).click()
+  await expect(dialog(page)).toHaveCount(0)
+  await expect(page.getByText('Gracz 01')).toHaveCount(0)
+
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe('')
+  await page.mouse.wheel(0, 2000)
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+})

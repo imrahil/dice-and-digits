@@ -150,6 +150,25 @@ export function Avatar({ name, color, size = 'md' }: { name: string; color: stri
   )
 }
 
+/**
+ * Sheets can stack (a confirm over an editor) and close in any order, so the
+ * body scroll lock is counted rather than saved and restored per sheet.
+ */
+let scrollLocks = 0
+
+function lockScroll() {
+  scrollLocks++
+  document.body.style.overflow = 'hidden'
+}
+
+function unlockScroll() {
+  scrollLocks = Math.max(0, scrollLocks - 1)
+
+  if (scrollLocks === 0) {
+    document.body.style.overflow = ''
+  }
+}
+
 export function Sheet({
   open,
   onClose,
@@ -171,13 +190,11 @@ export function Sheet({
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
 
     document.addEventListener('keydown', onKey)
-    const prev = document.body.style.overflow
-
-    document.body.style.overflow = 'hidden'
+    lockScroll()
 
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prev
+      unlockScroll()
     }
   }, [open, onClose])
 
