@@ -286,7 +286,6 @@ export const en = {
   groupKeepsCopy: 'Your shared group already keeps a copy of your players, games and history. Save its invite link: it restores everything on a new phone.',
   saveInviteLink: 'Save invite link',
   groupWhileBackup: 'This phone backs up to your personal backup. To create or join a shared group, turn the backup off first.',
-  restoreFromPhone: 'Played on another phone? Restore your backup',
 
   // cloud
   cloud: 'Shared group',
@@ -295,7 +294,7 @@ export const en = {
   cloudHowJoin: 'Create a group, then show the invite QR code or send the link. Anyone who opens it can join. There are no accounts or passwords, and a link can’t be withdrawn later, so only share it with people you trust.',
   cloudHowItWorks: 'How do groups work?',
   cloudSamePlayers: 'After joining, pick players from the shared list instead of adding them again, so their stats add up.',
-  cloudOptional: 'Playing alone? You don’t need a group. To keep your data safe when you change phones, use Cloud backup in More.',
+  cloudOptional: 'Playing alone? You don’t need a group. To keep your data safe when you change phones, use Cloud backup above.',
   cloudInGroupHint: 'Finished games, players and custom games sync automatically with everyone in this group. Pick players from the shared list so their stats add up. Use Invite to add more people.',
   createGroup: 'Create group',
   groupName: 'Group name',
@@ -353,7 +352,7 @@ export const en = {
 
   // advanced
   advanced: 'Advanced',
-  advancedIntro: 'Extras most people never need: shared groups for friends who play together, and moving your data by file.',
+  advancedIntro: 'Keeping your data safe and sharing it: a cloud backup for your own phones, shared groups for friends who play together, and moving data by file. You don’t need any of it to keep score.',
 
   // help
   help: 'How it works',
@@ -376,7 +375,7 @@ export const en = {
   helpDataTitle: 'Where your data lives',
   helpDataBody: 'Everything is saved on this phone and the app works offline, even in airplane mode. There are no accounts and no passwords.\nIf you clear the browser’s data or change phones, your history goes with it, unless you back it up.',
   helpBackupTitle: 'Cloud backup',
-  helpBackupBody: 'More → Cloud backup saves your players, games, My games and history. Instead of a password you get six easy words: write them down or take a screenshot.\nOn a new phone, type the six words, in English or Polish, to get everything back. Anyone who knows the words can open your backup, so keep them to yourself.',
+  helpBackupBody: 'More → Advanced → Cloud backup saves your players, games, My games and history. Instead of a password you get six easy words: write them down or take a screenshot.\nOn a new phone, type the six words, in English or Polish, to get everything back. Anyone who knows the words can open your backup, so keep them to yourself.',
   helpGroupsTitle: 'Shared groups',
   helpGroupsBody: 'A group gives friends who play together one shared history and set of stats, even when each of you keeps score on your own phone. Create one in More → Advanced and share the invite link or QR code.\nYou don’t need a group to let friends enter their own points during a game: that’s what Share live is for. A phone is in a group or has its own backup, not both; a group already keeps a copy of everything.',
   helpInstallTitle: 'Install the app',

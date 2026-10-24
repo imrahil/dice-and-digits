@@ -89,8 +89,9 @@ tematach (też link na pustym ekranie głównym).
   - **dołączają do liczenia**: wybierają swoje miejsce i wpisują własne
     punkty, np. swoją kolumnę w 7 Cudach na koniec, swoje +/− w Catanie albo
     wynik w każdej rundzie Tysiąca. Mogą edytować tylko swoje miejsce.
-- Zaproszenie do grupy to także kod QR (*Więcej → Zaawansowane → Wspólna grupa → Zaproś*). Grupy są
-  schowane w *Zaawansowanych*, bo większości osób wystarczy kopia w chmurze.
+- Zaproszenie do grupy to także kod QR (*Więcej → Zaawansowane → Wspólna grupa → Zaproś*). Kopia,
+  grupy i plik z danymi są schowane w *Zaawansowanych*: do liczenia punktów nie
+  są potrzebne.
 - **Kopia zapasowa w chmurze**: jedno stuknięcie zapisuje graczy, własne gry,
   Moje gry i zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
   zapamiętania (i kod QR), po polsku lub angielsku; wpisanie ich na nowym
@@ -193,8 +194,9 @@ player (everyone touches the screen, one is chosen), and a tap-to-restart
   - **join to score**: pick their seat and enter their own points, e.g. their
     7 Wonders column at the end, their +/− in Catan, or their score for each
     round of Tysiąc. They can only edit their own seat.
-- The group invite is a QR code too (*More → Advanced → Shared group → Invite*). Groups sit under
-  *Advanced*, because most people only need the cloud backup.
+- The group invite is a QR code too (*More → Advanced → Shared group → Invite*). The backup,
+  groups and the data file sit under *Advanced*: keeping score needs none of
+  them.
 - **Cloud backup**: one tap backs up your players, custom games, My games and
   finished games, with no account. You get six easy words to remember (and a QR),
   in English or Polish; typing them on a new phone, or after the browser is

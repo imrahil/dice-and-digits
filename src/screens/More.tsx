@@ -1,16 +1,12 @@
-import { useState, type ReactNode } from 'react'
-import { Check, ChevronRight, CircleHelp, Cloud, Copy, Gamepad2, Heart, KeyRound, LogOut, QrCode, Share2, SlidersHorizontal, Trash2, TriangleAlert, Users } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Check, ChevronRight, CircleHelp, Gamepad2, Heart, SlidersHorizontal, TriangleAlert, Users } from 'lucide-react'
 import { useI18n } from '../i18n'
-import { cloudEnabled, createBackup, deleteBackup, inviteLink, leaveGroup, markCodeSaved, useCloud, type Group } from '../lib/cloud'
-import { codeWords } from '../lib/recovery'
+import { useCloud } from '../lib/cloud'
 import { myGames } from '../lib/games'
 import { setSettings, useStore } from '../lib/store'
 import { navigate } from '../hooks/useRoute'
-import { confirm, toast } from '../components/dialogs'
 import { Logo } from '../components/Logo'
-import { SyncStatus } from '../components/SyncStatus'
-import { Button, Card, Page, Section, Segmented, Sheet, Toggle, cx } from '../components/ui'
-import { QrCode as QrImage, QrShareSheet, shareUrl } from '../components/QrShare'
+import { Card, Page, Section, Segmented, Toggle, cx } from '../components/ui'
 import type { Lang, Skin, Theme } from '../types'
 
 const CONTACT_EMAIL = 'dice-and-digits@imrahil.com'
@@ -62,12 +58,12 @@ function SkinPicker({ value, onChange }: { value: Skin; onChange: (skin: Skin) =
   )
 }
 
-function LinkRow({ icon, label, detail, onClick }: { icon: ReactNode; label: string; detail?: string; onClick: () => void }) {
+function LinkRow({ icon, label, detail, onClick }: { icon: ReactNode; label: string; detail?: ReactNode; onClick: () => void }) {
   return (
     <button onClick={onClick} className="flex w-full items-center gap-3 py-3 text-left first:pt-1 last:pb-1">
       <span className="emoji-tile flex size-9 items-center justify-center rounded-xl text-accent">{icon}</span>
       <span className="flex-1 font-bold">{label}</span>
-      {detail && <span className="text-sm font-semibold text-ink/50 dark:text-white/50">{detail}</span>}
+      {detail && <span className="flex items-center text-sm font-semibold text-ink/50 dark:text-white/50">{detail}</span>}
       <ChevronRight className="size-5 text-ink/30 dark:text-white/30" />
     </button>
   )
@@ -92,8 +88,6 @@ export function More() {
         <LinkRow icon={<Users className="size-5" />} label={t('players')} detail={num(playerCount)} onClick={() => navigate('players')} />
         <LinkRow icon={<Gamepad2 className="size-5" />} label={t('games')} detail={gameCount ? num(gameCount) : undefined} onClick={() => navigate('games')} />
       </Card>
-
-      {cloudEnabled && <BackupSection />}
 
       <Section title={t('settings')}>
         <Card className="space-y-4">
@@ -136,7 +130,14 @@ export function More() {
         <LinkRow
           icon={<SlidersHorizontal className="size-5" />}
           label={t('advanced')}
-          detail={group && group.kind !== 'vault' ? group.name : undefined}
+          detail={
+            // Until the backup's words are saved, More keeps nagging from here.
+            group?.kind === 'vault' && !group.savedAt ? (
+              <TriangleAlert className="size-5 text-gold" aria-label={t('saveCodeWarning')} />
+            ) : (
+              group?.name
+            )
+          }
           onClick={() => navigate('advanced')}
         />
       </Card>
@@ -160,159 +161,5 @@ export function More() {
         </Card>
       </Section>
     </Page>
-  )
-}
-
-/**
- * Personal backup: a group of one opened by a recovery code. With a shared
- * group the group already holds a copy, so this only points at its link.
- */
-function BackupSection() {
-  const { t } = useI18n()
-  const { group } = useCloud()
-  const [busy, setBusy] = useState(false)
-  const [kit, setKit] = useState(false)
-  const [invite, setInvite] = useState(false)
-
-  const create = async () => {
-    setBusy(true)
-
-    try {
-      await createBackup(t('myBackup'))
-      setKit(true)
-    } catch (e) {
-      toast(t('syncError', { error: e instanceof Error ? e.message : String(e) }))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const turnOff = async () => {
-    if (await confirm(t('turnOffConfirm'), { confirmLabel: t('turnOffBackup'), danger: true })) {
-      leaveGroup()
-    }
-  }
-
-  const remove = async () => {
-    if (!(await confirm(t('deleteBackupConfirm'), { confirmLabel: t('deleteBackup'), danger: true }))) {
-      return
-    }
-
-    try {
-      await deleteBackup()
-      toast(t('backupDeleted'))
-    } catch (e) {
-      toast(t('syncError', { error: e instanceof Error ? e.message : String(e) }))
-    }
-  }
-
-  if (group && group.kind !== 'vault') {
-    return (
-      <Section title={t('backupCloud')}>
-        <Card>
-          <p className="text-sm text-ink/65 dark:text-white/65">{t('groupKeepsCopy')}</p>
-          <Button className="mt-3 w-full" onClick={() => setInvite(true)}>
-            <QrCode className="size-5" /> {t('saveInviteLink')}
-          </Button>
-        </Card>
-        <QrShareSheet open={invite} onClose={() => setInvite(false)} title={group.name} caption={t('scanToJoinGroup')} url={inviteLink(group)} />
-      </Section>
-    )
-  }
-
-  return (
-    <Section title={t('backupCloud')}>
-      <Card>
-        {group ? (
-          <>
-            <SyncStatus group={group} />
-            {!group.savedAt && (
-              <p role="alert" className="mt-3 flex items-start gap-2 surface-flat rounded-2xl p-3 text-sm font-semibold">
-                <TriangleAlert className="size-5 shrink-0 text-gold" /> {t('saveCodeWarning')}
-              </p>
-            )}
-            <Button variant={group.savedAt ? 'secondary' : 'primary'} className="mt-4 w-full" onClick={() => setKit(true)}>
-              <KeyRound className="size-5" /> {t('recoveryCode')}
-            </Button>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <Button onClick={turnOff}>
-                <LogOut className="size-5" /> {t('turnOffBackup')}
-              </Button>
-              <Button variant="danger" onClick={remove}>
-                <Trash2 className="size-5" /> {t('deleteBackup')}
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="text-sm text-ink/65 dark:text-white/65">{t('backupIntro')}</p>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <Button variant="primary" onClick={create} disabled={busy}>
-                <Cloud className="size-5" /> {t('createBackup')}
-              </Button>
-              <Button onClick={() => navigate('restore')}>
-                <KeyRound className="size-5" /> {t('restoreFromCode')}
-              </Button>
-            </div>
-          </>
-        )}
-      </Card>
-      {group && <RecoveryKit group={group} open={kit} onClose={() => setKit(false)} />}
-    </Section>
-  )
-}
-
-/** The recovery code and link as QR, to save somewhere safe. Generated on the phone, like every QR here. */
-function RecoveryKit({ group, open, onClose }: { group: Group; open: boolean; onClose: () => void }) {
-  const { t, lang } = useI18n()
-  const url = inviteLink(group)
-  const words = group.code ? codeWords(group.code, lang) : []
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(words.join(' '))
-      toast(t('codeCopied'))
-    } catch {
-      // No clipboard: the words are on screen and selectable.
-    }
-  }
-
-  return (
-    <Sheet open={open} onClose={onClose} title={t('recoveryCode')}>
-      <p className="text-sm text-ink/65 dark:text-white/65">{t('recoveryHint')}</p>
-      {words.length > 0 && (
-        <ol data-testid="recovery-words" data-words={words.join(' ')} className="mt-3 grid grid-cols-2 gap-2">
-          {words.map((w, i) => (
-            <li key={i} className="flex items-baseline gap-2 surface-flat rounded-2xl px-3 py-2.5">
-              <span className="display w-4 text-sm font-black text-ink/40 tabular-nums dark:text-white/40">{i + 1}</span>
-              <span className="display text-xl font-black select-all">{w}</span>
-            </li>
-          ))}
-        </ol>
-      )}
-      <div className="mt-3 flex justify-center">
-        <div className="rounded-3xl bg-white p-2 shadow-sm ring-1 ring-edge dark:ring-0">
-          <QrImage text={url} className="size-44 max-h-[50vw] max-w-[50vw]" />
-        </div>
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <Button onClick={copy} disabled={!words.length}>
-          <Copy className="size-5" /> {t('copyCode')}
-        </Button>
-        <Button onClick={() => shareUrl(url, group.name, t('linkCopied'))}>
-          <Share2 className="size-5" /> {t('shareLink')}
-        </Button>
-      </div>
-      <Button
-        variant="primary"
-        className="mt-3 w-full"
-        onClick={() => {
-          markCodeSaved()
-          onClose()
-        }}
-      >
-        <Check className="size-5" strokeWidth={3} /> {t('codeSaved')}
-      </Button>
-    </Sheet>
   )
 }

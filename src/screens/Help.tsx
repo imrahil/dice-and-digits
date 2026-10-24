@@ -26,7 +26,7 @@ const TOPICS: Topic[] = [
   { id: 'history', emoji: '🏆', title: 'helpHistoryTitle', body: 'helpHistoryBody', go: ['stats', 'navStats'] },
   { id: 'tools', emoji: '⏳', title: 'helpToolsTitle', body: 'helpToolsBody', go: ['tools', 'navTools'] },
   { id: 'data', emoji: '🔒', title: 'helpDataTitle', body: 'helpDataBody' },
-  { id: 'backup', emoji: '☁️', title: 'helpBackupTitle', body: 'helpBackupBody', go: ['more', 'backupCloud'], cloud: true },
+  { id: 'backup', emoji: '☁️', title: 'helpBackupTitle', body: 'helpBackupBody', go: ['advanced', 'backupCloud'], cloud: true },
   { id: 'groups', emoji: '👥', title: 'helpGroupsTitle', body: 'helpGroupsBody', go: ['advanced', 'advanced'], cloud: true },
   { id: 'install', emoji: '📲', title: 'helpInstallTitle', body: 'helpInstallBody' },
 ]

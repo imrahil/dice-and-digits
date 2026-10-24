@@ -272,7 +272,6 @@ export const pl: Dict = {
   groupKeepsCopy: 'Twoja wspólna grupa już przechowuje kopię graczy, gier i historii. Zapisz link zaproszenia: przywróci wszystko na nowym telefonie.',
   saveInviteLink: 'Zapisz link zaproszenia',
   groupWhileBackup: 'Ten telefon zapisuje dane w Twojej kopii w chmurze. Aby utworzyć wspólną grupę lub do niej dołączyć, najpierw wyłącz kopię.',
-  restoreFromPhone: 'Grasz na innym telefonie? Przywróć kopię',
 
   cloud: 'Wspólna grupa',
   cloudIntro: 'Grupa daje wszystkim wspólną historię i statystyki, nawet gdy każdy zapisuje wyniki na własnym telefonie.',
@@ -280,7 +279,7 @@ export const pl: Dict = {
   cloudHowJoin: 'Utwórz grupę, a potem pokaż kod QR zaproszenia lub wyślij link. Każdy, kto go otworzy, może dołączyć. Nie ma kont ani haseł, a linku nie da się później wycofać, więc udostępniaj go tylko zaufanym osobom.',
   cloudHowItWorks: 'Jak działają grupy?',
   cloudSamePlayers: 'Po dołączeniu wybieraj graczy ze wspólnej listy zamiast dodawać ich od nowa, żeby ich statystyki się sumowały.',
-  cloudOptional: 'Grasz w pojedynkę? Grupa nie jest potrzebna. Aby nie stracić danych przy zmianie telefonu, użyj kopii w chmurze w zakładce Więcej.',
+  cloudOptional: 'Grasz w pojedynkę? Grupa nie jest potrzebna. Aby nie stracić danych przy zmianie telefonu, użyj kopii w chmurze powyżej.',
   cloudInGroupHint: 'Zakończone gry, gracze i własne gry synchronizują się automatycznie ze wszystkimi w tej grupie. Wybieraj graczy ze wspólnej listy, żeby ich statystyki się sumowały. Przycisk Zaproś pozwala dodać kolejne osoby.',
   createGroup: 'Utwórz grupę',
   groupName: 'Nazwa grupy',
@@ -335,7 +334,7 @@ export const pl: Dict = {
 
   about: 'O aplikacji',
   advanced: 'Zaawansowane',
-  advancedIntro: 'Dodatki, których większość osób nie potrzebuje: wspólne grupy dla znajomych, którzy grają razem, i przenoszenie danych w pliku.',
+  advancedIntro: 'Bezpieczeństwo i udostępnianie danych: kopia w chmurze dla Twoich telefonów, wspólne grupy dla znajomych, którzy grają razem, i przenoszenie danych w pliku. Do liczenia punktów nic z tego nie jest potrzebne.',
 
   help: 'Jak to działa',
   helpLink: 'Pierwszy raz? Zobacz, jak to działa',
@@ -357,7 +356,7 @@ export const pl: Dict = {
   helpDataTitle: 'Gdzie są Twoje dane',
   helpDataBody: 'Wszystko zapisuje się na tym telefonie, a aplikacja działa offline, nawet w trybie samolotowym. Nie ma kont ani haseł.\nJeśli wyczyścisz dane przeglądarki albo zmienisz telefon, historia zniknie razem z nimi, chyba że zrobisz kopię.',
   helpBackupTitle: 'Kopia w chmurze',
-  helpBackupBody: 'Więcej → Kopia w chmurze zapisuje graczy, gry, Moje gry i historię. Zamiast hasła dostajesz sześć łatwych słów: zapisz je albo zrób zrzut ekranu.\nNa nowym telefonie wpisz te sześć słów, po polsku lub angielsku, a wszystko wróci. Każdy, kto zna słowa, może otworzyć Twoją kopię, więc zachowaj je dla siebie.',
+  helpBackupBody: 'Więcej → Zaawansowane → Kopia w chmurze zapisuje graczy, gry, Moje gry i historię. Zamiast hasła dostajesz sześć łatwych słów: zapisz je albo zrób zrzut ekranu.\nNa nowym telefonie wpisz te sześć słów, po polsku lub angielsku, a wszystko wróci. Każdy, kto zna słowa, może otworzyć Twoją kopię, więc zachowaj je dla siebie.',
   helpGroupsTitle: 'Wspólne grupy',
   helpGroupsBody: 'Grupa daje znajomym, którzy grają razem, jedną wspólną historię i statystyki, nawet gdy każdy liczy punkty na swoim telefonie. Utworzysz ją w Więcej → Zaawansowane i udostępnisz link z zaproszeniem albo kod QR.\nGrupa nie jest potrzebna, żeby znajomi wpisywali swoje punkty w trakcie gry: do tego służy Udostępnij na żywo. Telefon należy do grupy albo ma własną kopię, nie obie naraz; grupa i tak przechowuje kopię wszystkiego.',
   helpInstallTitle: 'Instalacja aplikacji',

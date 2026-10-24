@@ -33,7 +33,7 @@ export function Restore() {
   }
 
   return (
-    <Page title={t('restoreTitle')} back="more">
+    <Page title={t('restoreTitle')} back="advanced">
       {!cloudEnabled ? (
         <Empty icon="☁️">{t('cloudUnavailable')}</Empty>
       ) : (

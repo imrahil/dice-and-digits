@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { ChevronRight, CircleHelp, KeyRound, Plus, ScanLine, Shuffle } from 'lucide-react'
+import { ChevronRight, CircleHelp, Plus, ScanLine, Shuffle } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { allGames, myGames, recentGameIds, useActiveSessions } from '../lib/games'
 import { finished } from '../lib/stats'
 import { useStore } from '../lib/store'
-import { cloudEnabled, useCloud } from '../lib/cloud'
+import { cloudEnabled } from '../lib/cloud'
 import { navigate } from '../hooks/useRoute'
 import { ActiveGameCard } from '../components/ActiveGameCard'
 import { DrawSheet } from '../components/DrawGame'
@@ -36,7 +36,6 @@ export function Home() {
   const custom = useStore((s) => s.games)
   const favorites = useStore((s) => s.favorites)
   const active = useActiveSessions()
-  const { group } = useCloud()
   const recent = finished(Object.values(sessions)).slice(0, 3)
 
   const [joining, setJoining] = useState(false)
@@ -143,11 +142,6 @@ export function Home() {
             <Button variant="ghost" size="sm" className="mx-auto flex" onClick={() => navigate('help')}>
               <CircleHelp className="size-4" /> {t('helpLink')}
             </Button>
-            {cloudEnabled && !group && (
-              <Button variant="ghost" size="sm" className="mx-auto flex" onClick={() => navigate('restore')}>
-                <KeyRound className="size-4" /> {t('restoreFromPhone')}
-              </Button>
-            )}
           </>
         )
       )}
