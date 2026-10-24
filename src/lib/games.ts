@@ -1,5 +1,5 @@
 import { BUILTIN_GAMES } from '../data/presets'
-import type { GameDef, Player, Session } from '../types'
+import type { GameDef, Player, Session, Text } from '../types'
 import { getState, saveSession, uid, useStore, type State } from './store'
 
 const GENERIC = ['builtin:counter', 'builtin:rounds']
@@ -46,6 +46,37 @@ export function drawGame(games: GameDef[], last?: string, random = Math.random):
   const pool = games.length > 1 ? games.filter((g) => g.id !== last) : games
 
   return pool[Math.floor(random() * pool.length)]
+}
+
+/** The game editor's text fields, kept as typed until saving. */
+export type EditorFields = { target: string; steps: string; timerMin: string; timerMax: string }
+
+/**
+ * What the game editor saves: the numbers parsed from its text fields, and
+ * only the fields the chosen scoring mode uses.
+ */
+export function gameFromEditor(g: GameDef, fields: EditorFields, text: (v: Text) => string): GameDef {
+  const steps = fields.steps
+    .split(/[,\s]+/)
+    .map((s) => parseInt(s, 10))
+    .filter((n) => Number.isFinite(n) && n > 0)
+    .slice(0, 4)
+  const tgt = parseInt(fields.target, 10)
+  // At least 3 s, and max never below min.
+  const lo = Math.max(3, parseInt(fields.timerMin, 10) || 3)
+  const hi = Math.max(lo, parseInt(fields.timerMax, 10) || lo)
+  const categories = (g.categories ?? []).filter((c) => text(c.name).trim())
+
+  return {
+    ...g,
+    name: text(g.name).trim(),
+    target: Number.isFinite(tgt) && tgt > 0 ? tgt : undefined,
+    steps: g.mode === 'counter' ? (steps.length ? steps : [1]) : undefined,
+    categories: g.mode === 'sheet' ? categories.map((c) => ({ ...c, name: text(c.name).trim() })) : undefined,
+    bonus: g.mode === 'sheet' ? g.bonus : undefined,
+    zeroSum: g.mode === 'rounds' ? g.zeroSum : undefined,
+    timer: g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined,
+  }
 }
 
 export function findGame(id: string): GameDef | undefined {

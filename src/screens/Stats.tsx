@@ -3,16 +3,9 @@ import { Trophy } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { gameStats, headToHead, overview, playerStats } from '../lib/stats'
 import { useStore } from '../lib/store'
-import { Avatar, Card, Empty, Page, Section, cx } from '../components/ui'
-
-function Tile({ label, value }: { label: string; value: string }) {
-  return (
-    <Card className="!p-3">
-      <span className="block display text-2xl font-black tabular-nums">{value}</span>
-      <span className="block text-xs font-bold text-ink/55 dark:text-white/55">{label}</span>
-    </Card>
-  )
-}
+import { Avatar, Card, Empty, Page, Section } from '../components/ui'
+import { PlayerSelect } from '../components/stats/PlayerSelect'
+import { Tile } from '../components/stats/Tile'
 
 export function Stats() {
   const { t, text, num, tp, duration, ago } = useI18n()
@@ -137,33 +130,5 @@ export function Stats() {
         </div>
       </Section>
     </Page>
-  )
-}
-
-function PlayerSelect({
-  value,
-  onChange,
-  players,
-  exclude,
-}: {
-  value: string
-  onChange: (id: string) => void
-  players: { id: string; name: string }[]
-  exclude: string
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={cx('h-11 min-w-0 flex-1 rounded-xl bg-ink/5 px-3 font-bold outline-none dark:bg-white/8')}
-    >
-      {players
-        .filter((p) => p.id !== exclude)
-        .map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name}
-          </option>
-        ))}
-    </select>
   )
 }

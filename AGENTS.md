@@ -78,7 +78,7 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
 - **`worker/src/worker.js`** is the router plus groups and sync on D1 (see
   `worker/migrations/`). **`worker/src/room.js`** is the Room Durable Object;
   its WebSocket protocol is documented at the top of the file.
-- Routing is hash-based (`src/hooks/useRoute.ts`, `App.tsx`'s `Router`).
+- Routing is hash-based (`src/hooks/useRoute.ts`, `components/app/Router.tsx`).
 
 ## Conventions and constraints
 
@@ -110,7 +110,7 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
   feature in `help*` i18n strings: update it when a feature changes.
 - **`VITE_API_URL` is baked in at build time.** `.env` is committed on purpose:
   the URL is public and the Pages build passes no env of its own.
-- **QR codes are generated on the phone** (`uqr`, `components/QrShare.tsx`).
+- **QR codes are generated on the phone** (`uqr`, `components/QrCode.tsx`).
   Never send a link to a QR web service: a group invite link *is* the key.
 - **No passwords or accounts.** A group is a capability: whoever has the invite
   link is in. Only secret hashes are stored server-side.
@@ -167,7 +167,7 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
 ## PWA
 
 `vite-plugin-pwa` precaches the bundle, because offline matters at a game
-table. It uses `registerType: 'prompt'`: `App.tsx` shows an "update ready"
+table. It uses `registerType: 'prompt'`: `components/app/UpdateBanner.tsx` shows an "update ready"
 banner instead of reloading mid-game. Don't switch it to `autoUpdate`.
 
 `public/manifest.json` is the manifest (the plugin's `manifest: false`). The
@@ -193,7 +193,7 @@ script in `index.html` (service worker answering). Keep the two in sync.
   `--cta*`, `--page-bg`, `--nav-*`). Every skin defines every variable,
   because the Settings previews nest `data-skin` inside another skin.
   Adding a skin: a CSS block (light + dark), the `Skin` type, `SKINS` in
-  `More.tsx`, `COLORS` in `useTheme.ts`, and i18n labels.
+  `components/more/SkinPicker.tsx`, `COLORS` in `useTheme.ts`, and i18n labels.
 - Build surfaces with the skin utilities, not hand-rolled rings: `surface`
   (raised panel), `surface-flat` (nested row, chip, input), `press` (tap
   feedback), `btn-cta` (primary action), `chip-on` (selected pill),
@@ -204,7 +204,7 @@ script in `index.html` (service worker answering). Keep the two in sync.
   `dice-digits:settings` key. Change one, change the other.
 - `vite.config.ts` uses `base: './'`. Reference public assets relatively.
 - `public/icons/icon.svg` is the master icon. Its drawing also lives in
-  `src/components/Logo.tsx`. The PNGs are rendered from the SVG.
+  `src/components/LogoShapes.tsx`. The PNGs are rendered from the SVG.
 
 ## Code style
 
@@ -222,6 +222,15 @@ Enforced by `eslint.config.js` (one config for the app and the worker):
 Not linted but expected: named exports only, hooks in `src/hooks/`, shared
 types in `src/types.ts`, screens in `src/screens/`. No Prettier: ESLint's
 stylistic rules are the formatter.
+
+**One component per file.** A file holds one React component, named like the
+file, plus only the small helpers and constants that component alone uses.
+The parts of a screen live in a folder named after it
+(`components/live/`, `components/tools/`, `components/play/counter/`…); a
+helper several files share goes to `src/lib/` (or a small `.ts` file next to
+them, like `components/play/counter/kit.ts`). The one exception is
+`components/ui.tsx`, the kit of shared primitives (`Button`, `Card`, `Sheet`…).
+When a screen grows a second component, give it its own file.
 
 ## Versioning
 

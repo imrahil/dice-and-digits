@@ -95,6 +95,47 @@ describe('my games', () => {
   })
 })
 
+describe('game editor', () => {
+  const fields = { target: '', steps: '1, 5, 10', timerMin: '10', timerMax: '30' }
+  const label = (v: GameDef['name']) => (typeof v === 'string' ? v : v.en)
+
+  it('parses quick buttons and the target, keeping only what the mode uses', () => {
+    const g = games.gameFromEditor(
+      custom(' Mine ', 1, { mode: 'counter', zeroSum: true, categories: [{ id: 'a', name: 'A' }], timer: { hidden: true, min: 5, max: 9 } }),
+      { ...fields, target: '100', steps: '2 x, 0, 3,4;5, 6, 7' },
+      label,
+    )
+
+    expect(g).toMatchObject({ name: 'Mine', target: 100, steps: [2, 3, 4, 6] })
+    expect(g.categories).toBeUndefined()
+    expect(g.zeroSum).toBeUndefined()
+    expect(g.timer).toBeUndefined()
+    expect(games.gameFromEditor(custom('c', 1), { ...fields, steps: 'none', target: '-5' }, label)).toMatchObject({ steps: [1], target: undefined })
+  })
+
+  it('drops unnamed categories and trims the rest on a score sheet', () => {
+    const g = games.gameFromEditor(
+      custom('s', 1, { mode: 'sheet', categories: [{ id: 'a', name: ' Gold ' }, { id: 'b', name: '  ' }], bonus: { name: 'B', of: ['a'], atLeast: 1, points: 5 } }),
+      fields,
+      label,
+    )
+
+    expect(g.categories).toEqual([{ id: 'a', name: 'Gold' }])
+    expect(g.bonus?.points).toBe(5)
+    expect(g.steps).toBeUndefined()
+  })
+
+  it('keeps the round timer at 3 s or more, with max never below min', () => {
+    const potato = (timerMin: string, timerMax: string) =>
+      games.gameFromEditor(custom('p', 1, { mode: 'winner', timer: { hidden: false, min: 0, max: 0 } }), { ...fields, timerMin, timerMax }, label).timer
+
+    expect(potato('1', '2')).toEqual({ hidden: false, min: 3, max: 3 })
+    expect(potato('20', '10')).toEqual({ hidden: false, min: 20, max: 20 })
+    expect(potato('', 'x')).toEqual({ hidden: false, min: 3, max: 3 })
+    expect(potato('8', '25')).toEqual({ hidden: false, min: 8, max: 25 })
+  })
+})
+
 describe('starting a game', () => {
   const players: Player[] = [
     { id: 'a', name: 'Anna', color: '#e4572e', updatedAt: 0 },
