@@ -1,9 +1,15 @@
 // A minimal D1 binding over node:sqlite, so the tests run the real SQL from
 // migrations/ instead of a hand-written mock.
-import { DatabaseSync } from 'node:sqlite'
 import { readFileSync, readdirSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+// Through require, not a static import: in browser-like test environments
+// (src/lib/cloud.test.ts runs under happy-dom) Vitest 5 only leaves the
+// built-ins in `builtinModules` unbundled, and prefix-only ones like
+// node:sqlite aren't in that list, so Vite would try to bundle it.
+const { DatabaseSync } = createRequire(import.meta.url)('node:sqlite')
 
 class Stmt {
   constructor(db, sql, args = []) {
