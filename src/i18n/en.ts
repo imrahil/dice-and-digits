@@ -64,17 +64,17 @@ export const en = {
   changeGame: 'Change',
 
   // my games
-  myGames: 'My games',
-  myGamesEmptyTitle: 'No favourites yet',
+  myGames: 'My shelf',
+  myGamesEmptyTitle: 'Your shelf is empty',
   myGamesEmptyBody: 'Heart the games you own or love, and the ones you create land here too. Then let the app pick tonight’s game.',
   addGames: 'Add games',
-  addToMyGames: 'Add to My games',
-  removeFromMyGames: 'Remove from My games',
+  addToMyGames: 'Add to My shelf',
+  removeFromMyGames: 'Remove from My shelf',
   draw: 'Draw',
   drawGame: 'Draw a game',
-  drawFromMyGames: 'Draw a game from My games',
+  drawFromMyGames: 'Draw a game from My shelf',
   drawTitle: 'Tonight’s game',
-  drawFrom: 'Drawn from {games} in My games.',
+  drawFrom: 'Drawn from {games} on My shelf.',
   drawAgain: 'Draw again',
   drawNeedTwo: 'Add at least two games to draw from.',
   playThis: 'Play this',
@@ -249,7 +249,8 @@ export const en = {
   categoriesNeeded: 'Add at least one category',
 
   // backup
-  backup: 'Backup',
+  backup: 'Backup file',
+  backupFileHint: 'Save everything to a file, or merge in a file saved on another phone. Works without the internet.',
   exportData: 'Export data',
   importData: 'Import data',
   importDone: 'Imported {n} items.',
@@ -257,7 +258,7 @@ export const en = {
 
   // personal backup
   backupCloud: 'Cloud backup',
-  backupIntro: 'Keep players, games, My games and history safe if this browser is cleared or you change phones. No account needed: you get six words to remember.',
+  backupIntro: 'Keep players, games, My shelf and history safe if this browser is cleared or you change phones. No account needed: you get six words to remember.',
   createBackup: 'Back up my data',
   myBackup: 'My backup',
   restoreFromCode: 'Restore from code',
@@ -285,7 +286,6 @@ export const en = {
   groupKeepsCopy: 'Your shared group already keeps a copy of your players, games and history. Save its invite link: it restores everything on a new phone.',
   saveInviteLink: 'Save invite link',
   groupWhileBackup: 'This phone backs up to your personal backup. To create or join a shared group, turn the backup off first.',
-  restoreFromPhone: 'Played on another phone? Restore your backup',
 
   // cloud
   cloud: 'Shared group',
@@ -350,9 +350,40 @@ export const en = {
   liveFinished: 'Final result',
   liveStopped: 'The scorekeeper stopped sharing this game. These are the last scores it sent.',
 
+  // advanced
+  advanced: 'Advanced',
+  advancedIntro: 'Keeping your data safe and sharing it: a cloud backup for your own phones, shared groups for friends who play together, and moving data by file. You don’t need any of it to keep score.',
+
+  // help
+  help: 'How it works',
+  helpLink: 'New here? See how it works',
+  helpIntro: 'Dice & Digits keeps score at your board game table, so everyone can focus on the game. Every result lands in your history and stats. Tap a topic to read more.',
+  helpStartTitle: 'Starting a game',
+  helpStartBody: 'Tap New game on the Play tab, pick a game and add the players. Players are remembered for next time.\nOn the setup screen you can shuffle the seats, draw a random first player, set a target score, choose “lowest score wins” and show everyone in the colour of their pawn.\nYour game isn’t on the list? Create your own with any categories and scoring rules.',
+  helpModesTitle: 'Four ways to keep score',
+  helpModesBody: 'Counter: tap + and − as points happen during the game (Catan, Carcassonne).\nRounds: enter everyone’s points after each round and watch the running totals (Uno, Thousand, Rummikub).\nScore sheet: fill in the categories at the end. Enter what is on the table, like 3 tiles or 14 coins, and the app does the maths (7 Wonders, Wingspan).\nWinner only: no points, just tap who won each round, or who lost it (Exploding Kittens, Hot Potato).',
+  helpPlayTitle: 'During the game',
+  helpPlayBody: 'Numbers go in on the app’s own keypad, which has a minus key. Undo takes back the last change, and any past round can be edited.\nWhen someone reaches the target score, a banner suggests finishing. Finish game shows the podium. If the top score is tied, pick the winner of your tie-breaker or keep a shared victory.\nThe screen stays on during a game; you can change that in Settings.',
+  helpLiveTitle: 'Players on their own phones',
+  helpLiveBody: 'During a game, open the menu and tap Share live. Friends scan the QR code, or tap Join a game on their Play tab and type the code, to follow the scores live.\nThey can also take their seat and enter their own points. Each player can only change their own score; your phone stays the scorekeeper and saves the result.',
+  helpMyGamesTitle: 'My shelf and tonight’s draw',
+  helpMyGamesBody: 'Tap the heart on any game to put it on My shelf, for example the games you own. Games you create are added for you.\nCan’t decide what to play? Draw a game picks one from My shelf at random. Draw again if the table disagrees.',
+  helpHistoryTitle: 'History and stats',
+  helpHistoryBody: 'Every finished game lands in History, grouped by day. Open one to see the breakdown, add notes, share the result or play again with the same players.\nStats shows games played, time played, a leaderboard, records for each game and head-to-head results between any two players.',
+  helpToolsTitle: 'Dice, first player and timer',
+  helpToolsBody: 'The Tools tab has dice (from a coin to a d20), a first-player picker where everyone puts a finger on the screen, and a turn timer: tap the clock to restart it for the next player.',
+  helpDataTitle: 'Where your data lives',
+  helpDataBody: 'Everything is saved on this phone and the app works offline, even in airplane mode. There are no accounts and no passwords.\nIf you clear the browser’s data or change phones, your history goes with it, unless you back it up.',
+  helpBackupTitle: 'Cloud backup',
+  helpBackupBody: 'More → Advanced → Cloud backup saves your players, games, My shelf and history. Instead of a password you get six easy words: write them down or take a screenshot.\nOn a new phone, type the six words, in English or Polish, to get everything back. Anyone who knows the words can open your backup, so keep them to yourself.',
+  helpGroupsTitle: 'Shared groups',
+  helpGroupsBody: 'A group gives friends who play together one shared history and set of stats, even when each of you keeps score on your own phone. Create one in More → Advanced and share the invite link or QR code.\nYou don’t need a group to let friends enter their own points during a game: that’s what Share live is for. A phone is in a group or has its own backup, not both; a group already keeps a copy of everything.',
+  helpInstallTitle: 'Install the app',
+  helpInstallBody: 'Add Dice & Digits to your home screen for a full-screen app that opens instantly. On iPhone: Share → Add to Home Screen. On Android: the browser menu → Install app.\nWhen a new version is ready, a banner offers to reload. It never interrupts a game.',
+
   // about
   about: 'About',
-  aboutBody: 'Works offline. Your data stays on this device unless you join a shared group.',
+  aboutBody: 'Works offline. Your data stays on this device unless you back it up or join a shared group.',
   installHint: 'Tip: add the app to your home screen for a full-screen experience.',
   aboutVersion: 'Version {version}',
   aboutBuilt: 'Built {date}',

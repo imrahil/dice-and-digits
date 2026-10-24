@@ -11,7 +11,10 @@ test('a finished game reaches the other phone through a shared group', async ({ 
   await button(a, '+3').first().click()
   await finishGame(a)
 
+  // Groups live under More → Advanced.
   await a.goto('#/more')
+  await expect(a.getByPlaceholder('np. Piątkowa ekipa')).toHaveCount(0)
+  await button(a, 'Zaawansowane').click()
   await a.getByPlaceholder('np. Piątkowa ekipa').fill('Piątkowa ekipa')
   await button(a, 'Utwórz grupę').click()
   await expect(a.getByText(/Ostatnia synchronizacja/)).toBeVisible()
@@ -25,7 +28,7 @@ test('a finished game reaches the other phone through a shared group', async ({ 
   await b.goto(invite.slice(invite.indexOf('#')))
   await expect(b.getByText(/Dołączyć do „Piątkowa ekipa”/)).toBeVisible()
   await button(b, 'Dołącz do grupy').click()
-  await b.waitForURL(/#\/more/)
+  await b.waitForURL(/#\/advanced/)
 
   await b.goto('#/history')
   await expect(b.locator('main')).toContainText('Splendor')
@@ -50,7 +53,7 @@ test('joining another group warns that this phone leaves its current one', async
     [a, 'Rodzina'],
     [b, 'Praca'],
   ] as const) {
-    await phone.goto('#/more')
+    await phone.goto('#/advanced')
     await phone.getByPlaceholder('np. Piątkowa ekipa').fill(name)
     await button(phone, 'Utwórz grupę').click()
     await expect(phone.getByText(/Ostatnia synchronizacja|Jeszcze nie/)).toBeVisible()
@@ -76,24 +79,32 @@ test('personal backup: six words on one phone restore everything on another', as
   await button(a, '+3').first().click()
   await finishGame(a)
 
-  await a.goto('#/more')
+  // The backup sits under More → Advanced, and More flags the unsaved words.
+  await a.goto('#/advanced')
   await button(a, 'Utwórz kopię').click()
 
   // The recovery words open straight away; until they're confirmed, More nags.
   const words = (await a.getByTestId('recovery-words').getAttribute('data-words'))!
 
   expect(words.split(' ')).toHaveLength(6)
+  await a.keyboard.press('Escape')
+  await a.goto('#/more')
+  await expect(a.getByLabel(/Zapisz słowa odzyskiwania/)).toBeVisible()
+  await button(a, 'Zaawansowane').click()
+  await button(a, 'Kod odzyskiwania').click()
   await button(a, 'Kod zapisany').click()
   const section = (title: string) => a.locator('section', { has: a.getByRole('heading', { name: title }) })
 
   await expect(section('Kopia w chmurze')).toContainText('Moja kopia')
   await expect(section('Kopia w chmurze').getByText(/Ostatnia synchronizacja/)).toBeVisible()
-  await expect(section('Wspólna grupa')).toContainText('najpierw wyłącz kopię')
   await expect(a.getByText(/Zapisz kod odzyskiwania/)).toHaveCount(0)
+  await expect(section('Wspólna grupa')).toContainText('najpierw wyłącz kopię')
+  await a.goto('#/more')
+  await expect(a.getByLabel(/Zapisz słowa odzyskiwania/)).toHaveCount(0)
 
-  // A fresh phone: the link on the empty home screen leads to the restore form.
-  await b.goto('#/')
-  await button(b, /Przywróć kopię/).click()
+  // A fresh phone: More → Advanced → Restore from code.
+  await b.goto('#/advanced')
+  await button(b, 'Przywróć z kodu').click()
   const field = b.getByLabel('Słowa lub link odzyskiwania')
 
   // A typo names the word; then typed as a child might, in capitals and without Polish letters.
@@ -104,7 +115,7 @@ test('personal backup: six words on one phone restore everything on another', as
   await button(b, 'Przywróć').click()
   await expect(b.getByText(/Przywrócić „Moja kopia”/)).toBeVisible()
   await button(b, 'Przywróć').click()
-  await b.waitForURL(/#\/more/)
+  await b.waitForURL(/#\/advanced/)
 
   await b.goto('#/history')
   await expect(b.locator('main')).toContainText('Splendor')

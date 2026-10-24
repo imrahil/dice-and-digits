@@ -44,7 +44,7 @@ opcjonalnym Cloudflare Workerem do wspólnych grup i tablic wyników na żywo.
   Tysiąc, 6 bierze, Rummikub, Domek, Szybka kawka, Zuuupa!, Yahtzee z premią
   +35 za górną sekcję i inne. Do tego **własne gry** z dowolnymi kategoriami,
   szybkimi przyciskami, progiem punktów i zasadą „wygrywa najmniej".
-- **Moje gry**: serduszkiem zbierasz gry, które masz albo lubisz (własne gry
+- **Moja półka gier**: serduszkiem zbierasz gry, które masz albo lubisz (własne gry
   trafiają tam same), a **„Losuj grę"** wybiera jedną z nich na dzisiejszy
   wieczór.
 - **Liczysz sztuki, nie punkty**: kategoria może być warta ×n za sztukę (3
@@ -74,6 +74,9 @@ opcjonalnym Cloudflare Workerem do wspólnych grup i tablic wyników na żywo.
 palcami** (wszyscy dotykają ekranu, losowany jest jeden palec) i **minutnik
 tury** restartowany stuknięciem.
 
+**Jak to działa**: *Więcej → Jak to działa* opisuje aplikację w krótkich
+tematach (też link na pustym ekranie głównym).
+
 **Opcjonalna chmura** (wymaga workera):
 
 - **Wspólna grupa**: znajomi dołączają przez link z zaproszeniem; gracze,
@@ -86,9 +89,11 @@ tury** restartowany stuknięciem.
   - **dołączają do liczenia**: wybierają swoje miejsce i wpisują własne
     punkty, np. swoją kolumnę w 7 Cudach na koniec, swoje +/− w Catanie albo
     wynik w każdej rundzie Tysiąca. Mogą edytować tylko swoje miejsce.
-- Zaproszenie do grupy to także kod QR (*Więcej → Wspólna grupa → Zaproś*).
+- Zaproszenie do grupy to także kod QR (*Więcej → Zaawansowane → Wspólna grupa → Zaproś*). Kopia,
+  grupy i plik z danymi są schowane w *Zaawansowanych*: do liczenia punktów nie
+  są potrzebne.
 - **Kopia zapasowa w chmurze**: jedno stuknięcie zapisuje graczy, własne gry,
-  Moje gry i zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
+  moją półkę gier i zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
   zapamiętania (i kod QR), po polsku lub angielsku; wpisanie ich na nowym
   telefonie albo po wyczyszczeniu przeglądarki przywraca wszystko i scala z tym,
   co już jest.
@@ -151,7 +156,7 @@ Polish UI, written to `docs/screenshots/`).
   Tysiąc, 6 bierze, Rummikub, Domek, Szybka kawka, Zuuupa!, Yahtzee with the
   upper-section +35 bonus, and more. Plus **your own games** with custom
   categories, quick buttons, a target score and lowest-wins.
-- **My games**: heart the games you own or love (the ones you create are added
+- **My shelf**: heart the games you own or love (the ones you create are added
   for you), then **Draw a game** picks tonight's game from that list.
 - **Count, don't calculate**: a category can be worth ×n per item (3 upgrade
   tiles ×2, unused stations ×4, Zuuupa! vegetables ×3…×7) or ÷n (7 Wonders:
@@ -176,6 +181,9 @@ Polish UI, written to `docs/screenshots/`).
 player (everyone touches the screen, one is chosen), and a tap-to-restart
 **turn timer**.
 
+**How it works**: *More → How it works* explains the app in short topics
+(also linked from the empty home screen).
+
 **Optional cloud** (needs the worker):
 
 - **Shared group**: friends join by invite link; players, custom games and
@@ -186,8 +194,10 @@ player (everyone touches the screen, one is chosen), and a tap-to-restart
   - **join to score**: pick their seat and enter their own points, e.g. their
     7 Wonders column at the end, their +/− in Catan, or their score for each
     round of Tysiąc. They can only edit their own seat.
-- The group invite is a QR code too (*More → Shared group → Invite*).
-- **Cloud backup**: one tap backs up your players, custom games, My games and
+- The group invite is a QR code too (*More → Advanced → Shared group → Invite*). The backup,
+  groups and the data file sit under *Advanced*: keeping score needs none of
+  them.
+- **Cloud backup**: one tap backs up your players, custom games, My shelf and
   finished games, with no account. You get six easy words to remember (and a QR),
   in English or Polish; typing them on a new phone, or after the browser is
   cleared, restores everything and merges it with what's already there.
@@ -298,8 +308,8 @@ Paid would make sense for:
 ## Persisted data
 
 All in `localStorage` under the `dice-digits:` prefix: `players`, `games`
-(custom only), `sessions`, `favorites` (My games; backed up, never shared with
+(custom only), `sessions`, `favorites` (My shelf; backed up, never shared with
 a group), `settings`, `dirty` (pending sync), `group` (shared
 group credentials), `live` (host tokens of live games), `guest:<code>`
 (a joined phone's seat token and not-yet-applied entries). Export/import in *More →
-Backup* moves everything between devices without the cloud.
+Advanced* moves everything between devices without the cloud.

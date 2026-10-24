@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
 import { button, dialog } from './helpers'
 
-test('my games: heart games, create one, then draw tonight’s game', async ({ page }) => {
+test('my shelf: heart games, create one, then draw tonight’s game', async ({ page }) => {
   await page.goto('#/my-games')
-  await expect(page.getByText('Brak ulubionych gier')).toBeVisible()
+  await expect(page.getByText('Twoja półka jest pusta')).toBeVisible()
 
   // Heart two built-ins from the add sheet.
   await button(page, 'Dodaj gry').click()
@@ -15,7 +15,7 @@ test('my games: heart games, create one, then draw tonight’s game', async ({ p
   await expect(page.locator('main')).toContainText('Catan')
   await expect(page.locator('main')).toContainText('Splendor')
 
-  // A game you create goes straight into My games.
+  // A game you create goes straight onto My shelf.
   await button(page, 'Nowa gra').click()
   await page.getByPlaceholder('Nazwa gry').fill('Nasza gra')
   await page.getByRole('radio', { name: 'Licznik' }).click()
@@ -36,12 +36,12 @@ test('my games: heart games, create one, then draw tonight’s game', async ({ p
   await expect(page.locator('main')).toContainText(picked)
 
   // Unhearting from the setup card takes it off the list.
-  await button(page, 'Usuń z Moich gier').click()
+  await button(page, 'Usuń z mojej półki gier').click()
   await page.goto('#/my-games')
   await expect(page.getByText('2 gry')).toBeVisible()
   await expect(page.locator('main')).not.toContainText(picked)
 
   // Home offers the draw once there are two games to pick from.
   await page.goto('#/')
-  await expect(button(page, 'Losuj grę z Moich gier')).toBeVisible()
+  await expect(button(page, 'Losuj grę z mojej półki gier')).toBeVisible()
 })

@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { ChevronRight, KeyRound, Plus, ScanLine, Shuffle } from 'lucide-react'
+import { ChevronRight, CircleHelp, Plus, ScanLine, Shuffle } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { allGames, myGames, recentGameIds, useActiveSessions } from '../lib/games'
 import { finished } from '../lib/stats'
 import { useStore } from '../lib/store'
-import { cloudEnabled, useCloud } from '../lib/cloud'
+import { cloudEnabled } from '../lib/cloud'
 import { navigate } from '../hooks/useRoute'
 import { ActiveGameCard } from '../components/ActiveGameCard'
-import { DrawSheet } from '../components/DrawGame'
+import { DrawSheet } from '../components/DrawSheet'
 import { SessionRow } from '../components/SessionRow'
 import { Logo } from '../components/Logo'
 import { Button, Empty, Page, Section, Sheet, cx, inputClass } from '../components/ui'
@@ -36,7 +36,6 @@ export function Home() {
   const custom = useStore((s) => s.games)
   const favorites = useStore((s) => s.favorites)
   const active = useActiveSessions()
-  const { group } = useCloud()
   const recent = finished(Object.values(sessions)).slice(0, 3)
 
   const [joining, setJoining] = useState(false)
@@ -140,11 +139,11 @@ export function Home() {
             <Empty icon="🎲" title={t('emptyHomeTitle')}>
               {t('emptyHomeBody')}
             </Empty>
-            {cloudEnabled && !group && (
-              <Button variant="ghost" size="sm" className="mx-auto flex" onClick={() => navigate('restore')}>
-                <KeyRound className="size-4" /> {t('restoreFromPhone')}
+            <div className="flex justify-center">
+              <Button variant="ghost" size="sm" onClick={() => navigate('help')}>
+                <CircleHelp className="size-4" /> {t('helpLink')}
               </Button>
-            )}
+            </div>
           </>
         )
       )}

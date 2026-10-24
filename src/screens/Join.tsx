@@ -63,7 +63,7 @@ export function Join({ link }: { link: string }) {
     try {
       await joinGroup(token, code)
       toast(vault ? t('restoreDone') : t('joinedGroup', { name: name ?? '' }))
-      navigate('more', { replace: true })
+      navigate('advanced', { replace: true })
     } catch {
       setBad(true)
     } finally {

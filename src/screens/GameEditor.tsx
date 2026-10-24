@@ -153,7 +153,7 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
       timer: g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined,
     })
 
-    // A game you made is one of yours: it goes straight into My games.
+    // A game you made is one of yours: it goes straight onto My shelf.
     if (isNew) {
       setFavorite(g.id, true)
     }

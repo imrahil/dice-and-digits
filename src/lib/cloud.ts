@@ -45,7 +45,7 @@ function readJson<T>(key: string, fallback: T): T {
 let cloud: CloudState = { group: readJson<Group | null>(GROUP_KEY, null), syncing: false, error: null }
 const listeners = new Set<() => void>()
 
-// My games travels to a personal backup only, never to a shared group.
+// My shelf travels to a personal backup only, never to a shared group.
 setPersonalSync(cloud.group?.kind === 'vault')
 
 function setCloud(patch: Partial<CloudState>) {

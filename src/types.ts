@@ -66,7 +66,7 @@ export type Player = Doc & {
   color: string
 }
 
-/** A game in My games: `id` is the game's id. Unhearting leaves a tombstone. */
+/** A game on My shelf: `id` is the game's id. Unhearting leaves a tombstone. */
 export type Favorite = Doc
 
 export type GameDef = Doc &

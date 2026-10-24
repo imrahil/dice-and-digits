@@ -4,7 +4,7 @@ import { buzz } from '../lib/haptics'
 import { isFavorite, setFavorite, useStore } from '../lib/store'
 import { IconButton, cx } from './ui'
 
-/** The heart that adds a game to (or removes it from) My games. */
+/** The heart that adds a game to (or removes it from) My shelf. */
 export function FavoriteButton({ id, className }: { id: string; className?: string }) {
   const { t } = useI18n()
   const on = useStore((s) => isFavorite(s.favorites, id))

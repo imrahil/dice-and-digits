@@ -96,12 +96,18 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
 - **Sync paging must not split a rev.** See the comment in `sync()` and the
   paging test. `MAX_PUSH` in cloud.ts must stay ≤ `LIMITS.docsPerPush`.
 - **The app works without the backend.** Gate every cloud UI on `cloudEnabled`.
-- **My games goes to a personal backup, never to a shared group.** Each
+- **My shelf goes to a personal backup, never to a shared group.** Each
   hearted game is a `fav` doc (`state.favorites`, id = the game's id;
   unhearting leaves a tombstone). It is shareable only while the phone is in a
   vault: `cloud.ts` calls `setPersonalSync()` on every group change, and the
   worker drops `fav` docs pushed to a shared group. Games created on this phone
   are hearted for you; `myGames()` skips deleted or unknown games.
+- **More stays simple.** The cloud backup, shared groups and the file
+  export/import live on `screens/Advanced.tsx` (More → Advanced), one
+  component per section in `components/advanced/`. The
+  Advanced row shows the group's name, or a warning while a new backup's
+  words are unsaved. **Help** (`screens/Help.tsx`, More → How it works) describes every
+  feature in `help*` i18n strings: update it when a feature changes.
 - **`VITE_API_URL` is baked in at build time.** `.env` is committed on purpose:
   the URL is public and the Pages build passes no env of its own.
 - **QR codes are generated on the phone** (`uqr`, `components/QrShare.tsx`).
