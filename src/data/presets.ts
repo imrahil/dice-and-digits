@@ -344,7 +344,7 @@ const PRESETS: Preset[] = [
     id: 'builtin:bohnanza',
     emoji: '🫘',
     name: name('Bohnanza', 'Fasolki'),
-    players: { min: 2, max: 7 },
+    players: { min: 3, max: 5 },
     mode: 'counter',
     lowWins: false,
     steps: [1, 2, 3, 4],
