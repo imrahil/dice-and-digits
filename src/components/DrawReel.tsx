@@ -5,7 +5,7 @@ import { drawGame } from '../lib/games'
 import { buzz } from '../lib/haptics'
 import { navigate } from '../hooks/useRoute'
 import { ModeBadge } from './ModeBadge'
-import { Button, Sheet, cx } from './ui'
+import { Button, cx } from './ui'
 import type { GameDef } from '../types'
 
 /** Frames the reel shows before it stops; each one waits a little longer. */
@@ -15,18 +15,8 @@ const frameDelay = (i: number) => 40 + 1.2 * i * i
 
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
-/** "What do we play tonight?": spins through My shelf and lands on one. */
-export function DrawSheet({ open, onClose, games }: { open: boolean; onClose: () => void; games: GameDef[] }) {
-  const { t } = useI18n()
-
-  return (
-    <Sheet open={open} onClose={onClose} title={`🎲 ${t('drawTitle')}`}>
-      <Reel games={games} onClose={onClose} />
-    </Sheet>
-  )
-}
-
-function Reel({ games: initial, onClose }: { games: GameDef[]; onClose: () => void }) {
+/** Spins through the games and lands on one, with Play this and Draw again. */
+export function DrawReel({ games: initial, onClose }: { games: GameDef[]; onClose: () => void }) {
   const { t, tp, text } = useI18n()
   // The pool is fixed while the sheet is open, so a re-render never restarts the spin.
   const [games] = useState(initial)
