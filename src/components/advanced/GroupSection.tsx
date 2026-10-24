@@ -3,7 +3,7 @@ import { LogOut, QrCode } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { createGroup, inviteLink, leaveGroup, useCloud } from '../../lib/cloud'
 import { confirm, toast } from '../dialogs'
-import { QrShareSheet } from '../QrShare'
+import { QrShareSheet } from '../QrShareSheet'
 import { SyncStatus } from '../SyncStatus'
 import { Button, Card, Section, inputClass } from '../ui'
 

@@ -3,7 +3,8 @@ import { useI18n } from '../../i18n'
 import { inviteLink, markCodeSaved, type Group } from '../../lib/cloud'
 import { codeWords } from '../../lib/recovery'
 import { toast } from '../dialogs'
-import { QrCode as QrImage, shareUrl } from '../QrShare'
+import { QrCode as QrImage } from '../QrCode'
+import { shareUrl } from '../QrShareSheet'
 import { Button, Sheet } from '../ui'
 
 /** The recovery code and link as QR, to save somewhere safe. Generated on the phone, like every QR here. */
