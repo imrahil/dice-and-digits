@@ -1,28 +1,32 @@
 import { useState } from 'react'
-import { Minus, Plus, Trash2 } from 'lucide-react'
-import { GAME_EMOJIS } from '../../data/presets'
+import { Trash2 } from 'lucide-react'
 import { useI18n } from '../../i18n'
-import { removeGame, saveGame, setFavorite, uid } from '../../lib/store'
+import { gameFromEditor, type EditorFields } from '../../lib/games'
+import { removeGame, saveGame, setFavorite } from '../../lib/store'
 import { goBack, navigate } from '../../hooks/useRoute'
 import { confirm } from '../dialogs'
 import { FavoriteButton } from '../FavoriteButton'
-import { BottomBar, Button, Card, IconButton, Page, Section, Segmented, Toggle, cx, inputClass } from '../ui'
-import type { Category, GameDef, ScoringMode } from '../../types'
+import { BottomBar, Button, IconButton, Page, Section, inputClass } from '../ui'
+import { CategoryList } from './CategoryList'
+import { EditorOptions } from './EditorOptions'
+import { EmojiPicker } from './EmojiPicker'
+import { ModePicker } from './ModePicker'
+import type { GameDef } from '../../types'
 
 export function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; title: string }) {
   const { t, text } = useI18n()
   const [g, setG] = useState<GameDef>(initial)
-  const [stepsText, setStepsText] = useState((initial.steps ?? [1, 5, 10]).join(', '))
-  const [target, setTarget] = useState(initial.target ? String(initial.target) : '')
-  const [timerMin, setTimerMin] = useState(String(initial.timer?.min ?? 10))
-  const [timerMax, setTimerMax] = useState(String(initial.timer?.max ?? 30))
+  const [fields, setFields] = useState<EditorFields>(() => ({
+    steps: (initial.steps ?? [1, 5, 10]).join(', '),
+    target: initial.target ? String(initial.target) : '',
+    timerMin: String(initial.timer?.min ?? 10),
+    timerMax: String(initial.timer?.max ?? 30),
+  }))
   const patch = (p: Partial<GameDef>) => setG((x) => ({ ...x, ...p }))
-
-  const cats = g.categories ?? []
-  const setCat = (i: number, p: Partial<Category>) => patch({ categories: cats.map((c, k) => (k === i ? { ...c, ...p } : c)) })
+  const setField = (field: keyof EditorFields, value: string) => setFields((f) => ({ ...f, [field]: value }))
 
   const name = text(g.name).trim()
-  const validCats = cats.filter((c) => text(c.name).trim())
+  const validCats = (g.categories ?? []).filter((c) => text(c.name).trim())
   const valid = name && (g.mode !== 'sheet' || validCats.length > 0)
 
   const save = () => {
@@ -30,26 +34,7 @@ export function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boo
       return
     }
 
-    const steps = stepsText
-      .split(/[,\s]+/)
-      .map((s) => parseInt(s, 10))
-      .filter((n) => Number.isFinite(n) && n > 0)
-      .slice(0, 4)
-    const tgt = parseInt(target, 10)
-    // At least 3 s, and max never below min.
-    const lo = Math.max(3, parseInt(timerMin, 10) || 3)
-    const hi = Math.max(lo, parseInt(timerMax, 10) || lo)
-
-    saveGame({
-      ...g,
-      name,
-      target: Number.isFinite(tgt) && tgt > 0 ? tgt : undefined,
-      steps: g.mode === 'counter' ? (steps.length ? steps : [1]) : undefined,
-      categories: g.mode === 'sheet' ? validCats.map((c) => ({ ...c, name: text(c.name).trim() })) : undefined,
-      bonus: g.mode === 'sheet' ? g.bonus : undefined,
-      zeroSum: g.mode === 'rounds' ? g.zeroSum : undefined,
-      timer: g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined,
-    })
+    saveGame(gameFromEditor(g, fields, text))
 
     // A game you made is one of yours: it goes straight onto My shelf.
     if (isNew) {
@@ -68,14 +53,6 @@ export function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boo
     setFavorite(g.id, false)
     navigate('games', { replace: true })
   }
-
-  const modes: { value: ScoringMode; label: string }[] = [
-    { value: 'counter', label: t('modeCounter') },
-    { value: 'rounds', label: t('modeRounds') },
-    { value: 'sheet', label: t('modeSheet') },
-    { value: 'winner', label: t('modeWinner') },
-  ]
-  const hint = { counter: t('modeCounterHint'), rounds: t('modeRoundsHint'), sheet: t('modeSheetHint'), winner: t('modeWinnerHint') }[g.mode]
 
   return (
     <Page
@@ -96,152 +73,21 @@ export function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boo
       <input className={inputClass} placeholder={t('gameName')} value={text(g.name)} onChange={(e) => patch({ name: e.target.value })} maxLength={50} autoFocus={isNew} />
 
       <Section title={t('icon')}>
-        <div className="grid grid-cols-8 gap-1.5">
-          {GAME_EMOJIS.map((e) => (
-            <button
-              key={e}
-              onClick={() => patch({ emoji: e })}
-              className={cx('flex aspect-square items-center justify-center rounded-xl text-2xl transition', g.emoji === e ? 'bg-accent/15 ring-2 ring-accent' : 'surface-flat')}
-            >
-              {e}
-            </button>
-          ))}
-        </div>
+        <EmojiPicker value={g.emoji} onChange={(emoji) => patch({ emoji })} />
       </Section>
 
       <Section title={t('scoringMode')}>
-        <Segmented grid value={g.mode} onChange={(mode) => patch({ mode })} options={modes} />
-        <p className="mt-2 px-1 text-sm text-ink/60 dark:text-white/60">{hint}</p>
+        <ModePicker value={g.mode} onChange={(mode) => patch({ mode })} />
       </Section>
 
       {g.mode === 'sheet' && (
         <Section title={t('categories')}>
-          <div className="space-y-2">
-            {cats.map((c, i) => (
-              <div key={c.id} className="flex items-center gap-2">
-                <input
-                  className={cx(inputClass, '!h-11')}
-                  placeholder={`${t('categoryName')} ${i + 1}`}
-                  value={text(c.name)}
-                  maxLength={40}
-                  onChange={(e) => setCat(i, { name: e.target.value })}
-                />
-                {c.div ? (
-                  <span className="flex h-11 w-14 shrink-0 items-center justify-center rounded-xl text-sm font-black text-accent ring-1 ring-edge dark:ring-white/10">
-                    ÷{c.div}
-                  </span>
-                ) : (
-                  <label className="flex h-11 w-16 shrink-0 items-center rounded-xl pl-2 ring-1 ring-edge focus-within:ring-2 focus-within:ring-accent dark:ring-white/10" title={t('perItem')}>
-                    <span className="text-sm font-black text-ink/40 dark:text-white/40">×</span>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      min={1}
-                      aria-label={t('perItem')}
-                      className="w-full bg-transparent px-1 text-center font-bold outline-none"
-                      value={c.per ?? ''}
-                      placeholder="1"
-                      onChange={(e) => {
-                        const n = parseInt(e.target.value, 10)
-
-                        setCat(i, { per: Number.isFinite(n) && n > 1 ? n : undefined })
-                      }}
-                    />
-                  </label>
-                )}
-                <button
-                  onClick={() => setCat(i, { negative: !c.negative })}
-                  aria-pressed={!!c.negative}
-                  title={t('negativeCategory')}
-                  className={cx(
-                    'flex size-11 shrink-0 items-center justify-center rounded-xl ring-1 transition',
-                    c.negative ? 'bg-danger text-white ring-danger' : 'text-ink/40 ring-edge dark:text-white/40 dark:ring-white/10',
-                  )}
-                >
-                  <Minus className="size-5" strokeWidth={3} />
-                </button>
-                <IconButton label={t('delete')} onClick={() => patch({ categories: cats.filter((_, k) => k !== i) })} disabled={cats.length === 1}>
-                  <Trash2 className="size-5" />
-                </IconButton>
-              </div>
-            ))}
-          </div>
-          <p className="mt-2 flex items-center gap-1.5 px-1 text-xs text-ink/55 dark:text-white/55">
-            <span className="inline-flex size-4 items-center justify-center rounded bg-danger text-white">
-              <Minus className="size-3" strokeWidth={3} />
-            </span>
-            {t('negativeCategory')}
-          </p>
-          <Button variant="ghost" className="mt-2 w-full" onClick={() => patch({ categories: [...cats, { id: uid().slice(0, 8), name: '' }] })}>
-            <Plus className="size-5" /> {t('addCategory')}
-          </Button>
+          <CategoryList categories={g.categories ?? []} onChange={(categories) => patch({ categories })} />
         </Section>
       )}
 
       <Section title={t('options')}>
-        <Card className="!py-2">
-          <Toggle checked={g.lowWins} onChange={(lowWins) => patch({ lowWins })} label={t('lowestWins')} />
-          {g.mode === 'rounds' && (
-            <div className="border-t border-edge dark:border-white/8">
-              <Toggle checked={!!g.zeroSum} onChange={(zeroSum) => patch({ zeroSum })} label={t('zeroSum')} hint={t('zeroSumHint')} />
-            </div>
-          )}
-          <label className="flex items-center gap-3 border-t border-edge py-3 dark:border-white/8">
-            <span className="flex-1 font-semibold">{t('targetScore')}</span>
-            <input type="number" inputMode="numeric" min={1} className={cx(inputClass, '!w-28 text-right')} value={target} onChange={(e) => setTarget(e.target.value)} placeholder="—" />
-          </label>
-          {g.mode === 'winner' && (
-            <div className="border-t border-edge dark:border-white/8">
-              <Toggle
-                checked={!!g.timer}
-                onChange={(on) => patch({ timer: on ? { hidden: true, min: 10, max: 30 } : undefined })}
-                label={t('roundTimer')}
-                hint={t('roundTimerHint')}
-              />
-            </div>
-          )}
-          {g.mode === 'winner' && g.timer && (
-            <>
-              <div className="border-t border-edge dark:border-white/8">
-                <Toggle
-                  checked={g.timer.hidden}
-                  onChange={(hidden) => patch({ timer: { ...g.timer!, hidden } })}
-                  label={t('timerHidden')}
-                  hint={t('timerHiddenHint')}
-                />
-              </div>
-              <div className="flex items-center gap-2 border-t border-edge py-3 dark:border-white/8">
-                <span className="flex-1 font-semibold">{t('timerRange')}</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={3}
-                  aria-label="min"
-                  className={cx(inputClass, '!w-20 text-right')}
-                  value={timerMin}
-                  onChange={(e) => setTimerMin(e.target.value)}
-                />
-                <span className="font-bold text-ink/50 dark:text-white/50">–</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={3}
-                  aria-label="max"
-                  className={cx(inputClass, '!w-20 text-right')}
-                  value={timerMax}
-                  onChange={(e) => setTimerMax(e.target.value)}
-                />
-              </div>
-            </>
-          )}
-          {g.mode === 'counter' && (
-            <label className="block border-t border-edge py-3 dark:border-white/8">
-              <span className="block font-semibold">{t('quickButtons')}</span>
-              <span className="mb-2 block text-sm text-ink/55 dark:text-white/55">{t('quickButtonsHint')}</span>
-              <input className={inputClass} value={stepsText} onChange={(e) => setStepsText(e.target.value)} inputMode="numeric" />
-            </label>
-          )}
-        </Card>
+        <EditorOptions game={g} onPatch={patch} fields={fields} onField={setField} />
       </Section>
 
       <BottomBar>
