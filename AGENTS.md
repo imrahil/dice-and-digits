@@ -96,7 +96,7 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
 - **Sync paging must not split a rev.** See the comment in `sync()` and the
   paging test. `MAX_PUSH` in cloud.ts must stay ≤ `LIMITS.docsPerPush`.
 - **The app works without the backend.** Gate every cloud UI on `cloudEnabled`.
-- **My games goes to a personal backup, never to a shared group.** Each
+- **My shelf goes to a personal backup, never to a shared group.** Each
   hearted game is a `fav` doc (`state.favorites`, id = the game's id;
   unhearting leaves a tombstone). It is shareable only while the phone is in a
   vault: `cloud.ts` calls `setPersonalSync()` on every group change, and the

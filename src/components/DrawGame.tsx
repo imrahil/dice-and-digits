@@ -15,7 +15,7 @@ const frameDelay = (i: number) => 40 + 1.2 * i * i
 
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
-/** "What do we play tonight?": spins through My games and lands on one. */
+/** "What do we play tonight?": spins through My shelf and lands on one. */
 export function DrawSheet({ open, onClose, games }: { open: boolean; onClose: () => void; games: GameDef[] }) {
   const { t } = useI18n()
 

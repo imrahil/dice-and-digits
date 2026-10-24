@@ -16,7 +16,7 @@ export type State = {
   players: Record<string, Player>
   games: Record<string, GameDef> // custom games only; built-ins live in data/presets.ts
   sessions: Record<string, Session>
-  /** My games, keyed by game id (built-in or custom). Synced to a personal backup only. */
+  /** My shelf, keyed by game id (built-in or custom). Synced to a personal backup only. */
   favorites: Record<string, Favorite>
   settings: Settings
   /** `${kind}:${id}` changed locally since the last successful sync. */
@@ -127,7 +127,7 @@ function markDirty(kind: Kind, id: string): string[] {
 let personal = false
 
 /**
- * My games is personal: it goes to this phone's own backup, never to a shared
+ * My shelf is personal: it goes to this phone's own backup, never to a shared
  * group. cloud.ts calls this whenever the phone joins or leaves either.
  */
 export function setPersonalSync(on: boolean) {

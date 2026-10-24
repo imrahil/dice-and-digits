@@ -79,7 +79,7 @@ export function MyGames() {
   )
 }
 
-/** Every game with a heart: tap to add it to My games or take it off. */
+/** Every game with a heart: tap to put it on My shelf or take it off. */
 function AddGames({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t, text, locale } = useI18n()
   const custom = useStore((s) => s.games)

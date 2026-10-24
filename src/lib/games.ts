@@ -32,7 +32,7 @@ export function matchesName(g: GameDef, needle: string): boolean {
   return !needle || (typeof g.name === 'string' ? [g.name] : [g.name.en, g.name.pl]).some((n) => n.toLocaleLowerCase().includes(needle))
 }
 
-/** My games, last hearted first, skipping deleted or unknown games. */
+/** My shelf, last hearted first, skipping deleted or unknown games. */
 export function myGames(favorites: State['favorites'], custom: State['games']): GameDef[] {
   return Object.values(favorites)
     .filter((f) => !f.deleted)

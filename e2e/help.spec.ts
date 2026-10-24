@@ -6,12 +6,12 @@ test('help: reached from the empty home screen and from More; topics open and li
   await button(page, 'Pierwszy raz? Zobacz, jak to działa').click()
   await page.waitForURL(/#\/help/)
 
-  const topic = page.locator('details', { hasText: 'Moje gry i losowanie gry na dziś' })
+  const topic = page.locator('details', { hasText: 'Moja półka gier i losowanie gry na dziś' })
 
   await expect(topic.getByText(/Stuknij serduszko/)).toBeHidden()
   await topic.locator('summary').click()
   await expect(topic.getByText(/Stuknij serduszko/)).toBeVisible()
-  await topic.getByRole('button', { name: 'Moje gry' }).click()
+  await topic.getByRole('button', { name: 'Moja półka gier' }).click()
   await page.waitForURL(/#\/my-games/)
 
   await page.goto('#/more')
