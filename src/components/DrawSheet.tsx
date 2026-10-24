@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n'
-import { DrawReel } from './DrawReel'
+import { DrawPanel } from './DrawPanel'
 import { Sheet } from './ui'
 import type { GameDef } from '../types'
 
@@ -9,7 +9,7 @@ export function DrawSheet({ open, onClose, games }: { open: boolean; onClose: ()
 
   return (
     <Sheet open={open} onClose={onClose} title={`🎲 ${t('drawTitle')}`}>
-      <DrawReel games={games} onClose={onClose} />
+      <DrawPanel games={games} onClose={onClose} />
     </Sheet>
   )
 }

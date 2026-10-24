@@ -69,12 +69,17 @@ export type Player = Doc & {
 /** A game on My shelf: `id` is the game's id. Unhearting leaves a tombstone. */
 export type Favorite = Doc
 
+/** How many can play. No `max` means no upper limit (Yahtzee, Hot Potato). */
+export type PlayerRange = { min: number; max?: number }
+
 export type GameDef = Doc &
   Rules & {
     emoji: string
     builtin?: boolean
     /** Pawn colours the physical game comes in (hexes from PAWN_COLORS). Not part of Rules: the seat snapshots the hex. */
     pawns?: string[]
+    /** Lets the draw pick only games that fit tonight's table. Missing = fits any count. Not part of Rules. */
+    players?: PlayerRange
   }
 
 export type Seat = {

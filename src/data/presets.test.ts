@@ -12,6 +12,23 @@ describe('built-in games', () => {
     }
   })
 
+  it('player ranges are sane, and only the generic scorers and two unconfirmed games lack one', () => {
+    const open = ['builtin:counter', 'builtin:rounds', 'builtin:zuuupa', 'builtin:bug-hotel']
+
+    for (const g of BUILTIN_GAMES) {
+      if (!g.players) {
+        expect(open, `${g.id} has no player range`).toContain(g.id)
+        continue
+      }
+
+      expect(g.players.min, g.id).toBeGreaterThanOrEqual(1)
+
+      if (g.players.max != null) {
+        expect(g.players.max, g.id).toBeGreaterThanOrEqual(g.players.min)
+      }
+    }
+  })
+
   it('score sheets have categories with unique ids and sane multipliers', () => {
     for (const g of BUILTIN_GAMES.filter((g) => g.mode === 'sheet')) {
       const cats = g.categories ?? []

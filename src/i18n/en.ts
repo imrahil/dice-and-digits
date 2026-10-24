@@ -77,6 +77,13 @@ export const en = {
   drawFrom: 'Drawn from {games} on My shelf.',
   drawAgain: 'Draw again',
   drawNeedTwo: 'Add at least two games to draw from.',
+  drawPlayers: 'How many are playing?',
+  drawAnyCount: 'Any',
+  drawNoneFit: 'No game on your shelf is for {players}.',
+  playersRange: 'Players',
+  playersRangeHint: 'Optional. The draw only picks games that fit.',
+  playersMin: 'Fewest players',
+  playersMax: 'Most players',
   playThis: 'Play this',
 
   // modes
@@ -367,7 +374,7 @@ export const en = {
   helpLiveTitle: 'Players on their own phones',
   helpLiveBody: 'During a game, open the menu and tap Share live. Friends scan the QR code, or tap Join a game on their Play tab and type the code, to follow the scores live.\nThey can also take their seat and enter their own points. Each player can only change their own score; your phone stays the scorekeeper and saves the result.',
   helpMyGamesTitle: 'My shelf and tonight’s draw',
-  helpMyGamesBody: 'Tap the heart on any game to put it on My shelf, for example the games you own. Games you create are added for you.\nCan’t decide what to play? Draw a game picks one from My shelf at random. Draw again if the table disagrees.',
+  helpMyGamesBody: 'Tap the heart on any game to put it on My shelf, for example the games you own. Games you create are added for you.\nCan’t decide what to play? Draw a game picks one from My shelf at random, only among games for as many players as you are. Draw again if the table disagrees.',
   helpHistoryTitle: 'History and stats',
   helpHistoryBody: 'Every finished game lands in History, grouped by day. Open one to see the breakdown, add notes, share the result or play again with the same players.\nStats shows games played, time played, a leaderboard, records for each game and head-to-head results between any two players.',
   helpToolsTitle: 'Dice, first player and timer',
@@ -403,6 +410,7 @@ export const en = {
   nWins: { one: '{n} win', other: '{n} wins' } as Plural,
   nLosses: { one: '{n} loss', other: '{n} losses' } as Plural,
   nPhones: { one: '{n} phone connected', other: '{n} phones connected' } as Plural,
+  nPlayersFor: { one: '{n} player', other: '{n} players' } as Plural,
   nPointsAhead: { one: '{n} point ahead', other: '{n} points ahead' } as Plural,
 }
 

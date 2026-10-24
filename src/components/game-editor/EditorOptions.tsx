@@ -38,6 +38,33 @@ export function EditorOptions({
           placeholder="—"
         />
       </label>
+      <div className="flex items-center gap-2 border-t border-edge py-3 dark:border-white/8">
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">{t('playersRange')}</span>
+          <span className="block text-sm text-ink/55 dark:text-white/55">{t('playersRangeHint')}</span>
+        </span>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={1}
+          aria-label={t('playersMin')}
+          className={cx(inputClass, '!w-16 text-right')}
+          value={fields.playersMin}
+          onChange={(e) => onField('playersMin', e.target.value)}
+          placeholder="—"
+        />
+        <span className="font-bold text-ink/50 dark:text-white/50">–</span>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={1}
+          aria-label={t('playersMax')}
+          className={cx(inputClass, '!w-16 text-right')}
+          value={fields.playersMax}
+          onChange={(e) => onField('playersMax', e.target.value)}
+          placeholder="—"
+        />
+      </div>
       {g.mode === 'winner' && <RoundTimerOptions timer={g.timer} onTimer={(timer) => onPatch({ timer })} fields={fields} onField={onField} />}
       {g.mode === 'counter' && (
         <label className="block border-t border-edge py-3 dark:border-white/8">

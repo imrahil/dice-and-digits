@@ -46,7 +46,7 @@ opcjonalnym Cloudflare Workerem do wspólnych grup i tablic wyników na żywo.
   szybkimi przyciskami, progiem punktów i zasadą „wygrywa najmniej".
 - **Moja półka gier**: serduszkiem zbierasz gry, które masz albo lubisz (własne gry
   trafiają tam same), a **„Losuj grę"** wybiera jedną z nich na dzisiejszy
-  wieczór.
+  wieczór, tylko spośród gier dla tylu osób, ile siedzi przy stole.
 - **Liczysz sztuki, nie punkty**: kategoria może być warta ×n za sztukę (3
   kafelki ulepszeń ×2, niewykorzystane stacje ×4, warzywa w Zuuupa! ×3…×7) albo
   ÷n (7 Cudów: 1 punkt za 3 monety). Wpisujesz to, co leży na stole, a
@@ -157,7 +157,8 @@ Polish UI, written to `docs/screenshots/`).
   upper-section +35 bonus, and more. Plus **your own games** with custom
   categories, quick buttons, a target score and lowest-wins.
 - **My shelf**: heart the games you own or love (the ones you create are added
-  for you), then **Draw a game** picks tonight's game from that list.
+  for you), then **Draw a game** picks tonight's game from that list, only
+  among games for as many players as are at the table.
 - **Count, don't calculate**: a category can be worth ×n per item (3 upgrade
   tiles ×2, unused stations ×4, Zuuupa! vegetables ×3…×7) or ÷n (7 Wonders:
   1 point per 3 coins). You enter what's on the table; the app does the maths.

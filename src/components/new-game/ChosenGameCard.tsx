@@ -14,7 +14,7 @@ export function ChosenGameCard({ game }: { game: GameDef }) {
       <span className="flex size-12 shrink-0 items-center justify-center emoji-tile rounded-2xl text-3xl">{game.emoji}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-lg font-extrabold">{text(game.name)}</span>
-        <ModeBadge mode={game.mode} target={game.target} lowWins={game.lowWins} />
+        <ModeBadge mode={game.mode} target={game.target} lowWins={game.lowWins} players={game.players} />
       </span>
       <FavoriteButton id={game.id} className="-mx-1" />
       <Button size="sm" variant="ghost" onClick={() => navigate('new', { replace: true })}>

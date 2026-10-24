@@ -28,6 +28,12 @@ test('my shelf: heart games, create one, then draw tonight’s game', async ({ p
   await button(page, 'Losuj grę').click()
   await expect(dialog(page).getByRole('button', { name: 'Gramy' })).toBeEnabled({ timeout: 5_000 })
 
+  // Seven or more at the table: Catan (3–4) and Splendor (2–4) drop out; the game without a range stays.
+  await dialog(page).getByRole('radio', { name: '7+' }).click()
+  await expect(page.getByTestId('drawn-game')).toHaveText('Nasza gra', { timeout: 5_000 })
+  await dialog(page).getByRole('radio', { name: 'Dowolnie' }).click()
+  await expect(dialog(page).getByRole('button', { name: 'Gramy' })).toBeEnabled({ timeout: 5_000 })
+
   const picked = await page.getByTestId('drawn-game').innerText()
 
   expect(['Catan', 'Splendor', 'Nasza gra']).toContain(picked)

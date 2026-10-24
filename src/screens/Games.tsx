@@ -19,7 +19,7 @@ export function Games() {
       <span className="flex size-11 shrink-0 items-center justify-center emoji-tile rounded-2xl text-2xl">{g.emoji}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate font-extrabold">{text(g.name)}</span>
-        <ModeBadge mode={g.mode} target={g.target} lowWins={g.lowWins} />
+        <ModeBadge mode={g.mode} target={g.target} lowWins={g.lowWins} players={g.players} />
       </span>
     </Card>
   )
