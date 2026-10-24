@@ -96,6 +96,11 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
 - **Sync paging must not split a rev.** See the comment in `sync()` and the
   paging test. `MAX_PUSH` in cloud.ts must stay ≤ `LIMITS.docsPerPush`.
 - **The app works without the backend.** Gate every cloud UI on `cloudEnabled`.
+- **My games is personal and never syncs.** `state.favorites` is a list of game
+  ids (built-in or custom, newest first) kept in localStorage and in the file
+  backup, not a synced doc kind: a shared group must not merge everyone's
+  favourites. Games created on this phone are added to it; `myGames()` skips
+  deleted or unknown ids, so a game deleted elsewhere just drops out.
 - **`VITE_API_URL` is baked in at build time.** `.env` is committed on purpose:
   the URL is public and the Pages build passes no env of its own.
 - **QR codes are generated on the phone** (`uqr`, `components/QrShare.tsx`).

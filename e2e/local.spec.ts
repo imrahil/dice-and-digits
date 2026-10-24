@@ -190,7 +190,7 @@ test('custom game from the editor, then played', async ({ page }) => {
   await button(page, 'Zapisz').click()
 
   await page.goto('#/new')
-  await page.getByText('Moja gra').click()
+  await page.getByText('Moja gra').first().click()
   await page.getByPlaceholder('Imię nowego gracza').fill('Anna')
   await page.keyboard.press('Enter')
   await button(page, 'Zacznij grę').click()

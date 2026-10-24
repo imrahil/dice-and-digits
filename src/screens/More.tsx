@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { Check, ChevronRight, Cloud, Copy, Download, Gamepad2, KeyRound, LogOut, QrCode, RefreshCw, Share2, Trash2, TriangleAlert, Upload, Users } from 'lucide-react'
+import { Check, ChevronRight, Cloud, Copy, Download, Gamepad2, Heart, KeyRound, LogOut, QrCode, RefreshCw, Share2, Trash2, TriangleAlert, Upload, Users } from 'lucide-react'
 import { useI18n } from '../i18n'
 import {
   cloudEnabled,
@@ -14,6 +14,7 @@ import {
   type Group,
 } from '../lib/cloud'
 import { codeWords } from '../lib/recovery'
+import { myGames } from '../lib/games'
 import { exportBackup, importBackup, setSettings, useStore } from '../lib/store'
 import { navigate } from '../hooks/useRoute'
 import { confirm, toast } from '../components/dialogs'
@@ -87,10 +88,12 @@ export function More() {
   const settings = useStore((s) => s.settings)
   const players = useStore((s) => s.players)
   const games = useStore((s) => s.games)
+  const favorites = useStore((s) => s.favorites)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const playerCount = Object.values(players).filter((p) => !p.deleted).length
   const gameCount = Object.values(games).filter((g) => !g.deleted).length
+  const myCount = myGames(favorites, games).length
 
   const doExport = () => {
     const blob = new Blob([exportBackup()], { type: 'application/json' })
@@ -111,6 +114,7 @@ export function More() {
   return (
     <Page title={t('navMore')}>
       <Card className="divide-y divide-edge !py-1 dark:divide-white/8">
+        <LinkRow icon={<Heart className="size-5" />} label={t('myGames')} detail={myCount ? num(myCount) : undefined} onClick={() => navigate('my-games')} />
         <LinkRow icon={<Users className="size-5" />} label={t('players')} detail={num(playerCount)} onClick={() => navigate('players')} />
         <LinkRow icon={<Gamepad2 className="size-5" />} label={t('games')} detail={gameCount ? num(gameCount) : undefined} onClick={() => navigate('games')} />
       </Card>

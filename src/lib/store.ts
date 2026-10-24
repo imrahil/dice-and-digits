@@ -16,6 +16,11 @@ export type State = {
   players: Record<string, Player>
   games: Record<string, GameDef> // custom games only; built-ins live in data/presets.ts
   sessions: Record<string, Session>
+  /**
+   * "My games": game ids (built-in or custom) this phone liked, newest first.
+   * Personal, so it stays on the phone (and in the file backup) and never syncs.
+   */
+  favorites: string[]
   settings: Settings
   /** `${kind}:${id}` changed locally since the last successful sync. */
   dirty: string[]
@@ -58,6 +63,7 @@ function load(): State {
     players: read('players', {}),
     games: read('games', {}),
     sessions: read('sessions', {}),
+    favorites: read('favorites', []),
     settings: { ...defaultSettings(), ...read<Partial<Settings>>('settings', {}) },
     dirty: read('dirty', []),
   }
@@ -187,6 +193,12 @@ export function setCounterView(id: string, view: CounterView) {
   updateSession(id, (s) => ({ ...s, counterView: view }))
 }
 
+export function setFavorite(id: string, on: boolean) {
+  const rest = state.favorites.filter((x) => x !== id)
+
+  set({ favorites: on ? [id, ...rest] : rest })
+}
+
 export function setSettings(patch: Partial<Settings>) {
   set({ settings: { ...state.settings, ...patch } })
 }
@@ -274,9 +286,9 @@ export function markAllDirty() {
 const BACKUP_FORMAT = 'dice-and-digits/1'
 
 export function exportBackup(): string {
-  const { players, games, sessions } = state
+  const { players, games, sessions, favorites } = state
 
-  return JSON.stringify({ format: BACKUP_FORMAT, exportedAt: Date.now(), players, games, sessions })
+  return JSON.stringify({ format: BACKUP_FORMAT, exportedAt: Date.now(), players, games, sessions, favorites })
 }
 
 /** Returns the number of docs merged, or null when the file isn't a backup. */
@@ -311,6 +323,12 @@ export function importBackup(json: string): number | null {
   take('game', data.games)
   take('session', data.sessions)
   const n = applyRemote(docs)
+  const favorites = Array.isArray(data.favorites) ? data.favorites.filter((id) => typeof id === 'string') : []
+
+  // My games: keep this phone's order, add the backup's games after it.
+  if (favorites.some((id) => !state.favorites.includes(id))) {
+    set({ favorites: [...new Set([...state.favorites, ...favorites])] })
+  }
 
   // Imported docs should reach the shared group too.
   set({

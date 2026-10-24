@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react'
 import { Check, Plus, Search, Shuffle, Sparkles, X } from 'lucide-react'
 import { PLAYER_COLORS } from '../data/presets'
 import { useI18n } from '../i18n'
-import { allGames, recentGameIds, sortBuiltins, startSession } from '../lib/games'
+import { allGames, matchesName, myGames, recentGameIds, sortBuiltins, startSession } from '../lib/games'
 import { autoAssign, choosePawn, isLight, lastPawns, needsOutline, paletteFor, pawnName } from '../lib/pawns'
 import { getState, savePlayer, uid, useStore } from '../lib/store'
 import { buzz } from '../lib/haptics'
 import { navigate } from '../hooks/useRoute'
 import { toast } from '../components/dialogs'
+import { DrawSheet } from '../components/DrawGame'
+import { FavoriteButton } from '../components/FavoriteButton'
 import { ModeBadge } from '../components/ModeBadge'
 import { Avatar, BottomBar, Button, Card, Page, Section, Sheet, Toggle, cx, inputClass } from '../components/ui'
 import type { GameDef, Player } from '../types'
@@ -23,13 +25,14 @@ function GamePicker() {
   const { t, text, locale } = useI18n()
   const custom = useStore((s) => s.games)
   const sessions = useStore((s) => s.sessions)
+  const favorites = useStore((s) => s.favorites)
   const [q, setQ] = useState('')
+  const [drawing, setDrawing] = useState(false)
 
   const games = allGames(custom)
   const needle = q.trim().toLocaleLowerCase()
-  const match = (g: GameDef) =>
-    !needle ||
-    (typeof g.name === 'string' ? [g.name] : [g.name.en, g.name.pl]).some((n) => n.toLocaleLowerCase().includes(needle))
+  const match = (g: GameDef) => matchesName(g, needle)
+  const liked = myGames(favorites, custom)
 
   const recent = recentGameIds(sessions, 4)
     .map((id) => games.find((g) => g.id === id))
@@ -60,6 +63,21 @@ function GamePicker() {
         />
       </div>
 
+      {liked.length > 0 && !needle && (
+        <Section
+          title={t('myGames')}
+          action={
+            liked.length > 1 && (
+              <Button size="sm" variant="ghost" onClick={() => setDrawing(true)}>
+                <Shuffle className="size-4" /> {t('draw')}
+              </Button>
+            )
+          }
+        >
+          <div className="space-y-2">{liked.map(row)}</div>
+        </Section>
+      )}
+      <DrawSheet open={drawing} onClose={() => setDrawing(false)} games={liked} />
       {recent.length > 0 && !needle && (
         <Section title={t('recentGames')}>
           <div className="space-y-2">{recent.map(row)}</div>
@@ -221,6 +239,7 @@ function Setup({ game }: { game: GameDef }) {
           <span className="block truncate text-lg font-extrabold">{text(game.name)}</span>
           <ModeBadge mode={game.mode} target={game.target} lowWins={game.lowWins} />
         </span>
+        <FavoriteButton id={game.id} className="-mx-1" />
         <Button size="sm" variant="ghost" onClick={() => navigate('new', { replace: true })}>
           {t('changeGame')}
         </Button>

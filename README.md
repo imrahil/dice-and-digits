@@ -44,6 +44,9 @@ opcjonalnym Cloudflare Workerem do wspólnych grup i tablic wyników na żywo.
   Tysiąc, 6 bierze, Rummikub, Domek, Szybka kawka, Zuuupa!, Yahtzee z premią
   +35 za górną sekcję i inne. Do tego **własne gry** z dowolnymi kategoriami,
   szybkimi przyciskami, progiem punktów i zasadą „wygrywa najmniej".
+- **Moje gry**: serduszkiem zbierasz gry, które masz albo lubisz (własne gry
+  trafiają tam same), a **„Losuj grę"** wybiera jedną z nich na dzisiejszy
+  wieczór.
 - **Liczysz sztuki, nie punkty**: kategoria może być warta ×n za sztukę (3
   kafelki ulepszeń ×2, niewykorzystane stacje ×4, warzywa w Zuuupa! ×3…×7) albo
   ÷n (7 Cudów: 1 punkt za 3 monety). Wpisujesz to, co leży na stole, a
@@ -148,6 +151,8 @@ Polish UI, written to `docs/screenshots/`).
   Tysiąc, 6 bierze, Rummikub, Domek, Szybka kawka, Zuuupa!, Yahtzee with the
   upper-section +35 bonus, and more. Plus **your own games** with custom
   categories, quick buttons, a target score and lowest-wins.
+- **My games**: heart the games you own or love (the ones you create are added
+  for you), then **Draw a game** picks tonight's game from that list.
 - **Count, don't calculate**: a category can be worth ×n per item (3 upgrade
   tiles ×2, unused stations ×4, Zuuupa! vegetables ×3…×7) or ÷n (7 Wonders:
   1 point per 3 coins). You enter what's on the table; the app does the maths.
@@ -293,7 +298,8 @@ Paid would make sense for:
 ## Persisted data
 
 All in `localStorage` under the `dice-digits:` prefix: `players`, `games`
-(custom only), `sessions`, `settings`, `dirty` (pending sync), `group` (shared
+(custom only), `sessions`, `favorites` (My games: ids, this phone only, never
+synced), `settings`, `dirty` (pending sync), `group` (shared
 group credentials), `live` (host tokens of live games), `guest:<code>`
 (a joined phone's seat token and not-yet-applied entries). Export/import in *More →
 Backup* moves everything between devices without the cloud.

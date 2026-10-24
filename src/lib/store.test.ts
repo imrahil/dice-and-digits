@@ -211,6 +211,23 @@ describe('dirty tracking for sync', () => {
   })
 })
 
+describe('my games', () => {
+  it('adds newest first, never twice, persists and never marks anything for sync', async () => {
+    const s = await freshStore()
+
+    s.setFavorite('builtin:catan', true)
+    s.setFavorite('mine', true)
+    s.setFavorite('builtin:catan', true)
+
+    expect(s.getState().favorites).toEqual(['builtin:catan', 'mine'])
+    expect(stored('favorites')).toEqual(['builtin:catan', 'mine'])
+    expect(s.getState().dirty).toEqual([])
+
+    s.setFavorite('builtin:catan', false)
+    expect(s.getState().favorites).toEqual(['mine'])
+  })
+})
+
 describe('backup', () => {
   it('round-trips through export and import', async () => {
     const a = await freshStore()
@@ -241,6 +258,21 @@ describe('backup', () => {
     b.importBackup(backup)
 
     expect(b.getState().players.anna.name).toBe('New')
+  })
+
+  it('merges My games after the ones already on this phone', async () => {
+    const a = await freshStore()
+
+    a.setFavorite('builtin:catan', true)
+    a.setFavorite('builtin:uno', true)
+
+    const backup = a.exportBackup()
+    const b = await freshStore({ favorites: ['builtin:azul', 'builtin:uno'] })
+
+    b.importBackup(backup)
+    expect(b.getState().favorites).toEqual(['builtin:azul', 'builtin:uno', 'builtin:catan'])
+    expect(b.importBackup(JSON.stringify({ format: 'dice-and-digits/1', favorites: [1, null] }))).toBe(0)
+    expect(b.getState().favorites).toHaveLength(3)
   })
 
   it('rejects files that are not a backup', async () => {

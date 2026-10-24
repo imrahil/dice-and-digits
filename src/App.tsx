@@ -18,6 +18,7 @@ import { Tools } from './screens/Tools'
 import { More } from './screens/More'
 import { Players } from './screens/Players'
 import { Games } from './screens/Games'
+import { MyGames } from './screens/MyGames'
 import { GameEditor } from './screens/GameEditor'
 import { Live } from './screens/Live'
 import { Join } from './screens/Join'
@@ -32,7 +33,7 @@ const TABS = [
 ] as const satisfies readonly { path: string; icon: unknown; label: Parameters<I18n['t']>[0] }[]
 
 /** Screens reached from "More" keep its tab highlighted. */
-const TAB_OF: Record<string, string> = { players: 'more', games: 'more', restore: 'more', result: 'history' }
+const TAB_OF: Record<string, string> = { players: 'more', games: 'more', 'my-games': 'more', restore: 'more', result: 'history' }
 
 function Router({ route }: { route: string[] }) {
   const [head = '', a] = route
@@ -58,6 +59,8 @@ function Router({ route }: { route: string[] }) {
       return <Players />
     case 'games':
       return a ? <GameEditor id={a} /> : <Games />
+    case 'my-games':
+      return <MyGames />
     case 'live':
       return <Live code={a} />
     case 'join':
@@ -170,7 +173,7 @@ export function App() {
   }, [settings.lang])
 
   const head = route[0] ?? ''
-  const isTab = TABS.some((tab) => tab.path === head) || ((head === 'players' || head === 'games') && !route[1])
+  const isTab = TABS.some((tab) => tab.path === head) || ((head === 'players' || head === 'games' || head === 'my-games') && !route[1])
   const active = TAB_OF[head] ?? head
 
   return (
