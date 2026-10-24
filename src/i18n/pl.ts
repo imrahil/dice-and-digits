@@ -244,7 +244,7 @@ export const pl: Dict = {
 
   // personal backup
   backupCloud: 'Kopia w chmurze',
-  backupIntro: 'Zachowaj graczy, gry, Moją półkę gier i historię, nawet gdy przeglądarka zostanie wyczyszczona albo zmienisz telefon. Bez zakładania konta: dostajesz sześć słów do zapamiętania.',
+  backupIntro: 'Zachowaj graczy, gry, moją półkę gier i historię, nawet gdy przeglądarka zostanie wyczyszczona albo zmienisz telefon. Bez zakładania konta: dostajesz sześć słów do zapamiętania.',
   createBackup: 'Utwórz kopię',
   myBackup: 'Moja kopia',
   restoreFromCode: 'Przywróć z kodu',
@@ -348,7 +348,7 @@ export const pl: Dict = {
   helpLiveTitle: 'Gracze na własnych telefonach',
   helpLiveBody: 'W trakcie gry otwórz menu i stuknij Udostępnij na żywo. Znajomi skanują kod QR albo stukają Dołącz do gry w zakładce Graj i wpisują kod, żeby na bieżąco śledzić wyniki.\nMogą też zająć swoje miejsce i sami wpisywać swoje punkty. Każdy może zmienić tylko swój wynik; Twój telefon dalej prowadzi punktację i zapisuje wynik.',
   helpMyGamesTitle: 'Moja półka gier i losowanie gry na dziś',
-  helpMyGamesBody: 'Stuknij serduszko przy dowolnej grze, żeby odłożyć ją na Moją półkę gier, np. gry, które masz w domu. Gry, które stworzysz, trafiają tam same.\nNie możecie się zdecydować? Losuj grę wybierze jedną z Mojej półki gier. Jeśli stół protestuje, losuj jeszcze raz.',
+  helpMyGamesBody: 'Stuknij serduszko przy dowolnej grze, żeby odłożyć ją na moją półkę gier, np. gry, które masz w domu. Gry, które stworzysz, trafiają tam same.\nNie możecie się zdecydować? Losuj grę wybierze jedną z mojej półki gier. Jeśli stół protestuje, losuj jeszcze raz.',
   helpHistoryTitle: 'Historia i statystyki',
   helpHistoryBody: 'Każda zakończona gra trafia do Historii, pogrupowana po dniach. Otwórz ją, aby zobaczyć szczegóły, dodać notatki, udostępnić wynik albo zagrać ponownie w tym samym składzie.\nStatystyki pokazują liczbę gier, czas gry, ranking, rekordy w każdej grze i bilans pojedynków między dowolnymi dwoma graczami.',
   helpToolsTitle: 'Kości, kto zaczyna i minutnik',
@@ -356,7 +356,7 @@ export const pl: Dict = {
   helpDataTitle: 'Gdzie są Twoje dane',
   helpDataBody: 'Wszystko zapisuje się na tym telefonie, a aplikacja działa offline, nawet w trybie samolotowym. Nie ma kont ani haseł.\nJeśli wyczyścisz dane przeglądarki albo zmienisz telefon, historia zniknie razem z nimi, chyba że zrobisz kopię.',
   helpBackupTitle: 'Kopia w chmurze',
-  helpBackupBody: 'Więcej → Zaawansowane → Kopia w chmurze zapisuje graczy, gry, Moją półkę gier i historię. Zamiast hasła dostajesz sześć łatwych słów: zapisz je albo zrób zrzut ekranu.\nNa nowym telefonie wpisz te sześć słów, po polsku lub angielsku, a wszystko wróci. Każdy, kto zna słowa, może otworzyć Twoją kopię, więc zachowaj je dla siebie.',
+  helpBackupBody: 'Więcej → Zaawansowane → Kopia w chmurze zapisuje graczy, gry, moją półkę gier i historię. Zamiast hasła dostajesz sześć łatwych słów: zapisz je albo zrób zrzut ekranu.\nNa nowym telefonie wpisz te sześć słów, po polsku lub angielsku, a wszystko wróci. Każdy, kto zna słowa, może otworzyć Twoją kopię, więc zachowaj je dla siebie.',
   helpGroupsTitle: 'Wspólne grupy',
   helpGroupsBody: 'Grupa daje znajomym, którzy grają razem, jedną wspólną historię i statystyki, nawet gdy każdy liczy punkty na swoim telefonie. Utworzysz ją w Więcej → Zaawansowane i udostępnisz link z zaproszeniem albo kod QR.\nGrupa nie jest potrzebna, żeby znajomi wpisywali swoje punkty w trakcie gry: do tego służy Udostępnij na żywo. Telefon należy do grupy albo ma własną kopię, nie obie naraz; grupa i tak przechowuje kopię wszystkiego.',
   helpInstallTitle: 'Instalacja aplikacji',

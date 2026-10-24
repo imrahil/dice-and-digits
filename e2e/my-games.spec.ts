@@ -36,12 +36,12 @@ test('my shelf: heart games, create one, then draw tonight’s game', async ({ p
   await expect(page.locator('main')).toContainText(picked)
 
   // Unhearting from the setup card takes it off the list.
-  await button(page, 'Usuń z Mojej półki gier').click()
+  await button(page, 'Usuń z mojej półki gier').click()
   await page.goto('#/my-games')
   await expect(page.getByText('2 gry')).toBeVisible()
   await expect(page.locator('main')).not.toContainText(picked)
 
   // Home offers the draw once there are two games to pick from.
   await page.goto('#/')
-  await expect(button(page, 'Losuj grę z Mojej półki gier')).toBeVisible()
+  await expect(button(page, 'Losuj grę z mojej półki gier')).toBeVisible()
 })

@@ -93,7 +93,7 @@ tematach (też link na pustym ekranie głównym).
   grupy i plik z danymi są schowane w *Zaawansowanych*: do liczenia punktów nie
   są potrzebne.
 - **Kopia zapasowa w chmurze**: jedno stuknięcie zapisuje graczy, własne gry,
-  Moją półkę gier i zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
+  moją półkę gier i zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
   zapamiętania (i kod QR), po polsku lub angielsku; wpisanie ich na nowym
   telefonie albo po wyczyszczeniu przeglądarki przywraca wszystko i scala z tym,
   co już jest.
