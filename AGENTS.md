@@ -103,7 +103,8 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
   worker drops `fav` docs pushed to a shared group. Games created on this phone
   are hearted for you; `myGames()` skips deleted or unknown games.
 - **More stays simple.** The cloud backup, shared groups and the file
-  export/import live on `screens/Advanced.tsx` (More → Advanced). The
+  export/import live on `screens/Advanced.tsx` (More → Advanced), one
+  component per section in `components/advanced/`. The
   Advanced row shows the group's name, or a warning while a new backup's
   words are unsaved. **Help** (`screens/Help.tsx`, More → How it works) describes every
   feature in `help*` i18n strings: update it when a feature changes.
