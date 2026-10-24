@@ -139,9 +139,11 @@ export function Home() {
             <Empty icon="🎲" title={t('emptyHomeTitle')}>
               {t('emptyHomeBody')}
             </Empty>
-            <Button variant="ghost" size="sm" className="mx-auto flex" onClick={() => navigate('help')}>
-              <CircleHelp className="size-4" /> {t('helpLink')}
-            </Button>
+            <div className="flex justify-center">
+              <Button variant="ghost" size="sm" onClick={() => navigate('help')}>
+                <CircleHelp className="size-4" /> {t('helpLink')}
+              </Button>
+            </div>
           </>
         )
       )}
