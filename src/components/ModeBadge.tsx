@@ -1,12 +1,13 @@
-import { ArrowDownWideNarrow, ListOrdered, Repeat, Target, Tally5, Trophy } from 'lucide-react'
+import { ArrowDownWideNarrow, ListOrdered, Repeat, Target, Tally5, Trophy, Users } from 'lucide-react'
 import { useI18n } from '../i18n'
-import type { ScoringMode } from '../types'
+import { formatPlayers } from '../lib/games'
+import type { PlayerRange, ScoringMode } from '../types'
 
 const ICON = { counter: Tally5, rounds: Repeat, sheet: ListOrdered, winner: Trophy }
 
 export const MODE_LABEL = { counter: 'modeCounter', rounds: 'modeRounds', sheet: 'modeSheet', winner: 'modeWinner' } as const
 
-export function ModeBadge({ mode, target, lowWins }: { mode: ScoringMode; target?: number; lowWins?: boolean }) {
+export function ModeBadge({ mode, target, lowWins, players }: { mode: ScoringMode; target?: number; lowWins?: boolean; players?: PlayerRange }) {
   const { t, num } = useI18n()
   const Icon = ICON[mode]
 
@@ -15,6 +16,11 @@ export function ModeBadge({ mode, target, lowWins }: { mode: ScoringMode; target
       <span className="inline-flex items-center gap-1">
         <Icon className="size-3.5" /> {t(MODE_LABEL[mode])}
       </span>
+      {players && (
+        <span className="inline-flex items-center gap-1" aria-label={t('playersRange')}>
+          <Users className="size-3.5" /> {formatPlayers(players)}
+        </span>
+      )}
       {target ? (
         <span className="inline-flex items-center gap-1">
           <Target className="size-3.5" /> {num(target)}

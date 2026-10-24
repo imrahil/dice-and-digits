@@ -28,11 +28,21 @@ test('my shelf: heart games, create one, then draw tonight’s game', async ({ p
   await button(page, 'Losuj grę').click()
   await expect(dialog(page).getByRole('button', { name: 'Gramy' })).toBeEnabled({ timeout: 5_000 })
 
+  // Seven or more at the table: Catan (3–4) and Splendor (2–4) drop out; the game without a range stays.
+  await dialog(page).getByRole('radio', { name: '7+' }).click()
+  await expect(page.getByTestId('drawn-game')).toHaveText('Nasza gra', { timeout: 5_000 })
+  await dialog(page).getByRole('radio', { name: 'Dowolnie' }).click()
+  // The picker shows the new count in the same render that starts the new draw.
+  await expect(dialog(page).getByRole('radio', { name: 'Dowolnie' })).toBeChecked()
+  await expect(dialog(page).getByRole('button', { name: 'Gramy' })).toBeEnabled({ timeout: 5_000 })
+
   const picked = await page.getByTestId('drawn-game').innerText()
 
   expect(['Catan', 'Splendor', 'Nasza gra']).toContain(picked)
   await dialog(page).getByRole('button', { name: 'Gramy' }).click()
   await page.waitForURL(/#\/new\//)
+  // The URL changes a moment before the setup screen replaces the shelf (which lists every game).
+  await expect(page.getByRole('heading', { name: 'Kto gra?' })).toBeVisible()
   await expect(page.locator('main')).toContainText(picked)
 
   // Unhearting from the setup card takes it off the list.

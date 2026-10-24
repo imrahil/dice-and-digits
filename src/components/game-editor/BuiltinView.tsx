@@ -31,7 +31,7 @@ export function BuiltinView({ game }: { game: GameDef }) {
     <Page title={`${game.emoji} ${text(game.name)}`} back="games" actions={<FavoriteButton id={game.id} />}>
       <Card>
         <span className="text-xs font-extrabold tracking-wide text-ink/45 uppercase dark:text-white/45">{t('builtin')}</span>
-        <ModeBadge mode={game.mode} target={game.target} lowWins={game.lowWins} />
+        <ModeBadge mode={game.mode} target={game.target} lowWins={game.lowWins} players={game.players} />
         {game.categories && (
           <ul className="mt-3 space-y-1">
             {game.categories.map((c) => (

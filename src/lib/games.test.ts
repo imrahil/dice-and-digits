@@ -79,6 +79,31 @@ describe('my games', () => {
     expect(games.matchesName(custom('Mine', 1), 'zzz')).toBe(false)
   })
 
+  it('fitsPlayers: inside the range fits, no max means no limit, no range fits anyone', () => {
+    const catan = custom('c', 1, { players: { min: 3, max: 4 } })
+    const potato = custom('p', 1, { players: { min: 2 } })
+
+    expect([2, 3, 4, 5].map((n) => games.fitsPlayers(catan, n))).toEqual([false, true, true, false])
+    expect(games.fitsPlayers(potato, 1)).toBe(false)
+    expect(games.fitsPlayers(potato, 12)).toBe(true)
+    expect(games.fitsPlayers(custom('x', 1), 1)).toBe(true)
+  })
+
+  it('formatPlayers writes a range, an open range or a single count', () => {
+    expect(games.formatPlayers({ min: 3, max: 4 })).toBe('3–4')
+    expect(games.formatPlayers({ min: 2 })).toBe('2+')
+    expect(games.formatPlayers({ min: 2, max: 2 })).toBe('2')
+  })
+
+  it('lastTableSize is the seat count of the most recently started game', () => {
+    expect(games.lastTableSize({})).toBeUndefined()
+
+    const at = (n: number, startedAt: number, deleted?: boolean) =>
+      ({ id: `s${startedAt}`, seats: Array.from({ length: n }, (_, i) => ({ id: `${i}`, name: '', color: '' })), startedAt, deleted }) as never
+
+    expect(games.lastTableSize({ a: at(4, 1), b: at(5, 3), c: at(2, 2), d: at(6, 9, true) })).toBe(5)
+  })
+
   it('drawGame picks from the list, never the previous pick when there is a choice', () => {
     const list = [custom('a', 1), custom('b', 1), custom('c', 1)]
 
@@ -96,7 +121,7 @@ describe('my games', () => {
 })
 
 describe('game editor', () => {
-  const fields = { target: '', steps: '1, 5, 10', timerMin: '10', timerMax: '30' }
+  const fields = { target: '', steps: '1, 5, 10', timerMin: '10', timerMax: '30', playersMin: '', playersMax: '' }
   const label = (v: GameDef['name']) => (typeof v === 'string' ? v : v.en)
 
   it('parses quick buttons and the target, keeping only what the mode uses', () => {
@@ -123,6 +148,17 @@ describe('game editor', () => {
     expect(g.categories).toEqual([{ id: 'a', name: 'Gold' }])
     expect(g.bonus?.points).toBe(5)
     expect(g.steps).toBeUndefined()
+  })
+
+  it('reads the player range: a max alone means up to it, a max below the min is dropped', () => {
+    const players = (playersMin: string, playersMax: string) => games.gameFromEditor(custom('g', 1), { ...fields, playersMin, playersMax }, label).players
+
+    expect(players('3', '4')).toEqual({ min: 3, max: 4 })
+    expect(players('2', '')).toEqual({ min: 2 })
+    expect(players('', '6')).toEqual({ min: 1, max: 6 })
+    expect(players('5', '3')).toEqual({ min: 5 })
+    expect(players('', '')).toBeUndefined()
+    expect(players('0', 'x')).toBeUndefined()
   })
 
   it('keeps the round timer at 3 s or more, with max never below min', () => {

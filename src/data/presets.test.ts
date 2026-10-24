@@ -12,6 +12,23 @@ describe('built-in games', () => {
     }
   })
 
+  it('every real game has a sane player range; only the generic scorers have none', () => {
+    const open = ['builtin:counter', 'builtin:rounds']
+
+    for (const g of BUILTIN_GAMES) {
+      if (!g.players) {
+        expect(open, `${g.id} has no player range`).toContain(g.id)
+        continue
+      }
+
+      expect(g.players.min, g.id).toBeGreaterThanOrEqual(1)
+
+      if (g.players.max != null) {
+        expect(g.players.max, g.id).toBeGreaterThanOrEqual(g.players.min)
+      }
+    }
+  })
+
   it('score sheets have categories with unique ids and sane multipliers', () => {
     for (const g of BUILTIN_GAMES.filter((g) => g.mode === 'sheet')) {
       const cats = g.categories ?? []

@@ -96,7 +96,7 @@ export function DrawReel({ games: initial, onClose }: { games: GameDef[]; onClos
             </span>
             <span data-testid="drawn-game" className={cx('display mt-4 line-clamp-2 text-2xl font-extrabold', spinning && 'opacity-60')}>{text(shown.name)}</span>
             <span className={cx('flex min-h-5 justify-center', spinning && 'invisible')}>
-              <ModeBadge mode={shown.mode} target={shown.target} lowWins={shown.lowWins} />
+              <ModeBadge mode={shown.mode} target={shown.target} lowWins={shown.lowWins} players={shown.players} />
             </span>
           </>
         )}

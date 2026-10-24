@@ -102,6 +102,10 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
   vault: `cloud.ts` calls `setPersonalSync()` on every group change, and the
   worker drops `fav` docs pushed to a shared group. Games created on this phone
   are hearted for you; `myGames()` skips deleted or unknown games.
+- **A game's player range (`players: { min, max? }`) is for the draw only.**
+  It is not part of `Rules`, so sessions don't snapshot it; a game without a
+  range fits any table (`fitsPlayers()`). Built-in ranges are the base-game
+  box counts.
 - **More stays simple.** The cloud backup, shared groups and the file
   export/import live on `screens/Advanced.tsx` (More → Advanced), one
   component per section in `components/advanced/`. The

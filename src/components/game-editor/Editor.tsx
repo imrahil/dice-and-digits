@@ -21,6 +21,8 @@ export function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boo
     target: initial.target ? String(initial.target) : '',
     timerMin: String(initial.timer?.min ?? 10),
     timerMax: String(initial.timer?.max ?? 30),
+    playersMin: initial.players ? String(initial.players.min) : '',
+    playersMax: initial.players?.max ? String(initial.players.max) : '',
   }))
   const patch = (p: Partial<GameDef>) => setG((x) => ({ ...x, ...p }))
   const setField = (field: keyof EditorFields, value: string) => setFields((f) => ({ ...f, [field]: value }))

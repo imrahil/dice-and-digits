@@ -1,5 +1,5 @@
 import { BUILTIN_GAMES } from '../data/presets'
-import type { GameDef, Player, Session, Text } from '../types'
+import type { GameDef, Player, PlayerRange, Session, Text } from '../types'
 import { getState, saveSession, uid, useStore, type State } from './store'
 
 const GENERIC = ['builtin:counter', 'builtin:rounds']
@@ -41,6 +41,29 @@ export function myGames(favorites: State['favorites'], custom: State['games']): 
     .filter((g): g is GameDef => !!g && !g.deleted)
 }
 
+/** Whether a game can be played by `n` people; a game without a range fits any count. */
+export function fitsPlayers(g: GameDef, n: number): boolean {
+  return !g.players || (n >= g.players.min && (g.players.max == null || n <= g.players.max))
+}
+
+/** "3–4", "2+" or just "2". */
+export function formatPlayers(r: PlayerRange): string {
+  if (r.max == null) {
+    return `${r.min}+`
+  }
+
+  return r.min === r.max ? `${r.min}` : `${r.min}–${r.max}`
+}
+
+/** How many sat at the last game started on this phone: the draw's starting guess. */
+export function lastTableSize(sessions: State['sessions']): number | undefined {
+  const last = Object.values(sessions)
+    .filter((s) => !s.deleted)
+    .sort((a, b) => b.startedAt - a.startedAt)[0]
+
+  return last?.seats.length
+}
+
 /** A random game for tonight; with a choice, never the one drawn just before. */
 export function drawGame(games: GameDef[], last?: string, random = Math.random): GameDef | undefined {
   const pool = games.length > 1 ? games.filter((g) => g.id !== last) : games
@@ -49,7 +72,7 @@ export function drawGame(games: GameDef[], last?: string, random = Math.random):
 }
 
 /** The game editor's text fields, kept as typed until saving. */
-export type EditorFields = { target: string; steps: string; timerMin: string; timerMax: string }
+export type EditorFields = { target: string; steps: string; timerMin: string; timerMax: string; playersMin: string; playersMax: string }
 
 /**
  * What the game editor saves: the numbers parsed from its text fields, and
@@ -66,6 +89,11 @@ export function gameFromEditor(g: GameDef, fields: EditorFields, text: (v: Text)
   const lo = Math.max(3, parseInt(fields.timerMin, 10) || 3)
   const hi = Math.max(lo, parseInt(fields.timerMax, 10) || lo)
   const categories = (g.categories ?? []).filter((c) => text(c.name).trim())
+  // Players: a max alone means "up to"; a max below the min is dropped.
+  const pMin = parseInt(fields.playersMin, 10)
+  const pMax = parseInt(fields.playersMax, 10)
+  const min = pMin >= 1 ? pMin : pMax >= 1 ? 1 : undefined
+  const players = min ? (pMax >= min ? { min, max: pMax } : { min }) : undefined
 
   return {
     ...g,
@@ -76,6 +104,7 @@ export function gameFromEditor(g: GameDef, fields: EditorFields, text: (v: Text)
     bonus: g.mode === 'sheet' ? g.bonus : undefined,
     zeroSum: g.mode === 'rounds' ? g.zeroSum : undefined,
     timer: g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined,
+    players,
   }
 }
 
