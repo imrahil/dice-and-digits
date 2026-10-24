@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { buzz } from '../lib/haptics'
-import { beep } from '../lib/sound'
+import { explosion, unlockAudio } from '../lib/sound'
 import type { RoundTimer } from '../types'
 
 export type PotatoPhase = 'idle' | 'running' | 'boom'
@@ -44,7 +44,7 @@ export function useHotPotatoRound(timer?: RoundTimer): HotPotatoRound {
       if (t >= clock.endsAt && !fired.current) {
         fired.current = true
         buzz([200, 100, 200, 100, 400])
-        beep()
+        explosion()
         setClock((c) => ({ ...c, phase: 'boom' }))
       }
     }, 200)
@@ -57,6 +57,8 @@ export function useHotPotatoRound(timer?: RoundTimer): HotPotatoRound {
       return
     }
 
+    // Start is a tap: the moment iOS lets the later explosion be heard.
+    unlockAudio()
     const lo = Math.max(1, timer.min)
     const hi = Math.max(lo, timer.max)
     const seconds = lo + Math.floor(Math.random() * (hi - lo + 1))

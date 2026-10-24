@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Pause, Play as PlayIcon, RotateCcw } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { buzz } from '../../lib/haptics'
-import { beep, mmss } from '../../lib/sound'
+import { beep, mmss, unlockAudio } from '../../lib/sound'
 import { Button, cx } from '../ui'
 
 const PRESETS = [30, 60, 120, 300]
@@ -41,6 +41,7 @@ export function Timer() {
   const running = endsAt !== null
 
   const start = () => {
+    unlockAudio()
     firedRef.current = false
     const from = left > 0 ? left : length
 
@@ -69,6 +70,7 @@ export function Timer() {
   /** Tap the clock: next player's turn starts with a full timer. */
   const restart = () => {
     buzz(10)
+    unlockAudio()
     firedRef.current = false
     setLeft(length)
     setEndsAt(Date.now() + length * 1000)
