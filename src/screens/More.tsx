@@ -1,25 +1,15 @@
-import { useRef, useState, type ReactNode } from 'react'
-import { Check, ChevronRight, Cloud, Copy, Download, Gamepad2, Heart, KeyRound, LogOut, QrCode, RefreshCw, Share2, Trash2, TriangleAlert, Upload, Users } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { Check, ChevronRight, CircleHelp, Cloud, Copy, Gamepad2, Heart, KeyRound, LogOut, QrCode, Share2, SlidersHorizontal, Trash2, TriangleAlert, Users } from 'lucide-react'
 import { useI18n } from '../i18n'
-import {
-  cloudEnabled,
-  createBackup,
-  createGroup,
-  deleteBackup,
-  inviteLink,
-  leaveGroup,
-  markCodeSaved,
-  syncNow,
-  useCloud,
-  type Group,
-} from '../lib/cloud'
+import { cloudEnabled, createBackup, deleteBackup, inviteLink, leaveGroup, markCodeSaved, useCloud, type Group } from '../lib/cloud'
 import { codeWords } from '../lib/recovery'
 import { myGames } from '../lib/games'
-import { exportBackup, importBackup, setSettings, useStore } from '../lib/store'
+import { setSettings, useStore } from '../lib/store'
 import { navigate } from '../hooks/useRoute'
 import { confirm, toast } from '../components/dialogs'
 import { Logo } from '../components/Logo'
-import { Button, Card, Page, Section, Segmented, Sheet, Toggle, cx, inputClass } from '../components/ui'
+import { SyncStatus } from '../components/SyncStatus'
+import { Button, Card, Page, Section, Segmented, Sheet, Toggle, cx } from '../components/ui'
 import { QrCode as QrImage, QrShareSheet, shareUrl } from '../components/QrShare'
 import type { Lang, Skin, Theme } from '../types'
 
@@ -89,27 +79,11 @@ export function More() {
   const players = useStore((s) => s.players)
   const games = useStore((s) => s.games)
   const favorites = useStore((s) => s.favorites)
-  const fileRef = useRef<HTMLInputElement>(null)
+  const { group } = useCloud()
 
   const playerCount = Object.values(players).filter((p) => !p.deleted).length
   const gameCount = Object.values(games).filter((g) => !g.deleted).length
   const myCount = myGames(favorites, games).length
-
-  const doExport = () => {
-    const blob = new Blob([exportBackup()], { type: 'application/json' })
-    const a = document.createElement('a')
-
-    a.href = URL.createObjectURL(blob)
-    a.download = `dice-and-digits-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000)
-  }
-
-  const doImport = async (file: File) => {
-    const n = importBackup(await file.text())
-
-    toast(n === null ? t('importFailed') : t('importDone', { n }))
-  }
 
   return (
     <Page title={t('navMore')}>
@@ -120,7 +94,6 @@ export function More() {
       </Card>
 
       {cloudEnabled && <BackupSection />}
-      {cloudEnabled && <CloudSection />}
 
       <Section title={t('settings')}>
         <Card className="space-y-4">
@@ -158,31 +131,15 @@ export function More() {
         </Card>
       </Section>
 
-      <Section title={t('backup')}>
-        <div className="grid grid-cols-2 gap-3">
-          <Button onClick={doExport}>
-            <Download className="size-5" /> {t('exportData')}
-          </Button>
-          <Button onClick={() => fileRef.current?.click()}>
-            <Upload className="size-5" /> {t('importData')}
-          </Button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-
-              if (f) {
-                doImport(f)
-              }
-
-              e.target.value = ''
-            }}
-          />
-        </div>
-      </Section>
+      <Card className="mt-6 divide-y divide-edge !py-1 dark:divide-white/8">
+        <LinkRow icon={<CircleHelp className="size-5" />} label={t('help')} onClick={() => navigate('help')} />
+        <LinkRow
+          icon={<SlidersHorizontal className="size-5" />}
+          label={t('advanced')}
+          detail={group && group.kind !== 'vault' ? group.name : undefined}
+          onClick={() => navigate('advanced')}
+        />
+      </Card>
 
       <Section title={t('about')}>
         <Card className="flex items-start gap-3">
@@ -203,35 +160,6 @@ export function More() {
         </Card>
       </Section>
     </Page>
-  )
-}
-
-/** Group name, last sync or error, and a sync button. */
-function SyncStatus({ group }: { group: Group }) {
-  const { t, ago } = useI18n()
-  const { syncing, error } = useCloud()
-
-  return (
-    <div className="flex items-center gap-3">
-      <span className="flex size-10 items-center justify-center rounded-xl bg-mint/15 text-mint">
-        <Cloud className="size-5" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-extrabold">{group.name}</span>
-        <span className={cx('block text-sm', error ? 'text-danger' : 'text-ink/55 dark:text-white/55')}>
-          {syncing
-            ? t('syncing')
-            : error
-              ? t('syncError', { error })
-              : group.lastSync
-                ? t('lastSync', { time: ago(group.lastSync) })
-                : t('neverSynced')}
-        </span>
-      </span>
-      <Button size="sm" variant="ghost" onClick={() => syncNow()} disabled={syncing} aria-label={t('syncNow')}>
-        <RefreshCw className={cx('size-5', syncing && 'animate-spin')} />
-      </Button>
-    </div>
   )
 }
 
@@ -386,95 +314,5 @@ function RecoveryKit({ group, open, onClose }: { group: Group; open: boolean; on
         <Check className="size-5" strokeWidth={3} /> {t('codeSaved')}
       </Button>
     </Sheet>
-  )
-}
-
-function CloudSection() {
-  const { t } = useI18n()
-  const { group } = useCloud()
-  const [name, setName] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [qr, setQr] = useState(false)
-
-  const create = async () => {
-    if (!name.trim()) {
-      return
-    }
-
-    setBusy(true)
-
-    try {
-      await createGroup(name.trim())
-    } catch (e) {
-      toast(t('syncError', { error: e instanceof Error ? e.message : String(e) }))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const leave = async () => {
-    if (await confirm(t('leaveConfirm'), { confirmLabel: t('leaveGroup'), danger: true })) {
-      leaveGroup()
-    }
-  }
-
-  return (
-    <Section title={t('cloud')}>
-      <Card>
-        {group?.kind === 'vault' ? (
-          <p className="text-sm text-ink/65 dark:text-white/65">{t('groupWhileBackup')}</p>
-        ) : group ? (
-          <>
-            <SyncStatus group={group} />
-            <p className="mt-3 text-sm text-ink/65 dark:text-white/65">{t('cloudInGroupHint')}</p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <Button onClick={() => setQr(true)}>
-                <QrCode className="size-5" /> {t('invite')}
-              </Button>
-              <Button variant="danger" onClick={leave}>
-                <LogOut className="size-5" /> {t('leaveGroup')}
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="space-y-2 text-sm text-ink/65 dark:text-white/65">
-              <p>{t('cloudIntro')}</p>
-              <p>{t('cloudOptional')}</p>
-              <details>
-                <summary className="cursor-pointer py-2 font-bold text-accent">{t('cloudHowItWorks')}</summary>
-                <div className="space-y-2">
-                  <p>{t('cloudShared')}</p>
-                  <p>{t('cloudHowJoin')}</p>
-                  <p>{t('cloudSamePlayers')}</p>
-                </div>
-              </details>
-            </div>
-            <form
-              className="mt-3 flex gap-2"
-              onSubmit={(e) => {
-                e.preventDefault()
-                create()
-              }}
-            >
-              <input
-                className={inputClass}
-                placeholder={t('groupNamePlaceholder')}
-                aria-label={t('groupName')}
-                value={name}
-                maxLength={60}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <Button type="submit" variant="primary" className="!h-12 shrink-0" disabled={!name.trim() || busy}>
-                {t('createGroup')}
-              </Button>
-            </form>
-          </>
-        )}
-      </Card>
-      {group && group.kind !== 'vault' && (
-        <QrShareSheet open={qr} onClose={() => setQr(false)} title={group.name} caption={t('scanToJoinGroup')} url={inviteLink(group)} />
-      )}
-    </Section>
   )
 }

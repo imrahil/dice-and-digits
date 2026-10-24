@@ -11,7 +11,10 @@ test('a finished game reaches the other phone through a shared group', async ({ 
   await button(a, '+3').first().click()
   await finishGame(a)
 
+  // Groups live under More → Advanced.
   await a.goto('#/more')
+  await expect(a.getByPlaceholder('np. Piątkowa ekipa')).toHaveCount(0)
+  await button(a, 'Zaawansowane').click()
   await a.getByPlaceholder('np. Piątkowa ekipa').fill('Piątkowa ekipa')
   await button(a, 'Utwórz grupę').click()
   await expect(a.getByText(/Ostatnia synchronizacja/)).toBeVisible()
@@ -25,7 +28,7 @@ test('a finished game reaches the other phone through a shared group', async ({ 
   await b.goto(invite.slice(invite.indexOf('#')))
   await expect(b.getByText(/Dołączyć do „Piątkowa ekipa”/)).toBeVisible()
   await button(b, 'Dołącz do grupy').click()
-  await b.waitForURL(/#\/more/)
+  await b.waitForURL(/#\/advanced/)
 
   await b.goto('#/history')
   await expect(b.locator('main')).toContainText('Splendor')
@@ -50,7 +53,7 @@ test('joining another group warns that this phone leaves its current one', async
     [a, 'Rodzina'],
     [b, 'Praca'],
   ] as const) {
-    await phone.goto('#/more')
+    await phone.goto('#/advanced')
     await phone.getByPlaceholder('np. Piątkowa ekipa').fill(name)
     await button(phone, 'Utwórz grupę').click()
     await expect(phone.getByText(/Ostatnia synchronizacja|Jeszcze nie/)).toBeVisible()
@@ -88,8 +91,9 @@ test('personal backup: six words on one phone restore everything on another', as
 
   await expect(section('Kopia w chmurze')).toContainText('Moja kopia')
   await expect(section('Kopia w chmurze').getByText(/Ostatnia synchronizacja/)).toBeVisible()
-  await expect(section('Wspólna grupa')).toContainText('najpierw wyłącz kopię')
   await expect(a.getByText(/Zapisz kod odzyskiwania/)).toHaveCount(0)
+  await a.goto('#/advanced')
+  await expect(section('Wspólna grupa')).toContainText('najpierw wyłącz kopię')
 
   // A fresh phone: the link on the empty home screen leads to the restore form.
   await b.goto('#/')

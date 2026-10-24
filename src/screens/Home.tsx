@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronRight, KeyRound, Plus, ScanLine, Shuffle } from 'lucide-react'
+import { ChevronRight, CircleHelp, KeyRound, Plus, ScanLine, Shuffle } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { allGames, myGames, recentGameIds, useActiveSessions } from '../lib/games'
 import { finished } from '../lib/stats'
@@ -140,6 +140,9 @@ export function Home() {
             <Empty icon="🎲" title={t('emptyHomeTitle')}>
               {t('emptyHomeBody')}
             </Empty>
+            <Button variant="ghost" size="sm" className="mx-auto flex" onClick={() => navigate('help')}>
+              <CircleHelp className="size-4" /> {t('helpLink')}
+            </Button>
             {cloudEnabled && !group && (
               <Button variant="ghost" size="sm" className="mx-auto flex" onClick={() => navigate('restore')}>
                 <KeyRound className="size-4" /> {t('restoreFromPhone')}

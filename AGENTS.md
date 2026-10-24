@@ -102,6 +102,10 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
   vault: `cloud.ts` calls `setPersonalSync()` on every group change, and the
   worker drops `fav` docs pushed to a shared group. Games created on this phone
   are hearted for you; `myGames()` skips deleted or unknown games.
+- **More stays simple.** Shared groups and the file export/import live on
+  `screens/Advanced.tsx` (More → Advanced); More keeps the personal cloud
+  backup. **Help** (`screens/Help.tsx`, More → How it works) describes every
+  feature in `help*` i18n strings: update it when a feature changes.
 - **`VITE_API_URL` is baked in at build time.** `.env` is committed on purpose:
   the URL is public and the Pages build passes no env of its own.
 - **QR codes are generated on the phone** (`uqr`, `components/QrShare.tsx`).

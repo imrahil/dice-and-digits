@@ -74,6 +74,9 @@ opcjonalnym Cloudflare Workerem do wspólnych grup i tablic wyników na żywo.
 palcami** (wszyscy dotykają ekranu, losowany jest jeden palec) i **minutnik
 tury** restartowany stuknięciem.
 
+**Jak to działa**: *Więcej → Jak to działa* opisuje aplikację w krótkich
+tematach (też link na pustym ekranie głównym).
+
 **Opcjonalna chmura** (wymaga workera):
 
 - **Wspólna grupa**: znajomi dołączają przez link z zaproszeniem; gracze,
@@ -86,7 +89,8 @@ tury** restartowany stuknięciem.
   - **dołączają do liczenia**: wybierają swoje miejsce i wpisują własne
     punkty, np. swoją kolumnę w 7 Cudach na koniec, swoje +/− w Catanie albo
     wynik w każdej rundzie Tysiąca. Mogą edytować tylko swoje miejsce.
-- Zaproszenie do grupy to także kod QR (*Więcej → Wspólna grupa → Zaproś*).
+- Zaproszenie do grupy to także kod QR (*Więcej → Zaawansowane → Wspólna grupa → Zaproś*). Grupy są
+  schowane w *Zaawansowanych*, bo większości osób wystarczy kopia w chmurze.
 - **Kopia zapasowa w chmurze**: jedno stuknięcie zapisuje graczy, własne gry,
   Moje gry i zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
   zapamiętania (i kod QR), po polsku lub angielsku; wpisanie ich na nowym
@@ -176,6 +180,9 @@ Polish UI, written to `docs/screenshots/`).
 player (everyone touches the screen, one is chosen), and a tap-to-restart
 **turn timer**.
 
+**How it works**: *More → How it works* explains the app in short topics
+(also linked from the empty home screen).
+
 **Optional cloud** (needs the worker):
 
 - **Shared group**: friends join by invite link; players, custom games and
@@ -186,7 +193,8 @@ player (everyone touches the screen, one is chosen), and a tap-to-restart
   - **join to score**: pick their seat and enter their own points, e.g. their
     7 Wonders column at the end, their +/− in Catan, or their score for each
     round of Tysiąc. They can only edit their own seat.
-- The group invite is a QR code too (*More → Shared group → Invite*).
+- The group invite is a QR code too (*More → Advanced → Shared group → Invite*). Groups sit under
+  *Advanced*, because most people only need the cloud backup.
 - **Cloud backup**: one tap backs up your players, custom games, My games and
   finished games, with no account. You get six easy words to remember (and a QR),
   in English or Polish; typing them on a new phone, or after the browser is
@@ -302,4 +310,4 @@ All in `localStorage` under the `dice-digits:` prefix: `players`, `games`
 a group), `settings`, `dirty` (pending sync), `group` (shared
 group credentials), `live` (host tokens of live games), `guest:<code>`
 (a joined phone's seat token and not-yet-applied entries). Export/import in *More →
-Backup* moves everything between devices without the cloud.
+Advanced* moves everything between devices without the cloud.
