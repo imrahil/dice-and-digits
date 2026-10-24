@@ -3,7 +3,7 @@ import { Heart, Plus, Search, Shuffle, Sparkles } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { allGames, matchesName, myGames, sortBuiltins } from '../lib/games'
 import { buzz } from '../lib/haptics'
-import { setFavorite, useStore } from '../lib/store'
+import { isFavorite, setFavorite, useStore } from '../lib/store'
 import { navigate } from '../hooks/useRoute'
 import { DrawSheet } from '../components/DrawGame'
 import { FavoriteButton } from '../components/FavoriteButton'
@@ -102,7 +102,7 @@ function AddGames({ open, onClose }: { open: boolean; onClose: () => void }) {
       </div>
       <ul className="mt-3 space-y-2">
         {list.map((g) => {
-          const on = favorites.includes(g.id)
+          const on = isFavorite(favorites, g.id)
 
           return (
             <li key={g.id}>

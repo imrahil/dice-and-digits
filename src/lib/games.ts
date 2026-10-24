@@ -32,10 +32,12 @@ export function matchesName(g: GameDef, needle: string): boolean {
   return !needle || (typeof g.name === 'string' ? [g.name] : [g.name.en, g.name.pl]).some((n) => n.toLocaleLowerCase().includes(needle))
 }
 
-/** "My games" in the order they were added, skipping deleted or unknown games. */
-export function myGames(favorites: string[], custom: State['games']): GameDef[] {
-  return favorites
-    .map((id) => (custom[id] ?? BUILTIN_GAMES.find((g) => g.id === id)))
+/** My games, last hearted first, skipping deleted or unknown games. */
+export function myGames(favorites: State['favorites'], custom: State['games']): GameDef[] {
+  return Object.values(favorites)
+    .filter((f) => !f.deleted)
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .map((f) => custom[f.id] ?? BUILTIN_GAMES.find((g) => g.id === f.id))
     .filter((g): g is GameDef => !!g && !g.deleted)
 }
 

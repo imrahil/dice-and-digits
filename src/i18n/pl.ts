@@ -243,7 +243,7 @@ export const pl: Dict = {
 
   // personal backup
   backupCloud: 'Kopia w chmurze',
-  backupIntro: 'Zachowaj graczy, gry i historię, nawet gdy przeglądarka zostanie wyczyszczona albo zmienisz telefon. Bez zakładania konta: dostajesz sześć słów do zapamiętania.',
+  backupIntro: 'Zachowaj graczy, gry, Moje gry i historię, nawet gdy przeglądarka zostanie wyczyszczona albo zmienisz telefon. Bez zakładania konta: dostajesz sześć słów do zapamiętania.',
   createBackup: 'Utwórz kopię',
   myBackup: 'Moja kopia',
   restoreFromCode: 'Przywróć z kodu',

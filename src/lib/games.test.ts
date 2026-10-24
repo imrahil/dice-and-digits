@@ -55,11 +55,18 @@ describe('game lists', () => {
 })
 
 describe('my games', () => {
-  it('myGames keeps the saved order and skips deleted or unknown games', () => {
-    const list = games.myGames(['mine', 'gone', 'builtin:catan', 'nope'], {
-      mine: custom('mine', 1),
-      gone: custom('gone', 2, { deleted: true }),
-    })
+  it('myGames lists the last hearted first, skipping unhearted, deleted or unknown games', () => {
+    const fav = (id: string, updatedAt: number, deleted?: boolean) => ({ id, updatedAt, deleted })
+    const list = games.myGames(
+      {
+        mine: fav('mine', 4),
+        gone: fav('gone', 5),
+        'builtin:catan': fav('builtin:catan', 3),
+        'builtin:uno': fav('builtin:uno', 6, true),
+        nope: fav('nope', 7),
+      },
+      { mine: custom('mine', 1), gone: custom('gone', 2, { deleted: true }) },
+    )
 
     expect(list.map((g) => g.id)).toEqual(['mine', 'builtin:catan'])
   })

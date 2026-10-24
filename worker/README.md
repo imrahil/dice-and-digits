@@ -42,6 +42,9 @@ If the app is served from another origin, add it to `ALLOWED_ORIGINS` in
   and a 64-hex secret from it with PBKDF2-SHA256 (200,000 rounds) and sends
   only those, so the worker never sees the words and a leaked D1 can't be
   searched for codes cheaply. Migration `0003` adds the `kind` column.
+- **Doc kinds**: `player`, `game`, `session`, and `fav` (one per game in the
+  person's My games). `fav` is personal: a backup stores it, a push of it to a
+  shared group is silently dropped.
 - **Sync** is a push and a pull in one call. Each push bumps the group's `rev`,
   and every doc written in it carries that rev. A pull returns `rev > cursor`
   and never ends a page in the middle of a rev. The upsert's `WHERE

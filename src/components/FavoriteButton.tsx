@@ -1,13 +1,13 @@
 import { Heart } from 'lucide-react'
 import { useI18n } from '../i18n'
 import { buzz } from '../lib/haptics'
-import { setFavorite, useStore } from '../lib/store'
+import { isFavorite, setFavorite, useStore } from '../lib/store'
 import { IconButton, cx } from './ui'
 
 /** The heart that adds a game to (or removes it from) My games. */
 export function FavoriteButton({ id, className }: { id: string; className?: string }) {
   const { t } = useI18n()
-  const on = useStore((s) => s.favorites.includes(id))
+  const on = useStore((s) => isFavorite(s.favorites, id))
 
   return (
     <IconButton

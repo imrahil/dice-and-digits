@@ -257,7 +257,7 @@ export const en = {
 
   // personal backup
   backupCloud: 'Cloud backup',
-  backupIntro: 'Keep players, games and history safe if this browser is cleared or you change phones. No account needed: you get six words to remember.',
+  backupIntro: 'Keep players, games, My games and history safe if this browser is cleared or you change phones. No account needed: you get six words to remember.',
   createBackup: 'Back up my data',
   myBackup: 'My backup',
   restoreFromCode: 'Restore from code',

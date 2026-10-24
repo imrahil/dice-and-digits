@@ -210,6 +210,21 @@ test('groups are isolated from each other', async () => {
   assert.equal(other.body.docs.length, 0)
 })
 
+test('My games (fav) is kept by a backup and dropped by a shared group', async () => {
+  const { call } = setup()
+  const fav = { kind: 'fav', id: 'builtin:catan', updatedAt: 1, data: { id: 'builtin:catan', updatedAt: 1 } }
+  const shared = await newGroup(call)
+  const inGroup = await call('POST', '/api/sync', { token: shared, body: { cursor: 0, docs: [fav, doc('anna', 1)] } })
+
+  assert.equal(inGroup.status, 200)
+  assert.deepEqual(inGroup.body.docs.map((d) => d.kind), ['player'])
+
+  const { token } = await newVault(call)
+  const inVault = await call('POST', '/api/sync', { token, body: { cursor: 0, docs: [fav] } })
+
+  assert.deepEqual(inVault.body.docs.map((d) => [d.kind, d.id]), [['fav', 'builtin:catan']])
+})
+
 test('invalid docs are rejected', async () => {
   const { call } = setup()
   const token = await newGroup(call)

@@ -87,8 +87,8 @@ tury** restartowany stuknięciem.
     punkty, np. swoją kolumnę w 7 Cudach na koniec, swoje +/− w Catanie albo
     wynik w każdej rundzie Tysiąca. Mogą edytować tylko swoje miejsce.
 - Zaproszenie do grupy to także kod QR (*Więcej → Wspólna grupa → Zaproś*).
-- **Kopia zapasowa w chmurze**: jedno stuknięcie zapisuje graczy, własne gry i
-  zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
+- **Kopia zapasowa w chmurze**: jedno stuknięcie zapisuje graczy, własne gry,
+  Moje gry i zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
   zapamiętania (i kod QR), po polsku lub angielsku; wpisanie ich na nowym
   telefonie albo po wyczyszczeniu przeglądarki przywraca wszystko i scala z tym,
   co już jest.
@@ -187,8 +187,8 @@ player (everyone touches the screen, one is chosen), and a tap-to-restart
     7 Wonders column at the end, their +/− in Catan, or their score for each
     round of Tysiąc. They can only edit their own seat.
 - The group invite is a QR code too (*More → Shared group → Invite*).
-- **Cloud backup**: one tap backs up your players, custom games and finished
-  games, with no account. You get six easy words to remember (and a QR),
+- **Cloud backup**: one tap backs up your players, custom games, My games and
+  finished games, with no account. You get six easy words to remember (and a QR),
   in English or Polish; typing them on a new phone, or after the browser is
   cleared, restores everything and merges it with what's already there.
 
@@ -298,8 +298,8 @@ Paid would make sense for:
 ## Persisted data
 
 All in `localStorage` under the `dice-digits:` prefix: `players`, `games`
-(custom only), `sessions`, `favorites` (My games: ids, this phone only, never
-synced), `settings`, `dirty` (pending sync), `group` (shared
+(custom only), `sessions`, `favorites` (My games; backed up, never shared with
+a group), `settings`, `dirty` (pending sync), `group` (shared
 group credentials), `live` (host tokens of live games), `guest:<code>`
 (a joined phone's seat token and not-yet-applied entries). Export/import in *More →
 Backup* moves everything between devices without the cloud.
