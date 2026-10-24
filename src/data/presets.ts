@@ -300,6 +300,7 @@ const PRESETS: Preset[] = [
     id: 'builtin:zuuupa',
     emoji: '🍲',
     name: name('Zuuupa!', 'Zuuupa!'),
+    players: { min: 2, max: 5 },
     mode: 'sheet',
     lowWins: false,
     // Enter how many cards of each vegetable you collected; a double card still counts once.
@@ -325,6 +326,7 @@ const PRESETS: Preset[] = [
     id: 'builtin:bug-hotel',
     emoji: '🕸️',
     name: name('Hotel pod Pajęczą Siecią', 'Hotel pod Pajęczą Siecią'),
+    players: { min: 2, max: 4 },
     mode: 'counter',
     lowWins: false,
     target: 6,

@@ -12,8 +12,8 @@ describe('built-in games', () => {
     }
   })
 
-  it('player ranges are sane, and only the generic scorers and two unconfirmed games lack one', () => {
-    const open = ['builtin:counter', 'builtin:rounds', 'builtin:zuuupa', 'builtin:bug-hotel']
+  it('every real game has a sane player range; only the generic scorers have none', () => {
+    const open = ['builtin:counter', 'builtin:rounds']
 
     for (const g of BUILTIN_GAMES) {
       if (!g.players) {
