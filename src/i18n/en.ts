@@ -44,7 +44,7 @@ export const en = {
   options: 'Options',
   recentGames: 'Recently played',
   builtinGames: 'Popular games',
-  yourGames: 'Your games',
+  yourGames: 'Created by you',
   createGame: 'Create your own game',
   noGamesFound: 'No game matches “{q}”.',
   addPlayer: 'Add player',
@@ -62,6 +62,22 @@ export const en = {
   startGame: 'Start game',
   needPlayers: 'Add at least one player',
   changeGame: 'Change',
+
+  // my games
+  myGames: 'My games',
+  myGamesEmptyTitle: 'No favourites yet',
+  myGamesEmptyBody: 'Heart the games you own or love, and the ones you create land here too. Then let the app pick tonight’s game.',
+  addGames: 'Add games',
+  addToMyGames: 'Add to My games',
+  removeFromMyGames: 'Remove from My games',
+  draw: 'Draw',
+  drawGame: 'Draw a game',
+  drawFromMyGames: 'Draw a game from My games',
+  drawTitle: 'Tonight’s game',
+  drawFrom: 'Drawn from {games} in My games.',
+  drawAgain: 'Draw again',
+  drawNeedTwo: 'Add at least two games to draw from.',
+  playThis: 'Play this',
 
   // modes
   modeCounter: 'Counter',
@@ -241,7 +257,7 @@ export const en = {
 
   // personal backup
   backupCloud: 'Cloud backup',
-  backupIntro: 'Keep players, games and history safe if this browser is cleared or you change phones. No account needed: you get six words to remember.',
+  backupIntro: 'Keep players, games, My games and history safe if this browser is cleared or you change phones. No account needed: you get six words to remember.',
   createBackup: 'Back up my data',
   myBackup: 'My backup',
   restoreFromCode: 'Restore from code',

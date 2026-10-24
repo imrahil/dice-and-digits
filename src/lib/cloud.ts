@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import type { Session } from '../types'
-import { applyRemote, clearDirty, dirtyDocs, markAllDirty, type RemoteDoc } from './store'
+import { applyRemote, clearDirty, dirtyDocs, markAllDirty, setPersonalSync, type RemoteDoc } from './store'
 import { deriveKey, newCode, type Code } from './recovery'
 
 /** Worker base URL, baked in at build time. Empty = local-only build, cloud UI hidden. */
@@ -45,6 +45,9 @@ function readJson<T>(key: string, fallback: T): T {
 let cloud: CloudState = { group: readJson<Group | null>(GROUP_KEY, null), syncing: false, error: null }
 const listeners = new Set<() => void>()
 
+// My games travels to a personal backup only, never to a shared group.
+setPersonalSync(cloud.group?.kind === 'vault')
+
 function setCloud(patch: Partial<CloudState>) {
   cloud = { ...cloud, ...patch }
 
@@ -54,6 +57,8 @@ function setCloud(patch: Partial<CloudState>) {
     } else {
       localStorage.removeItem(GROUP_KEY)
     }
+
+    setPersonalSync(cloud.group?.kind === 'vault')
   }
 
   listeners.forEach((l) => l())

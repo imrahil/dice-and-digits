@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { ChevronRight, KeyRound, Plus, ScanLine } from 'lucide-react'
+import { ChevronRight, KeyRound, Plus, ScanLine, Shuffle } from 'lucide-react'
 import { useI18n } from '../i18n'
-import { allGames, recentGameIds, useActiveSessions } from '../lib/games'
+import { allGames, myGames, recentGameIds, useActiveSessions } from '../lib/games'
 import { finished } from '../lib/stats'
 import { useStore } from '../lib/store'
 import { cloudEnabled, useCloud } from '../lib/cloud'
 import { navigate } from '../hooks/useRoute'
 import { ActiveGameCard } from '../components/ActiveGameCard'
+import { DrawSheet } from '../components/DrawGame'
 import { SessionRow } from '../components/SessionRow'
 import { Logo } from '../components/Logo'
 import { Button, Empty, Page, Section, Sheet, cx, inputClass } from '../components/ui'
@@ -33,11 +34,14 @@ export function Home() {
   const { t, text } = useI18n()
   const sessions = useStore((s) => s.sessions)
   const custom = useStore((s) => s.games)
+  const favorites = useStore((s) => s.favorites)
   const active = useActiveSessions()
   const { group } = useCloud()
   const recent = finished(Object.values(sessions)).slice(0, 3)
 
   const [joining, setJoining] = useState(false)
+  const [drawing, setDrawing] = useState(false)
+  const liked = myGames(favorites, custom)
   const games = allGames(custom)
   const recentIds = recentGameIds(sessions, QUICK)
   // Recently played first, topped up with the starters so both rows stay full.
@@ -76,6 +80,15 @@ export function Home() {
           <Plus className="size-7" strokeWidth={3} />
           {t('newGame')}
         </Button>
+      )}
+
+      {liked.length > 1 && (
+        <>
+          <Button className="mt-3 w-full" onClick={() => setDrawing(true)}>
+            <Shuffle className="size-5" /> {t('drawFromMyGames')}
+          </Button>
+          <DrawSheet open={drawing} onClose={() => setDrawing(false)} games={liked} />
+        </>
       )}
 
       <Section title={recentIds.length ? t('quickStart') : t('builtinGames')}>

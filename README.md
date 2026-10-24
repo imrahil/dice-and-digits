@@ -44,6 +44,9 @@ opcjonalnym Cloudflare Workerem do wspólnych grup i tablic wyników na żywo.
   Tysiąc, 6 bierze, Rummikub, Domek, Szybka kawka, Zuuupa!, Yahtzee z premią
   +35 za górną sekcję i inne. Do tego **własne gry** z dowolnymi kategoriami,
   szybkimi przyciskami, progiem punktów i zasadą „wygrywa najmniej".
+- **Moje gry**: serduszkiem zbierasz gry, które masz albo lubisz (własne gry
+  trafiają tam same), a **„Losuj grę"** wybiera jedną z nich na dzisiejszy
+  wieczór.
 - **Liczysz sztuki, nie punkty**: kategoria może być warta ×n za sztukę (3
   kafelki ulepszeń ×2, niewykorzystane stacje ×4, warzywa w Zuuupa! ×3…×7) albo
   ÷n (7 Cudów: 1 punkt za 3 monety). Wpisujesz to, co leży na stole, a
@@ -84,8 +87,8 @@ tury** restartowany stuknięciem.
     punkty, np. swoją kolumnę w 7 Cudach na koniec, swoje +/− w Catanie albo
     wynik w każdej rundzie Tysiąca. Mogą edytować tylko swoje miejsce.
 - Zaproszenie do grupy to także kod QR (*Więcej → Wspólna grupa → Zaproś*).
-- **Kopia zapasowa w chmurze**: jedno stuknięcie zapisuje graczy, własne gry i
-  zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
+- **Kopia zapasowa w chmurze**: jedno stuknięcie zapisuje graczy, własne gry,
+  Moje gry i zakończone partie, bez zakładania konta. Dostajesz sześć łatwych słów do
   zapamiętania (i kod QR), po polsku lub angielsku; wpisanie ich na nowym
   telefonie albo po wyczyszczeniu przeglądarki przywraca wszystko i scala z tym,
   co już jest.
@@ -148,6 +151,8 @@ Polish UI, written to `docs/screenshots/`).
   Tysiąc, 6 bierze, Rummikub, Domek, Szybka kawka, Zuuupa!, Yahtzee with the
   upper-section +35 bonus, and more. Plus **your own games** with custom
   categories, quick buttons, a target score and lowest-wins.
+- **My games**: heart the games you own or love (the ones you create are added
+  for you), then **Draw a game** picks tonight's game from that list.
 - **Count, don't calculate**: a category can be worth ×n per item (3 upgrade
   tiles ×2, unused stations ×4, Zuuupa! vegetables ×3…×7) or ÷n (7 Wonders:
   1 point per 3 coins). You enter what's on the table; the app does the maths.
@@ -182,8 +187,8 @@ player (everyone touches the screen, one is chosen), and a tap-to-restart
     7 Wonders column at the end, their +/− in Catan, or their score for each
     round of Tysiąc. They can only edit their own seat.
 - The group invite is a QR code too (*More → Shared group → Invite*).
-- **Cloud backup**: one tap backs up your players, custom games and finished
-  games, with no account. You get six easy words to remember (and a QR),
+- **Cloud backup**: one tap backs up your players, custom games, My games and
+  finished games, with no account. You get six easy words to remember (and a QR),
   in English or Polish; typing them on a new phone, or after the browser is
   cleared, restores everything and merges it with what's already there.
 
@@ -293,7 +298,8 @@ Paid would make sense for:
 ## Persisted data
 
 All in `localStorage` under the `dice-digits:` prefix: `players`, `games`
-(custom only), `sessions`, `settings`, `dirty` (pending sync), `group` (shared
+(custom only), `sessions`, `favorites` (My games; backed up, never shared with
+a group), `settings`, `dirty` (pending sync), `group` (shared
 group credentials), `live` (host tokens of live games), `guest:<code>`
 (a joined phone's seat token and not-yet-applied entries). Export/import in *More →
 Backup* moves everything between devices without the cloud.

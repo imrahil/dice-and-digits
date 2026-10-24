@@ -27,6 +27,27 @@ export function allGames(custom: State['games']): GameDef[] {
   return [...mine, ...BUILTIN_GAMES]
 }
 
+/** Search by name in either language; `needle` is already lower-cased. */
+export function matchesName(g: GameDef, needle: string): boolean {
+  return !needle || (typeof g.name === 'string' ? [g.name] : [g.name.en, g.name.pl]).some((n) => n.toLocaleLowerCase().includes(needle))
+}
+
+/** My games, last hearted first, skipping deleted or unknown games. */
+export function myGames(favorites: State['favorites'], custom: State['games']): GameDef[] {
+  return Object.values(favorites)
+    .filter((f) => !f.deleted)
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .map((f) => custom[f.id] ?? BUILTIN_GAMES.find((g) => g.id === f.id))
+    .filter((g): g is GameDef => !!g && !g.deleted)
+}
+
+/** A random game for tonight; with a choice, never the one drawn just before. */
+export function drawGame(games: GameDef[], last?: string, random = Math.random): GameDef | undefined {
+  const pool = games.length > 1 ? games.filter((g) => g.id !== last) : games
+
+  return pool[Math.floor(random() * pool.length)]
+}
+
 export function findGame(id: string): GameDef | undefined {
   return getState().games[id] ?? BUILTIN_GAMES.find((g) => g.id === id)
 }

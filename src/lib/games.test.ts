@@ -54,6 +54,47 @@ describe('game lists', () => {
   })
 })
 
+describe('my games', () => {
+  it('myGames lists the last hearted first, skipping unhearted, deleted or unknown games', () => {
+    const fav = (id: string, updatedAt: number, deleted?: boolean) => ({ id, updatedAt, deleted })
+    const list = games.myGames(
+      {
+        mine: fav('mine', 4),
+        gone: fav('gone', 5),
+        'builtin:catan': fav('builtin:catan', 3),
+        'builtin:uno': fav('builtin:uno', 6, true),
+        nope: fav('nope', 7),
+      },
+      { mine: custom('mine', 1), gone: custom('gone', 2, { deleted: true }) },
+    )
+
+    expect(list.map((g) => g.id)).toEqual(['mine', 'builtin:catan'])
+  })
+
+  it('matchesName searches both languages of a built-in', () => {
+    const catan = games.findGame('builtin:catan')!
+
+    expect(games.matchesName(catan, '')).toBe(true)
+    expect(games.matchesName(catan, 'catan')).toBe(true)
+    expect(games.matchesName(custom('Mine', 1), 'zzz')).toBe(false)
+  })
+
+  it('drawGame picks from the list, never the previous pick when there is a choice', () => {
+    const list = [custom('a', 1), custom('b', 1), custom('c', 1)]
+
+    expect(games.drawGame(list, undefined, () => 0)?.id).toBe('a')
+    expect(games.drawGame(list, undefined, () => 0.99)?.id).toBe('c')
+    expect(games.drawGame(list, 'a', () => 0)?.id).toBe('b')
+
+    for (let i = 0; i < 50; i++) {
+      expect(games.drawGame(list, 'b')?.id).not.toBe('b')
+    }
+
+    expect(games.drawGame([list[0]], 'a')?.id).toBe('a')
+    expect(games.drawGame([])).toBeUndefined()
+  })
+})
+
 describe('starting a game', () => {
   const players: Player[] = [
     { id: 'a', name: 'Anna', color: '#e4572e', updatedAt: 0 },

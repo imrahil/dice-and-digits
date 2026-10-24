@@ -133,6 +133,20 @@ describe('groups', () => {
     await onPhone('B', ({ store }) => expect(store.getState().sessions.live).toBeUndefined())
   })
 
+  it('My games stays on each phone: a group never shares it', async () => {
+    await onPhone('A', ({ store }) => store.setFavorite('builtin:catan', true))
+    await pairPhones()
+    await onPhone('A', async ({ store, cloud }) => {
+      store.setFavorite('builtin:uno', true)
+      await cloud.syncNow()
+      expect(store.getState().dirty).toEqual([])
+    })
+    await onPhone('B', async ({ store, cloud }) => {
+      await cloud.syncNow()
+      expect(store.getState().favorites).toEqual({})
+    })
+  })
+
   it('an invalid invite is rejected and leaves the phone ungrouped', async () => {
     await onPhone('B', async ({ cloud }) => {
       await expect(cloud.joinGroup('00000000-0000-4000-8000-000000000000.nope')).rejects.toThrow()
@@ -203,6 +217,31 @@ describe('personal backup', () => {
       expect(cloud.getCloud().group!.savedAt).toBeTypeOf('number')
     })
     expect(words).toHaveLength(6)
+  })
+
+  it('carries My games to the restored phone, unhearts included', async () => {
+    await onPhone('A', ({ store }) => {
+      store.setFavorite('builtin:catan', true)
+      store.setFavorite('builtin:uno', true)
+    })
+
+    const words = (await backUp()).join(' ')
+
+    await onPhone('B', async ({ store, cloud }) => {
+      store.setFavorite('builtin:azul', true) // hearted before restoring: joins the backup
+      await restore(cloud, words)
+    })
+    await onPhone('A', async ({ store, cloud }) => {
+      store.setFavorite('builtin:uno', false)
+      await cloud.syncNow()
+    })
+    await onPhone('B', async ({ store, cloud }) => {
+      await cloud.syncNow()
+
+      const on = Object.keys(store.getState().favorites).filter((id) => store.isFavorite(store.getState().favorites, id))
+
+      expect(on.sort()).toEqual(['builtin:azul', 'builtin:catan'])
+    })
   })
 
   it('the server never sees the words or the code', async () => {

@@ -211,6 +211,40 @@ describe('dirty tracking for sync', () => {
   })
 })
 
+describe('my games', () => {
+  it('hearting stores a doc per game and unhearting leaves a tombstone', async () => {
+    const s = await freshStore()
+
+    s.setFavorite('builtin:catan', true)
+    s.setFavorite('builtin:catan', true)
+    expect(stored('favorites')).toEqual({ 'builtin:catan': { id: 'builtin:catan', updatedAt: 1_000 } })
+    expect(s.isFavorite(s.getState().favorites, 'builtin:catan')).toBe(true)
+
+    vi.setSystemTime(2_000)
+    s.setFavorite('builtin:catan', false)
+    expect(s.getState().favorites['builtin:catan']).toEqual({ id: 'builtin:catan', updatedAt: 2_000, deleted: true })
+    expect(s.isFavorite(s.getState().favorites, 'builtin:catan')).toBe(false)
+  })
+
+  it('only syncs to a personal backup, never to a shared group', async () => {
+    const s = await freshStore()
+
+    s.setFavorite('builtin:catan', true)
+    expect(s.getState().dirty).toEqual([])
+
+    s.setPersonalSync(true)
+    s.setFavorite('builtin:uno', true)
+    s.markAllDirty()
+    expect(s.getState().dirty.sort()).toEqual(['fav:builtin:catan', 'fav:builtin:uno'])
+
+    s.savePlayer(player('anna'))
+    s.setPersonalSync(false)
+    expect(s.getState().dirty).toEqual(['player:anna'])
+    s.markAllDirty()
+    expect(s.getState().dirty).toEqual(['player:anna'])
+  })
+})
+
 describe('backup', () => {
   it('round-trips through export and import', async () => {
     const a = await freshStore()
@@ -241,6 +275,28 @@ describe('backup', () => {
     b.importBackup(backup)
 
     expect(b.getState().players.anna.name).toBe('New')
+  })
+
+  it('carries My games, merged with the ones already on this phone', async () => {
+    const a = await freshStore()
+
+    a.setFavorite('builtin:catan', true)
+    a.setFavorite('builtin:uno', true)
+    vi.setSystemTime(3_000)
+    a.setFavorite('builtin:uno', false) // unhearted after the other phone hearted it
+
+    const backup = a.exportBackup()
+    const b = await freshStore()
+
+    vi.setSystemTime(2_000)
+    b.setFavorite('builtin:uno', true)
+    b.setFavorite('builtin:azul', true)
+    b.importBackup(backup)
+
+    const on = Object.keys(b.getState().favorites).filter((id) => b.isFavorite(b.getState().favorites, id))
+
+    expect(on.sort()).toEqual(['builtin:azul', 'builtin:catan'])
+    expect(b.importBackup(JSON.stringify({ format: 'dice-and-digits/1', favorites: ['builtin:x', null] }))).toBe(0)
   })
 
   it('rejects files that are not a backup', async () => {

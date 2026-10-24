@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { detectLang } from '../i18n'
-import type { CounterView, Doc, GameDef, Player, Session, Settings } from '../types'
+import type { CounterView, Doc, Favorite, GameDef, Player, Session, Settings } from '../types'
 
 /**
  * Local-first store: everything lives in localStorage and the app works fully
@@ -10,21 +10,24 @@ import type { CounterView, Doc, GameDef, Player, Session, Settings } from '../ty
 
 const PREFIX = 'dice-digits:'
 
-export type Kind = 'player' | 'game' | 'session'
+export type Kind = 'player' | 'game' | 'session' | 'fav'
 
 export type State = {
   players: Record<string, Player>
   games: Record<string, GameDef> // custom games only; built-ins live in data/presets.ts
   sessions: Record<string, Session>
+  /** My games, keyed by game id (built-in or custom). Synced to a personal backup only. */
+  favorites: Record<string, Favorite>
   settings: Settings
   /** `${kind}:${id}` changed locally since the last successful sync. */
   dirty: string[]
 }
 
-const COLLECTION: Record<Kind, 'players' | 'games' | 'sessions'> = {
+const COLLECTION: Record<Kind, 'players' | 'games' | 'sessions' | 'favorites'> = {
   player: 'players',
   game: 'games',
   session: 'sessions',
+  fav: 'favorites',
 }
 
 function read<T>(key: string, fallback: T): T {
@@ -58,6 +61,7 @@ function load(): State {
     players: read('players', {}),
     games: read('games', {}),
     sessions: read('sessions', {}),
+    favorites: read('favorites', {}),
     settings: { ...defaultSettings(), ...read<Partial<Settings>>('settings', {}) },
     dirty: read('dirty', []),
   }
@@ -120,9 +124,23 @@ function markDirty(kind: Kind, id: string): string[] {
   return state.dirty.includes(tag) ? state.dirty : [...state.dirty, tag]
 }
 
+let personal = false
+
+/**
+ * My games is personal: it goes to this phone's own backup, never to a shared
+ * group. cloud.ts calls this whenever the phone joins or leaves either.
+ */
+export function setPersonalSync(on: boolean) {
+  personal = on
+
+  if (!on && state.dirty.some((t) => t.startsWith('fav:'))) {
+    set({ dirty: state.dirty.filter((t) => !t.startsWith('fav:')) })
+  }
+}
+
 /** In-progress games are private to this phone; only finished ones are shared. */
 const shareable = (kind: Kind, doc: Doc) =>
-  kind !== 'session' || Boolean((doc as Session).finishedAt)
+  kind === 'fav' ? personal : kind !== 'session' || Boolean((doc as Session).finishedAt)
 
 function put<K extends Kind>(kind: K, doc: Doc) {
   const col = COLLECTION[kind]
@@ -187,6 +205,17 @@ export function setCounterView(id: string, view: CounterView) {
   updateSession(id, (s) => ({ ...s, counterView: view }))
 }
 
+export const isFavorite = (favorites: State['favorites'], gameId: string) => Boolean(favorites[gameId] && !favorites[gameId].deleted)
+
+/** Unhearting leaves a tombstone, so the backup drops the game on other phones too. */
+export function setFavorite(gameId: string, on: boolean) {
+  if (isFavorite(state.favorites, gameId) === on) {
+    return
+  }
+
+  put('fav', on ? { id: gameId, updatedAt: 0 } : { ...state.favorites[gameId], deleted: true })
+}
+
 export function setSettings(patch: Partial<Settings>) {
   set({ settings: { ...state.settings, ...patch } })
 }
@@ -199,7 +228,12 @@ export function applyRemote(docs: RemoteDoc[]) {
     return 0
   }
 
-  const next = { players: { ...state.players }, games: { ...state.games }, sessions: { ...state.sessions } }
+  const next = {
+    players: { ...state.players },
+    games: { ...state.games },
+    sessions: { ...state.sessions },
+    favorites: { ...state.favorites },
+  }
   let changed = 0
 
   for (const d of docs) {
@@ -274,9 +308,9 @@ export function markAllDirty() {
 const BACKUP_FORMAT = 'dice-and-digits/1'
 
 export function exportBackup(): string {
-  const { players, games, sessions } = state
+  const { players, games, sessions, favorites } = state
 
-  return JSON.stringify({ format: BACKUP_FORMAT, exportedAt: Date.now(), players, games, sessions })
+  return JSON.stringify({ format: BACKUP_FORMAT, exportedAt: Date.now(), players, games, sessions, favorites })
 }
 
 /** Returns the number of docs merged, or null when the file isn't a backup. */
@@ -310,6 +344,7 @@ export function importBackup(json: string): number | null {
   take('player', data.players)
   take('game', data.games)
   take('session', data.sessions)
+  take('fav', data.favorites)
   const n = applyRemote(docs)
 
   // Imported docs should reach the shared group too.

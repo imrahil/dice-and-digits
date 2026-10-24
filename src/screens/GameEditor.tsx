@@ -3,9 +3,10 @@ import { Copy, Minus, Play as PlayIcon, Plus, Trash2 } from 'lucide-react'
 import { GAME_EMOJIS } from '../data/presets'
 import { useI18n } from '../i18n'
 import { findGame } from '../lib/games'
-import { removeGame, saveGame, uid } from '../lib/store'
+import { removeGame, saveGame, setFavorite, uid } from '../lib/store'
 import { goBack, navigate } from '../hooks/useRoute'
 import { confirm } from '../components/dialogs'
+import { FavoriteButton } from '../components/FavoriteButton'
 import { ModeBadge } from '../components/ModeBadge'
 import { BottomBar, Button, Card, Empty, IconButton, Page, Section, Segmented, Toggle, cx, inputClass } from '../components/ui'
 import type { Category, GameDef, ScoringMode } from '../types'
@@ -56,11 +57,12 @@ function BuiltinView({ game }: { game: GameDef }) {
     }
 
     saveGame(copy)
+    setFavorite(copy.id, true)
     navigate(`games/${copy.id}`, { replace: true })
   }
 
   return (
-    <Page title={`${game.emoji} ${text(game.name)}`} back="games">
+    <Page title={`${game.emoji} ${text(game.name)}`} back="games" actions={<FavoriteButton id={game.id} />}>
       <Card>
         <span className="text-xs font-extrabold tracking-wide text-ink/45 uppercase dark:text-white/45">{t('builtin')}</span>
         <ModeBadge mode={game.mode} target={game.target} lowWins={game.lowWins} />
@@ -150,6 +152,12 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
       zeroSum: g.mode === 'rounds' ? g.zeroSum : undefined,
       timer: g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined,
     })
+
+    // A game you made is one of yours: it goes straight into My games.
+    if (isNew) {
+      setFavorite(g.id, true)
+    }
+
     goBack('games')
   }
 
@@ -159,6 +167,7 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
     }
 
     removeGame(g.id)
+    setFavorite(g.id, false)
     navigate('games', { replace: true })
   }
 
@@ -177,9 +186,12 @@ function Editor({ initial, isNew, title }: { initial: GameDef; isNew: boolean; t
       bare
       actions={
         !isNew && (
-          <IconButton label={t('delete')} onClick={del} className="text-danger dark:text-[#ff8a93]">
-            <Trash2 className="size-5" />
-          </IconButton>
+          <>
+            <FavoriteButton id={g.id} />
+            <IconButton label={t('delete')} onClick={del} className="text-danger dark:text-[#ff8a93]">
+              <Trash2 className="size-5" />
+            </IconButton>
+          </>
         )
       }
     >

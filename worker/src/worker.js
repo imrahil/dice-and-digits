@@ -35,7 +35,7 @@ export const LIMITS = {
   nameLength: 60,
 }
 
-const KINDS = new Set(['player', 'game', 'session'])
+const KINDS = new Set(['player', 'game', 'session', 'fav'])
 const ID_RE = /^[\w:.-]{1,80}$/
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789' // no 0/O, 1/I/L
 const CODE_RE = /^[A-Z2-9]{6}$/
@@ -233,6 +233,11 @@ export async function sync(request, env) {
   for (const d of incoming) {
     if (!validDoc(d)) {
       throw new HttpError(400, 'Invalid doc')
+    }
+
+    // My games (fav) is personal: a backup keeps it, a shared group never does.
+    if (d.kind === 'fav' && group.kind !== 'vault') {
+      continue
     }
 
     const data = JSON.stringify(d.data)
