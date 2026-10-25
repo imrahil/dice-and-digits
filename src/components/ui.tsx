@@ -225,26 +225,14 @@ export function Sheet({
   )
 }
 
-export function Toggle({
-  checked,
-  onChange,
-  label,
-  hint,
-  disabled,
-}: {
-  checked: boolean
-  onChange: (v: boolean) => void
-  label: ReactNode
-  hint?: ReactNode
-  disabled?: boolean
-}) {
+export function Toggle({ checked, onChange, label, hint }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode; hint?: ReactNode }) {
   return (
-    <label className={cx('flex items-center gap-3 py-2', disabled ? 'opacity-60' : 'cursor-pointer')}>
+    <label className="flex cursor-pointer items-center gap-3 py-2">
       <span className="min-w-0 flex-1">
         <span className="block font-semibold">{label}</span>
         {hint && <span className="block text-sm text-ink/55 dark:text-white/55">{hint}</span>}
       </span>
-      <input type="checkbox" className="peer sr-only" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+      <input type="checkbox" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span className="relative h-7 w-12 shrink-0 rounded-full border-[length:var(--bw-flat)] border-(--line-flat) bg-ink/15 transition peer-checked:bg-mint peer-focus-visible:ring-2 peer-focus-visible:ring-accent after:absolute after:top-1/2 after:left-0.5 after:size-5 after:-translate-y-1/2 after:rounded-full after:border-[length:var(--bw-flat)] after:border-(--line-flat) after:bg-white after:shadow after:transition peer-checked:after:translate-x-5 dark:bg-white/15" />
     </label>
   )

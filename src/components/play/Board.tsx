@@ -156,7 +156,7 @@ export function Board({ session }: { session: Session }) {
       }
       subtitle={
         timer
-          ? t(isHotPotato(session) ? 'potatoSubtitle' : 'timerSubtitle', { n: session.rounds.length + 1, min: timer.min, max: timer.max })
+          ? t(isHotPotato(session) && session.rules.lowWins ? 'potatoSubtitle' : 'timerSubtitle', { n: session.rounds.length + 1, min: timer.min, max: timer.max })
           : mode === 'rounds' &&
         [
           tp('nRounds', session.rounds.length),
