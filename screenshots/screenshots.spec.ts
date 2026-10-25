@@ -121,6 +121,10 @@ const sevenWonders = session('s-7w', 'builtin:7wonders', 4, {
   sheet: sheetOf({ ...wonders, guilds: [] }, 4),
 })
 
+const potato = session('s-potato', 'builtin:hot-potato', 4, {
+  rounds: [{ p2: 1 }, { p0: 1 }, { p2: 1 }, { p3: 1 }, { p1: 1 }],
+})
+
 const done7w = finished(session('d-7w', 'builtin:7wonders', 4, { sheet: sheetOf(wonders, 4) }), 0, 52)
 const done1000 = finished(
   session('d-1000', 'builtin:1000', 3, {
@@ -212,6 +216,7 @@ for (const lang of ['en', 'pl'] as const) {
       catan,
       thousand,
       sevenWonders,
+      potato,
       done7w,
       done1000,
       doneCatan,
@@ -251,6 +256,22 @@ for (const lang of ['en', 'pl'] as const) {
     await press(page, '-100')
     await shot(page, lang, '09-keypad')
     await page.keyboard.press('Escape')
+
+    // Hot Potato mid-round: the hidden clock 7 s in (every round lasts at least 10 s).
+    await page.goto('#/play/s-potato')
+    await button(page, /^(Start round|Start rundy) 6/).click()
+    await page.context().clock.setFixedTime(now + 7000)
+    await shot(page, lang, '11-timer')
+    await page.context().clock.setFixedTime(now)
+    await button(page, /^(Stop round|Przerwij rundę)/).click()
+
+    // The game editor's icon picker, with the brain picked for a logic game.
+    await page.goto('#/games/new')
+    await page.getByPlaceholder(/Game name|Nazwa gry/).fill('Mastermind')
+    await button(page, '🧠').click()
+    await page.getByText(/^(Winner only|Tylko zwycięzca)$/).click()
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await shot(page, lang, '12-editor')
 
     // Live: the scorekeeper's QR code, with one friend already in.
     await page.goto('#/play/s-7w')
