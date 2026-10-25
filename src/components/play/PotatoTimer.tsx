@@ -11,6 +11,9 @@ export type PotatoTimerProps = {
   maxMs: number
   /** Who got burnt last round, for the idle hint. */
   lastBurnt?: string
+  /** Hot Potato itself talks about the potato; other timed games get neutral wording and their own emoji. */
+  potato: boolean
+  emoji: string
 }
 
 const SIZE = 196
@@ -18,21 +21,23 @@ const TRACK = 14
 const R = (SIZE - TRACK) / 2
 const C = 2 * Math.PI * R
 
-/** Hot Potato round timer. Hidden mode counts up so nobody can tell when it goes off. */
-export function PotatoTimer({ phase, elapsedMs, durationMs, hidden, maxMs, lastBurnt }: PotatoTimerProps) {
+/** Winner mode's random round timer (Hot Potato). Hidden mode counts up so nobody can tell when it goes off. */
+export function PotatoTimer({ phase, elapsedMs, durationMs, hidden, maxMs, lastBurnt, potato, emoji }: PotatoTimerProps) {
   const { t } = useI18n()
   const running = phase === 'running'
   const remainingMs = Math.max(0, durationMs - elapsedMs)
   const fill = !running ? 0 : hidden ? elapsedMs / (maxMs || 1) : remainingMs / (durationMs || 1)
   const time = !running ? '?' : hidden ? mmss(Math.floor(elapsedMs / 1000)) : mmss(Math.ceil(remainingMs / 1000))
+  const after = mmss(Math.round(durationMs / 1000))
   const label = running ? (hidden ? t('potatoElapsed') : t('potatoLeft')) : hidden ? t('potatoHiddenTime') : t('potatoRandomTime')
+  const keepGoing = potato ? t('potatoPass') : t('timerKeepGoing')
   const hint = running
     ? hidden
-      ? `${t('potatoPass')} ${t('potatoAnySecond')}`
-      : t('potatoPass')
+      ? `${keepGoing} ${potato ? t('potatoAnySecond') : t('timerAnySecond')}`
+      : keepGoing
     : lastBurnt
-      ? t('potatoLast', { name: lastBurnt })
-      : t('potatoIdle')
+      ? potato ? t('potatoLast', { name: lastBurnt }) : t('timerLast', { name: lastBurnt })
+      : potato ? t('potatoIdle') : t('timerIdle')
 
   return (
     <div
@@ -47,12 +52,16 @@ export function PotatoTimer({ phase, elapsedMs, durationMs, hidden, maxMs, lastB
       {phase === 'boom' ? (
         <>
           <span className="text-[88px] leading-none" aria-hidden>
-            💥
+            {potato ? '💥' : '⏰'}
           </span>
-          <span className="display text-[64px] leading-[0.9] font-black">{t('potatoBoom')}</span>
+          <span className="display text-[64px] leading-[0.9] font-black">{potato ? t('potatoBoom') : t('timerBoom')}</span>
           <span className="flex flex-col gap-1">
-            <span className="text-lg font-extrabold">{t('potatoWho')}</span>
-            {durationMs > 0 && <span className="text-sm font-bold opacity-85">{t('potatoAfter', { time: mmss(Math.round(durationMs / 1000)) })}</span>}
+            <span className="text-lg font-extrabold">{potato ? t('potatoWho') : t('timerWho')}</span>
+            {durationMs > 0 && (
+              <span className="text-sm font-bold opacity-85">
+                {potato ? t('potatoAfter', { time: after }) : t('timerAfter', { time: after })}
+              </span>
+            )}
           </span>
         </>
       ) : (
@@ -76,7 +85,7 @@ export function PotatoTimer({ phase, elapsedMs, durationMs, hidden, maxMs, lastB
             </svg>
             <span className="surface-flat relative flex size-[168px] flex-col items-center justify-center rounded-full">
               <span className="text-[44px] leading-none" aria-hidden>
-                🥔
+                {potato ? '🥔' : emoji}
               </span>
               <span className="display text-[56px] leading-none font-black tabular-nums">{time}</span>
               <span className="mt-0.5 text-xs font-extrabold tracking-[0.04em] text-ink/55 uppercase dark:text-white/55">{label}</span>

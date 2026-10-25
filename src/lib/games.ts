@@ -108,6 +108,11 @@ export function gameFromEditor(g: GameDef, fields: EditorFields, text: (v: Text)
   }
 }
 
+/** Hot Potato's timer talks about the potato; other timed games get neutral wording. */
+export function isHotPotato(session: Session): boolean {
+  return session.gameId === 'builtin:hot-potato'
+}
+
 export function findGame(id: string): GameDef | undefined {
   return getState().games[id] ?? BUILTIN_GAMES.find((g) => g.id === id)
 }

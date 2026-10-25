@@ -8,8 +8,9 @@ import { Avatar, cx } from '../../ui'
 import { PotatoTimer } from '../PotatoTimer'
 import { seatColor } from '../../../lib/pawns'
 import type { RoundTimer, Session } from '../../../types'
+import { isHotPotato } from '../../../lib/games'
 
-/** The last round's loser, for "Last burnt: …". */
+/** The last round's loser, for "Last burnt: …" (or "Lost last round: …"). */
 function lastBurnt(session: Session): string | undefined {
   const last = session.rounds[session.rounds.length - 1]
 
@@ -26,6 +27,7 @@ export function TimedBoard({ session, scorer, timer, round }: { session: Session
   const byId = Object.fromEntries(table.map((r) => [r.seat.id, r]))
   const played = session.rounds.length > 0
   const { phase } = round
+  const potato = isHotPotato(session)
 
   const record = (p: string) => {
     buzz([10, 40, 20])
@@ -42,10 +44,12 @@ export function TimedBoard({ session, scorer, timer, round }: { session: Session
         hidden={timer.hidden}
         maxMs={timer.max * 1000}
         lastBurnt={lastBurnt(session)}
+        potato={potato}
+        emoji={session.emoji}
       />
 
       <div className="flex items-center justify-between px-1 pt-3.5 pb-2 text-xs font-extrabold text-ink/50 uppercase dark:text-white/50">
-        <span>{phase === 'boom' ? t('tapWhoBurnt') : t('losses')}</span>
+        <span>{phase === 'boom' ? (potato ? t('tapWhoBurnt') : t('tapWhoLost')) : t('losses')}</span>
         <span>{t('fewerIsBetter')}</span>
       </div>
 

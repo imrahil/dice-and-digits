@@ -182,6 +182,33 @@ test('winner-only: stopping or skipping a Gorący ziemniak round records nothing
   expect((await session(page, 'builtin:hot-potato')).rounds).toHaveLength(0)
 })
 
+test('a custom timed game gets neutral wording and its own icon, not the potato', async ({ page }) => {
+  await page.clock.install()
+  await page.goto('#/games/new')
+  await page.getByPlaceholder('Nazwa gry').fill('Szybkie słowa')
+  await button(page, '🧠').click()
+  await page.getByText('Tylko zwycięzca').click()
+  await page.getByText('Licznik czasu rundy').click()
+  await button(page, 'Zapisz').click()
+
+  await page.goto('#/new')
+  await page.getByText('Szybkie słowa').first().click()
+  await page.getByPlaceholder('Imię nowego gracza').fill('Ola')
+  await page.keyboard.press('Enter')
+  await button(page, 'Zacznij grę').click()
+
+  const main = page.locator('main')
+
+  await expect(main).toContainText('Naciśnij Start, gdy wszyscy będą gotowi')
+  await expect(main).toContainText('🧠')
+  await expect(main).not.toContainText('ziemniak')
+
+  await button(page, 'Start rundy 1').click()
+  await page.clock.runFor(30_000)
+  await expect(page.getByText('Koniec czasu!')).toBeVisible()
+  await expect(main).toContainText('Kto przegrał tę rundę?')
+})
+
 test('custom game from the editor, then played', async ({ page }) => {
   await page.goto('#/games/new')
   await page.getByPlaceholder('Nazwa gry').fill('Moja gra')
