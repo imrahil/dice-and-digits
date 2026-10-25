@@ -94,7 +94,6 @@ export function gameFromEditor(g: GameDef, fields: EditorFields, text: (v: Text)
   const pMax = parseInt(fields.playersMax, 10)
   const min = pMin >= 1 ? pMin : pMax >= 1 ? 1 : undefined
   const players = min ? (pMax >= min ? { min, max: pMax } : { min }) : undefined
-  const timer = g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined
 
   return {
     ...g,
@@ -104,16 +103,12 @@ export function gameFromEditor(g: GameDef, fields: EditorFields, text: (v: Text)
     categories: g.mode === 'sheet' ? categories.map((c) => ({ ...c, name: text(c.name).trim() })) : undefined,
     bonus: g.mode === 'sheet' ? g.bonus : undefined,
     zeroSum: g.mode === 'rounds' ? g.zeroSum : undefined,
-    lowWins: g.lowWins || !!timer,
-    timer,
+    timer: g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined,
     players,
   }
 }
 
-/**
- * A round timer records who lost each round (who was caught when time ran
- * out), so the fewest losses always win: lowest wins is forced on.
- */
+/** A winner-mode game with a random round clock (Hot Potato). */
 export function hasRoundTimer(rules: Pick<Rules, 'mode' | 'timer'>): boolean {
   return rules.mode === 'winner' && !!rules.timer
 }
@@ -171,7 +166,7 @@ export function startSession(
     rules: {
       name: game.name,
       mode: game.mode,
-      lowWins: opts.lowWins || hasRoundTimer(game),
+      lowWins: opts.lowWins,
       target: opts.target,
       categories: game.categories,
       bonus: game.bonus,

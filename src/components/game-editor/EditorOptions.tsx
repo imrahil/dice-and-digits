@@ -21,13 +21,7 @@ export function EditorOptions({
 
   return (
     <Card className="!py-2">
-      <Toggle
-        checked={g.lowWins || timed}
-        onChange={(lowWins) => onPatch({ lowWins })}
-        label={t('lowestWins')}
-        hint={timed ? t('timerCountsLosses') : undefined}
-        disabled={timed}
-      />
+      <Toggle checked={g.lowWins} onChange={(lowWins) => onPatch({ lowWins })} label={t('lowestWins')} hint={timed ? t('timerLowWinsHint') : undefined} />
       {g.mode === 'rounds' && (
         <div className="border-t border-edge dark:border-white/8">
           <Toggle checked={!!g.zeroSum} onChange={(zeroSum) => onPatch({ zeroSum })} label={t('zeroSum')} hint={t('zeroSumHint')} />
@@ -72,7 +66,15 @@ export function EditorOptions({
           placeholder="—"
         />
       </div>
-      {g.mode === 'winner' && <RoundTimerOptions timer={g.timer} onTimer={(timer) => onPatch({ timer })} fields={fields} onField={onField} />}
+      {g.mode === 'winner' && (
+        <RoundTimerOptions
+          timer={g.timer}
+          // A new clock usually means "who was caught when time ran out", so it switches lowest wins on; it can be switched back.
+          onTimer={(timer) => onPatch(timer && !g.timer ? { timer, lowWins: true } : { timer })}
+          fields={fields}
+          onField={onField}
+        />
+      )}
       {g.mode === 'counter' && (
         <label className="block border-t border-edge py-3 dark:border-white/8">
           <span className="block font-semibold">{t('quickButtons')}</span>

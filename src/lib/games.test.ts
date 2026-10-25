@@ -171,12 +171,13 @@ describe('game editor', () => {
     expect(potato('8', '25')).toEqual({ hidden: false, min: 8, max: 25 })
   })
 
-  it('a round timer turns lowest wins on: each round records who lost', () => {
-    const timed = custom('t', 1, { mode: 'winner', lowWins: false, timer: { hidden: true, min: 10, max: 30 } })
+  it('a round timer leaves lowest wins as the player set it', () => {
+    const timed = custom('t', 1, { mode: 'winner', timer: { hidden: true, min: 10, max: 30 } })
 
-    expect(games.gameFromEditor(timed, fields, label).lowWins).toBe(true)
-    expect(games.gameFromEditor({ ...timed, timer: undefined }, fields, label).lowWins).toBe(false)
-    expect(games.gameFromEditor({ ...timed, mode: 'counter' }, fields, label).lowWins).toBe(false)
+    expect(games.gameFromEditor({ ...timed, lowWins: false }, fields, label).lowWins).toBe(false)
+    expect(games.gameFromEditor({ ...timed, lowWins: true }, fields, label).lowWins).toBe(true)
+    expect(games.hasRoundTimer(timed)).toBe(true)
+    expect(games.hasRoundTimer({ ...timed, mode: 'rounds' })).toBe(false)
   })
 })
 
@@ -207,12 +208,11 @@ describe('starting a game', () => {
     ])
   })
 
-  it('a game with a round timer always starts with lowest wins, even if setup says otherwise', () => {
-    store.saveGame(custom('timed', 1, { mode: 'winner', timer: { hidden: true, min: 10, max: 30 } }))
+  it('a game with a round timer starts with lowest wins as chosen on the setup screen', () => {
+    const potato = games.findGame('builtin:hot-potato')!
 
-    expect(games.startSession(games.findGame('timed')!, players, { lowWins: false }).rules.lowWins).toBe(true)
-    expect(games.startSession(games.findGame('builtin:hot-potato')!, players, { lowWins: false }).rules.lowWins).toBe(true)
-    expect(games.startSession(games.findGame('builtin:exploding-kittens')!, players, { lowWins: false }).rules.lowWins).toBe(false)
+    expect(games.startSession(potato, players, { lowWins: false }).rules).toMatchObject({ lowWins: false, timer: potato.timer })
+    expect(games.startSession(potato, players, { lowWins: true }).rules.lowWins).toBe(true)
   })
 
   it('later edits to the game definition do not change a started session', () => {

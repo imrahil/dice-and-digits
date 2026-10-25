@@ -9,9 +9,11 @@ export type PotatoTimerProps = {
   /** Hidden: counts up against `maxMs`; visible: counts down this round's length. */
   hidden: boolean
   maxMs: number
-  /** Who got burnt last round, for the idle hint. */
-  lastBurnt?: string
-  /** Hot Potato itself talks about the potato; other timed games get neutral wording and their own emoji. */
+  /** Who was tapped last round, for the idle hint. */
+  lastTapped?: string
+  /** Lowest wins: the tap records who lost the round; otherwise who won it. */
+  losing: boolean
+  /** Hot Potato counting burns talks about the potato; everything else gets neutral wording and its own emoji. */
   potato: boolean
   emoji: string
 }
@@ -22,7 +24,7 @@ const R = (SIZE - TRACK) / 2
 const C = 2 * Math.PI * R
 
 /** Winner mode's random round timer (Hot Potato). Hidden mode counts up so nobody can tell when it goes off. */
-export function PotatoTimer({ phase, elapsedMs, durationMs, hidden, maxMs, lastBurnt, potato, emoji }: PotatoTimerProps) {
+export function PotatoTimer({ phase, elapsedMs, durationMs, hidden, maxMs, lastTapped, losing, potato, emoji }: PotatoTimerProps) {
   const { t } = useI18n()
   const running = phase === 'running'
   const remainingMs = Math.max(0, durationMs - elapsedMs)
@@ -35,8 +37,8 @@ export function PotatoTimer({ phase, elapsedMs, durationMs, hidden, maxMs, lastB
     ? hidden
       ? `${keepGoing} ${potato ? t('potatoAnySecond') : t('timerAnySecond')}`
       : keepGoing
-    : lastBurnt
-      ? potato ? t('potatoLast', { name: lastBurnt }) : t('timerLast', { name: lastBurnt })
+    : lastTapped
+      ? potato ? t('potatoLast', { name: lastTapped }) : losing ? t('timerLast', { name: lastTapped }) : t('timerLastWon', { name: lastTapped })
       : potato ? t('potatoIdle') : t('timerIdle')
 
   return (
@@ -56,7 +58,7 @@ export function PotatoTimer({ phase, elapsedMs, durationMs, hidden, maxMs, lastB
           </span>
           <span className="display text-[64px] leading-[0.9] font-black">{potato ? t('potatoBoom') : t('timerBoom')}</span>
           <span className="flex flex-col gap-1">
-            <span className="text-lg font-extrabold">{potato ? t('potatoWho') : t('timerWho')}</span>
+            <span className="text-lg font-extrabold">{potato ? t('potatoWho') : losing ? t('whoLost') : t('whoWon')}</span>
             {durationMs > 0 && (
               <span className="text-sm font-bold opacity-85">
                 {potato ? t('potatoAfter', { time: after }) : t('timerAfter', { time: after })}
