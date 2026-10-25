@@ -1,5 +1,5 @@
 import { BUILTIN_GAMES } from '../data/presets'
-import type { GameDef, Player, PlayerRange, Session, Text } from '../types'
+import type { GameDef, Player, PlayerRange, Rules, Session, Text } from '../types'
 import { getState, saveSession, uid, useStore, type State } from './store'
 
 const GENERIC = ['builtin:counter', 'builtin:rounds']
@@ -94,6 +94,7 @@ export function gameFromEditor(g: GameDef, fields: EditorFields, text: (v: Text)
   const pMax = parseInt(fields.playersMax, 10)
   const min = pMin >= 1 ? pMin : pMax >= 1 ? 1 : undefined
   const players = min ? (pMax >= min ? { min, max: pMax } : { min }) : undefined
+  const timer = g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined
 
   return {
     ...g,
@@ -103,9 +104,18 @@ export function gameFromEditor(g: GameDef, fields: EditorFields, text: (v: Text)
     categories: g.mode === 'sheet' ? categories.map((c) => ({ ...c, name: text(c.name).trim() })) : undefined,
     bonus: g.mode === 'sheet' ? g.bonus : undefined,
     zeroSum: g.mode === 'rounds' ? g.zeroSum : undefined,
-    timer: g.mode === 'winner' && g.timer ? { hidden: g.timer.hidden, min: lo, max: hi } : undefined,
+    lowWins: g.lowWins || !!timer,
+    timer,
     players,
   }
+}
+
+/**
+ * A round timer records who lost each round (who was caught when time ran
+ * out), so the fewest losses always win: lowest wins is forced on.
+ */
+export function hasRoundTimer(rules: Pick<Rules, 'mode' | 'timer'>): boolean {
+  return rules.mode === 'winner' && !!rules.timer
 }
 
 /** Hot Potato's timer talks about the potato; other timed games get neutral wording. */
@@ -161,7 +171,7 @@ export function startSession(
     rules: {
       name: game.name,
       mode: game.mode,
-      lowWins: opts.lowWins,
+      lowWins: opts.lowWins || hasRoundTimer(game),
       target: opts.target,
       categories: game.categories,
       bonus: game.bonus,

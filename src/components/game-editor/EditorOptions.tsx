@@ -1,7 +1,7 @@
 import { useI18n } from '../../i18n'
 import { Card, Toggle, cx, inputClass } from '../ui'
 import { RoundTimerOptions } from './RoundTimerOptions'
-import type { EditorFields } from '../../lib/games'
+import { hasRoundTimer, type EditorFields } from '../../lib/games'
 import type { GameDef } from '../../types'
 
 /** The options that apply to the chosen mode: lowest wins, zero-sum, target, round timer, quick buttons. */
@@ -17,10 +17,17 @@ export function EditorOptions({
   onField: (field: keyof EditorFields, value: string) => void
 }) {
   const { t } = useI18n()
+  const timed = hasRoundTimer(g)
 
   return (
     <Card className="!py-2">
-      <Toggle checked={g.lowWins} onChange={(lowWins) => onPatch({ lowWins })} label={t('lowestWins')} />
+      <Toggle
+        checked={g.lowWins || timed}
+        onChange={(lowWins) => onPatch({ lowWins })}
+        label={t('lowestWins')}
+        hint={timed ? t('timerCountsLosses') : undefined}
+        disabled={timed}
+      />
       {g.mode === 'rounds' && (
         <div className="border-t border-edge dark:border-white/8">
           <Toggle checked={!!g.zeroSum} onChange={(zeroSum) => onPatch({ zeroSum })} label={t('zeroSum')} hint={t('zeroSumHint')} />

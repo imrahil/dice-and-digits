@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Check, Shuffle } from 'lucide-react'
 import { useI18n } from '../../i18n'
-import { startSession } from '../../lib/games'
+import { hasRoundTimer, startSession } from '../../lib/games'
 import { autoAssign, choosePawn, lastPawns, paletteFor } from '../../lib/pawns'
 import { nextColor } from '../../lib/players'
 import { getState, savePlayer, uid, useStore } from '../../lib/store'
@@ -166,7 +166,7 @@ export function Setup({ game }: { game: GameDef }) {
       </Section>
 
       <Section title={t('options')}>
-        <SetupOptions lowWins={lowWins} onLowWins={setLowWins} target={target} onTarget={setTarget} usePawns={usePawns} onUsePawns={setUsePawns} />
+        <SetupOptions lowWins={lowWins} onLowWins={setLowWins} timed={hasRoundTimer(game)} target={target} onTarget={setTarget} usePawns={usePawns} onUsePawns={setUsePawns} />
       </Section>
 
       <PawnPicker playerId={pickFor} palette={palette} pawns={pawns} roster={roster} onPick={pick} onClose={() => setPickFor(null)} />

@@ -170,6 +170,14 @@ describe('game editor', () => {
     expect(potato('', 'x')).toEqual({ hidden: false, min: 3, max: 3 })
     expect(potato('8', '25')).toEqual({ hidden: false, min: 8, max: 25 })
   })
+
+  it('a round timer turns lowest wins on: each round records who lost', () => {
+    const timed = custom('t', 1, { mode: 'winner', lowWins: false, timer: { hidden: true, min: 10, max: 30 } })
+
+    expect(games.gameFromEditor(timed, fields, label).lowWins).toBe(true)
+    expect(games.gameFromEditor({ ...timed, timer: undefined }, fields, label).lowWins).toBe(false)
+    expect(games.gameFromEditor({ ...timed, mode: 'counter' }, fields, label).lowWins).toBe(false)
+  })
 })
 
 describe('starting a game', () => {
@@ -197,6 +205,14 @@ describe('starting a game', () => {
       { id: 'a', name: 'Anna', color: '#e4572e', pawn: '#2a2a2e' },
       { id: 'b', name: 'Bart', color: '#2e86de' },
     ])
+  })
+
+  it('a game with a round timer always starts with lowest wins, even if setup says otherwise', () => {
+    store.saveGame(custom('timed', 1, { mode: 'winner', timer: { hidden: true, min: 10, max: 30 } }))
+
+    expect(games.startSession(games.findGame('timed')!, players, { lowWins: false }).rules.lowWins).toBe(true)
+    expect(games.startSession(games.findGame('builtin:hot-potato')!, players, { lowWins: false }).rules.lowWins).toBe(true)
+    expect(games.startSession(games.findGame('builtin:exploding-kittens')!, players, { lowWins: false }).rules.lowWins).toBe(false)
   })
 
   it('later edits to the game definition do not change a started session', () => {
