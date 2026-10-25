@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { button, dialog, emptyCells, finishGame, press, seatId, session, setUpGame, startGame } from './helpers'
+import { button, dialog, emptyCells, finishGame, press, seatId, session, sessions, setUpGame, startGame } from './helpers'
 
 // One phone, no cloud: every scoring mode from setup to stats.
 
@@ -207,6 +207,50 @@ test('a custom timed game gets neutral wording and its own icon, not the potato'
   await page.clock.runFor(30_000)
   await expect(page.getByText('Koniec czasu!')).toBeVisible()
   await expect(main).toContainText('Kto przegrał tę rundę?')
+})
+
+test('a custom timed game counts losses: the fewest losses win, whatever the setup toggle said', async ({ page }) => {
+  await page.clock.install()
+  await page.goto('#/games/new')
+  await page.getByPlaceholder('Nazwa gry').fill('Bomba')
+  await page.getByText('Tylko zwycięzca').click()
+  await page.getByText('Licznik czasu rundy').click()
+
+  const lowest = page.getByRole('checkbox', { name: /Wygrywa najniższy wynik/i })
+
+  await expect(lowest).toBeChecked()
+  await expect(lowest).toBeDisabled()
+  await button(page, 'Zapisz').click()
+
+  await page.goto('#/new')
+  await page.getByText('Bomba').first().click()
+
+  for (const name of ['Ola', 'Piotr']) {
+    await page.getByPlaceholder('Imię nowego gracza').fill(name)
+    await page.keyboard.press('Enter')
+  }
+
+  await expect(page.getByRole('checkbox', { name: /Wygrywa najniższy wynik/i })).toBeDisabled()
+  await button(page, 'Zacznij grę').click()
+
+  const tile = (name: string) => page.locator('main').getByRole('button', { name: new RegExp(name) })
+
+  for (const n of [1, 2]) {
+    await button(page, `Start rundy ${n}`).click()
+    await page.clock.runFor(30_000)
+    await tile('Piotr').click()
+  }
+
+  const bomba = (await sessions(page)).find((s) => s.rules.name === 'Bomba')!
+
+  expect(bomba.rules.lowWins).toBe(true)
+
+  await finishGame(page)
+
+  const winnerCard = page.getByText('Zwycięzca', { exact: true }).locator('..')
+
+  await expect(winnerCard).toContainText('Ola')
+  await expect(winnerCard).not.toContainText('Piotr')
 })
 
 test('custom game from the editor, then played', async ({ page }) => {

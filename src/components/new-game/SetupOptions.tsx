@@ -1,10 +1,11 @@
 import { useI18n } from '../../i18n'
 import { Card, Toggle, cx, inputClass } from '../ui'
 
-/** Per-game overrides for this session: lowest wins, target score and pawn colours. */
+/** Per-game overrides for this session: lowest wins (locked on for a round timer), target score and pawn colours. */
 export function SetupOptions({
   lowWins,
   onLowWins,
+  timed,
   target,
   onTarget,
   usePawns,
@@ -12,6 +13,7 @@ export function SetupOptions({
 }: {
   lowWins: boolean
   onLowWins: (on: boolean) => void
+  timed: boolean
   target: string
   onTarget: (value: string) => void
   usePawns: boolean
@@ -21,7 +23,13 @@ export function SetupOptions({
 
   return (
     <Card className="!py-2">
-      <Toggle checked={lowWins} onChange={onLowWins} label={t('lowestWins')} />
+      <Toggle
+        checked={lowWins || timed}
+        onChange={onLowWins}
+        label={t('lowestWins')}
+        hint={timed ? t('timerCountsLosses') : undefined}
+        disabled={timed}
+      />
       <label className="flex items-center gap-3 border-t border-edge py-3 dark:border-white/8">
         <span className="min-w-0 flex-1">
           <span className="block font-semibold">{t('targetScore')}</span>
