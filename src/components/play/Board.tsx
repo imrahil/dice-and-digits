@@ -3,6 +3,7 @@ import { MoreVertical, Undo2 } from 'lucide-react'
 import { useI18n } from '../../i18n'
 import { pushLive, stopLive } from '../../lib/cloud'
 import { hostScorer } from '../../lib/scorer'
+import { isHotPotato } from '../../lib/games'
 import { isEmpty, standings, targetReached } from '../../lib/scoring'
 import { counterViewOf, removeSession, setCounterView, updateSession, useStore } from '../../lib/store'
 import { buzz } from '../../lib/haptics'
@@ -155,7 +156,7 @@ export function Board({ session }: { session: Session }) {
       }
       subtitle={
         timer
-          ? t('potatoSubtitle', { n: session.rounds.length + 1, min: timer.min, max: timer.max })
+          ? t(isHotPotato(session) ? 'potatoSubtitle' : 'timerSubtitle', { n: session.rounds.length + 1, min: timer.min, max: timer.max })
           : mode === 'rounds' &&
         [
           tp('nRounds', session.rounds.length),
