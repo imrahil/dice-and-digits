@@ -30,6 +30,16 @@ opcjonalnym Cloudflare Workerem do wspólnych grup i tablic wyników na żywo.
 </tr>
 </table>
 
+<table>
+<tr>
+<td align="center" width="20%"><img src="docs/screenshots/pl/11-timer.png" alt="Gorący ziemniak z licznikiem czasu"><br><sub>Gorący ziemniak</sub></td>
+<td align="center" width="20%"><img src="docs/screenshots/pl/12-editor.png" alt="Ikony gier w edytorze"><br><sub>Ikony gier</sub></td>
+<td width="20%"></td>
+<td width="20%"></td>
+<td width="20%"></td>
+</tr>
+</table>
+
 **Liczenie punktów: cztery tryby pokrywają prawie każdą grę**
 
 | Tryb                 | Jak działa                                                                  | Dobre do                                     |
@@ -134,6 +144,16 @@ któremu nowa wersja nigdy nie przeładuje aplikacji w środku gry.
 <td align="center" width="20%"><img src="docs/screenshots/en/07-history.png" alt="History"><br><sub>History</sub></td>
 <td align="center" width="20%"><img src="docs/screenshots/en/08-tools.png" alt="Dice roller"><br><sub>Dice roller</sub></td>
 <td align="center" width="20%"><img src="docs/screenshots/en/10-live.png" alt="Live game QR"><br><sub>Live game QR</sub></td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td align="center" width="20%"><img src="docs/screenshots/en/11-timer.png" alt="Hot Potato round timer"><br><sub>Hot Potato</sub></td>
+<td align="center" width="20%"><img src="docs/screenshots/en/12-editor.png" alt="Game icons in the editor"><br><sub>Game icons</sub></td>
+<td width="20%"></td>
+<td width="20%"></td>
+<td width="20%"></td>
 </tr>
 </table>
 
