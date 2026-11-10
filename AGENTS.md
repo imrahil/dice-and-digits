@@ -70,8 +70,14 @@ D1 (shared groups) and one Durable Object per live game (`Room`).
   `round`) applied by `applyOp()`. Boards take a `Scorer` (`src/lib/scorer.ts`:
   `canEdit(seat)` + `apply(ops)`), so the same UI serves the host (all seats,
   local store) and a joined phone (own seat, ops sent to the room).
-- **`src/lib/cloud.ts`** handles groups, sync and live-game HTTP calls.
-  Everything is a no-op when `VITE_API_URL` is empty (`cloudEnabled`).
+- **`src/lib/api.ts`** is the one way to call the worker: `api()` throws an
+  `ApiError` carrying the HTTP status (`isNotFound()`), so callers never match
+  on error text. It also owns `API_URL` and `cloudEnabled`.
+- **`src/lib/cloud.ts`** handles groups and sync; **`src/lib/live.ts`** the
+  live-game HTTP calls. Everything is a no-op when `VITE_API_URL` is empty
+  (`cloudEnabled`).
+- **`src/lib/storage.ts`** (`readJson`/`writeJson`) is the only code touching
+  `localStorage`: it adds the `dice-digits:` prefix and never throws.
 - **`src/lib/room.ts`** (reconnecting WebSocket), **`src/hooks/useLiveHost.ts`**
   (host side, on the Play screen) and **`src/hooks/useRoom.ts`** (watching or
   joined phone, on the Live screen).

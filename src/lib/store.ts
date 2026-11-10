@@ -1,14 +1,13 @@
 import { useSyncExternalStore } from 'react'
 import { detectLang } from '../i18n'
+import { readJson, STORAGE_PREFIX, writeJson } from './storage'
 import type { CounterView, Doc, Favorite, GameDef, Player, Session, Settings } from '../types'
 
 /**
  * Local-first store: everything lives in localStorage and the app works fully
- * offline. Cloud sync (lib/sync.ts) is an optional layer on top that ships
+ * offline. Cloud sync (lib/cloud.ts) is an optional layer on top that ships
  * the `dirty` docs and merges remote ones with last-write-wins on updatedAt.
  */
-
-const PREFIX = 'dice-digits:'
 
 export type Kind = 'player' | 'game' | 'session' | 'fav'
 
@@ -30,24 +29,6 @@ const COLLECTION: Record<Kind, 'players' | 'games' | 'sessions' | 'favorites'> =
   fav: 'favorites',
 }
 
-function read<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(PREFIX + key)
-
-    return raw ? (JSON.parse(raw) as T) : fallback
-  } catch {
-    return fallback
-  }
-}
-
-function write(key: string, value: unknown) {
-  try {
-    localStorage.setItem(PREFIX + key, JSON.stringify(value))
-  } catch {
-    // Quota exceeded or storage disabled: keep working in memory.
-  }
-}
-
 const defaultSettings = (): Settings => ({
   lang: detectLang(),
   theme: 'auto',
@@ -58,12 +39,12 @@ const defaultSettings = (): Settings => ({
 
 function load(): State {
   return {
-    players: read('players', {}),
-    games: read('games', {}),
-    sessions: read('sessions', {}),
-    favorites: read('favorites', {}),
-    settings: { ...defaultSettings(), ...read<Partial<Settings>>('settings', {}) },
-    dirty: read('dirty', []),
+    players: readJson('players', {}),
+    games: readJson('games', {}),
+    sessions: readJson('sessions', {}),
+    favorites: readJson('favorites', {}),
+    settings: { ...defaultSettings(), ...readJson<Partial<Settings>>('settings', {}) },
+    dirty: readJson('dirty', []),
   }
 }
 
@@ -74,7 +55,7 @@ function set(next: Partial<State>) {
   state = { ...state, ...next }
 
   for (const k of Object.keys(next) as (keyof State)[]) {
-    write(k, state[k])
+    writeJson(k, state[k])
   }
 
   listeners.forEach((l) => l())
@@ -82,7 +63,7 @@ function set(next: Partial<State>) {
 
 // Another tab wrote: reload so both stay consistent.
 window.addEventListener('storage', (e) => {
-  if (!e.key?.startsWith(PREFIX)) {
+  if (!e.key?.startsWith(STORAGE_PREFIX)) {
     return
   }
 
@@ -118,8 +99,11 @@ export function uid(): string {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`
 }
 
+/** A doc's entry in `state.dirty`. Ids may hold colons (`builtin:catan`); kinds never do. */
+const tagOf = (kind: Kind, id: string) => `${kind}:${id}`
+
 function markDirty(kind: Kind, id: string): string[] {
-  const tag = `${kind}:${id}`
+  const tag = tagOf(kind, id)
 
   return state.dirty.includes(tag) ? state.dirty : [...state.dirty, tag]
 }
@@ -282,7 +266,7 @@ export function clearDirty(sent: RemoteDoc[]) {
   const done = new Set(
     sent
       .filter((d) => state[COLLECTION[d.kind]][d.id]?.updatedAt === d.updatedAt)
-      .map((d) => `${d.kind}:${d.id}`),
+      .map((d) => tagOf(d.kind, d.id)),
   )
 
   set({ dirty: state.dirty.filter((t) => !done.has(t)) })
@@ -295,7 +279,7 @@ export function markAllDirty() {
   for (const kind of Object.keys(COLLECTION) as Kind[]) {
     for (const doc of Object.values(state[COLLECTION[kind]])) {
       if (shareable(kind, doc)) {
-        tags.push(`${kind}:${doc.id}`)
+        tags.push(tagOf(kind, doc.id))
       }
     }
   }
@@ -352,7 +336,7 @@ export function importBackup(json: string): number | null {
     dirty: [
       ...new Set([
         ...state.dirty,
-        ...docs.filter((d) => shareable(d.kind, d.data)).map((d) => `${d.kind}:${d.id}`),
+        ...docs.filter((d) => shareable(d.kind, d.data)).map((d) => tagOf(d.kind, d.id)),
       ]),
     ],
   })

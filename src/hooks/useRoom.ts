@@ -1,31 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { fetchLive } from '../lib/cloud'
+import { isNotFound } from '../lib/api'
+import { fetchLive } from '../lib/live'
 import { applyOp, type Op, type OpBody } from '../lib/ops'
 import { RoomSocket, type ServerMsg, type SocketStatus } from '../lib/room'
 import type { Scorer } from '../lib/scorer'
+import { readJson, writeJson } from '../lib/storage'
 import { uid } from '../lib/store'
 import type { Session } from '../types'
 
-const KEY = (code: string) => `dice-digits:guest:${code}`
+const KEY = (code: string) => `guest:${code}`
 
 type Saved = { token?: string; pending: Op[] }
 
 function load(code: string): Saved {
-  try {
-    const v = JSON.parse(localStorage.getItem(KEY(code)) ?? 'null')
+  const v = readJson<Saved | null>(KEY(code), null)
 
-    return v && Array.isArray(v.pending) ? v : { pending: [] }
-  } catch {
-    return { pending: [] }
-  }
-}
-
-function save(code: string, v: Saved) {
-  try {
-    localStorage.setItem(KEY(code), JSON.stringify(v))
-  } catch {
-    // storage full or blocked: the ops still go out while the tab is open
-  }
+  return v && Array.isArray(v.pending) ? v : { pending: [] }
 }
 
 export type RoomView = {
@@ -65,7 +55,7 @@ export function useRoom(code: string): RoomView {
       const next = fn(savedRef.current)
 
       savedRef.current = next
-      save(code, next)
+      writeJson(KEY(code), next)
       setSaved(next)
     },
     [code],
@@ -153,7 +143,7 @@ export function useRoom(code: string): RoomView {
         // Repeated failures: check whether the game still exists at all.
         if (st === 'offline' && failures === 3) {
           fetchLive(code).catch((e) => {
-            if (e instanceof Error && /not found/i.test(e.message)) {
+            if (isNotFound(e)) {
               socket.current?.stop()
               setStatus('ended')
             }
@@ -183,7 +173,7 @@ export function useRoom(code: string): RoomView {
           return
         }
 
-        if (e instanceof Error && /not found/i.test(e.message)) {
+        if (isNotFound(e)) {
           setStatus('notfound')
         } else {
           // offline or flaky: let the socket keep trying

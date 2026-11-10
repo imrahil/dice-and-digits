@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n'
-import { cloudEnabled } from '../lib/cloud'
+import { cloudEnabled } from '../lib/api'
 import { BackupSection } from '../components/advanced/BackupSection'
 import { FileSection } from '../components/advanced/FileSection'
 import { GroupSection } from '../components/advanced/GroupSection'

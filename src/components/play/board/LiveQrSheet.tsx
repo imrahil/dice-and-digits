@@ -1,5 +1,5 @@
 import { useI18n } from '../../../i18n'
-import { liveLink, type LiveHandle } from '../../../lib/cloud'
+import { liveLink, type LiveHandle } from '../../../lib/live'
 import { QrShareSheet } from '../../QrShareSheet'
 import { JoinedSeats } from '../JoinedSeats'
 import type { HostRoom } from '../../../hooks/useLiveHost'

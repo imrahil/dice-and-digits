@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useStore } from '../lib/store'
-import { cloudEnabled, syncNow, useCloud } from '../lib/cloud'
+import { cloudEnabled } from '../lib/api'
+import { syncNow, useCloud } from '../lib/cloud'
 
 /** Sync on open, on return to the tab, shortly after local changes, and every 5 min. */
 export function useAutoSync() {
