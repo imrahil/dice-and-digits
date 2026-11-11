@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import { useI18n } from '../i18n'
-import { liveHandle } from '../lib/cloud'
+import { liveHandle } from '../lib/live'
 import { isEmpty, standings } from '../lib/scoring'
 import { navigate } from '../hooks/useRoute'
 import { useNow } from '../hooks/useNow'

@@ -1,4 +1,4 @@
-import { API_URL } from './cloud'
+import { API_URL } from './api'
 import type { Op } from './ops'
 import type { Session } from '../types'
 

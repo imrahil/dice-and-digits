@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { KeyRound } from 'lucide-react'
 import { useI18n } from '../i18n'
-import { cloudEnabled } from '../lib/cloud'
+import { cloudEnabled } from '../lib/api'
 import { parseWords } from '../lib/recovery'
 import { navigate } from '../hooks/useRoute'
 import { Button, Card, Empty, Page, inputClass } from '../components/ui'

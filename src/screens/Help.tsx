@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useI18n, type I18n } from '../i18n'
-import { cloudEnabled } from '../lib/cloud'
+import { cloudEnabled } from '../lib/api'
 import { navigate } from '../hooks/useRoute'
 import { Page } from '../components/ui'
 

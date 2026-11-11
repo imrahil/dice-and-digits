@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n'
-import { cloudEnabled } from '../lib/cloud'
+import { cloudEnabled } from '../lib/api'
 import { Empty, Page } from '../components/ui'
 import { LiveRoom } from '../components/live/LiveRoom'
 

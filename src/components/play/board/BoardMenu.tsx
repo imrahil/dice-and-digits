@@ -1,6 +1,6 @@
 import { ArrowDownUp, Flag, LayoutGrid, List, QrCode, Radio, Trash2 } from 'lucide-react'
 import { useI18n } from '../../../i18n'
-import { cloudEnabled } from '../../../lib/cloud'
+import { cloudEnabled } from '../../../lib/api'
 import { tableFits } from '../../../lib/store'
 import { Button, Segmented, Sheet } from '../../ui'
 import { ViewLabel } from '../ViewLabel'

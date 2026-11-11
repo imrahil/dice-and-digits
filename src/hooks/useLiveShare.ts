@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { forgetLive, liveHandle, startLive, stopLive } from '../lib/cloud'
+import { forgetLive, liveHandle, startLive, stopLive } from '../lib/live'
 import { useLiveHost } from './useLiveHost'
 import type { Session } from '../types'
 

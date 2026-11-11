@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { MoreVertical, Undo2 } from 'lucide-react'
 import { useI18n } from '../../i18n'
-import { pushLive, stopLive } from '../../lib/cloud'
+import { pushLive, stopLive } from '../../lib/live'
 import { hostScorer } from '../../lib/scorer'
 import { isHotPotato } from '../../lib/games'
 import { isEmpty, standings, targetReached } from '../../lib/scoring'
