@@ -211,7 +211,7 @@ const PRESETS: Preset[] = [
   {
     id: 'builtin:uno',
     emoji: '🃏',
-    name: name('Uno', 'Uno'),
+    name: name('Crazy Eights', 'Makao'),
     players: { min: 2, max: 10 },
     mode: 'rounds',
     lowWins: false,

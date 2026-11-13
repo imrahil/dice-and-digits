@@ -54,7 +54,7 @@ describe('pawn colours', () => {
       1: s('1', 'ttr', 1, RED),
       2: s('2', 'ttr', 2, BLUE),
       3: s('3', 'ttr', 3, GREEN, true),
-      4: s('4', 'uno', 4, BLACK),
+      4: s('4', 'rummy', 4, BLACK),
     }
 
     expect(lastPawns(sessions, 'ttr')).toEqual({ a: BLUE })
