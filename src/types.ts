@@ -5,7 +5,7 @@ export type Text = string | { en: string; pl: string }
 
 /**
  * - counter: big +/- buttons per player, every tap is logged (Catan, Carcassonne)
- * - rounds:  a row of scores per round, running totals (Uno, Tysiąc, Rummy)
+ * - rounds:  a row of scores per round, running totals (Crazy Eights, Tysiąc, Rummy)
  * - sheet:   end-of-game score pad, one row per category (7 Wonders, Wingspan)
  * - winner:  no points, just who won each round (Exploding Kittens); with
  *            lowWins it records who *lost* instead (Hot Potato)
